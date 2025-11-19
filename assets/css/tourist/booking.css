@@ -1,3 +1,20 @@
+:root{
+  --primary-color: #ffffff;
+  --secondary-color: #213638;
+  --accent: #E5A13E;
+  --secondary-accent: #CFE7E5;
+  --muted-color: gainsboro;
+}
+
+body{
+    background-color: var(--muted-color);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #333;
+
+}
+
+
+
 .booking-card {
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -12,6 +29,17 @@
 .card-footer-actions a {
     font-size: 0.9rem;
 }
+
+.card-header {
+    background-color: var(--secondary-color) !important;
+    border-bottom: 1px solid #ddd;
+
+}
+
+.card-header .badge{
+    color: var(--primary-color);
+}
+
 
 main .container{
     margin-top: 1rem;
