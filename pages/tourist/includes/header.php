@@ -215,50 +215,57 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const dropdownToggle = document.querySelector('.dropdown-toggle[aria-expanded]');
-        const badge = document.querySelector('.position-absolute .badge.rounded-pill.bg-danger');
-        let hasMarkedAsRead = false;
+    // Mark all notifications as read when dropdown is opened
+document.addEventListener('DOMContentLoaded', function () {
+    const dropdownToggle = document.querySelector('.dropdown-toggle[aria-expanded]');
+    const dropdownMenu = document.querySelector('#notification-dropdown');
 
-        if (!dropdownToggle || !badge) return;
+    if (!dropdownToggle || !dropdownMenu) return;
 
-        dropdownToggle.addEventListener('click', function () {
-            // INSTANTLY hide & reset badge when dropdown is opened
-            if (!hasMarkedAsRead && <?= $unread_count ?> > 0) {
-                badge.classList.add('d-none');
-                badge.textContent = '0'; // Set to 0 immediately
+    let hasMarkedAsRead = false;
 
-                // Also remove all "New" badges visually right away
-                document.querySelectorAll('.mark-as-read').forEach(el => {
-                    el.classList.remove('bg-primary', 'bg-opacity-10', 'fw-semibold', 'border-start', 'border-primary', 'border-4');
-                    el.classList.add('text-muted');
-                });
-                document.querySelectorAll('.badge.bg-danger').forEach(b => {
-                    if (b.textContent.trim() === 'New') b.remove();
-                });
+    dropdownToggle.addEventListener('click', function () {
+        // Only mark as read once per page load (when dropdown first opens)
+        if (hasMarkedAsRead) return;
+        
+        const unreadCount = <?= $unread_count ?>;
 
-                hasMarkedAsRead = true;
+        if (unreadCount > 0) {
+            fetch('includes/ajax/mark-notifications-read.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hasMarkedAsRead = true;
+                    
+                    // Remove all "New" badges and bg-light
+                    document.querySelectorAll('.mark-as-read').forEach(item => {
+                        item.classList.remove('bg-light', 'fw-semibold');
+                    });
+                    document.querySelectorAll('.badge.bg-danger').forEach(badge => {
+                        if (badge.textContent.trim() === 'New') {
+                            badge.remove();
+                        }
+                    });
 
-                // Now send AJAX in background (doesn't affect UI)
-                fetch('includes/ajax/mark-notifications-read.php', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
+                    // Hide the red counter badge
+                    const counterBadge = document.querySelector('.badge.rounded-pill.bg-danger');
+                    if (counterBadge) {
+                        counterBadge.classList.add('d-none');
+                        counterBadge.textContent = '0';
                     }
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.success) {
-                        console.warn('Failed to mark notifications as read on server');
-                        // Optional: revert UI if failed (rare)
-                    }
-                })
-                .catch(err => {
-                    console.error('AJAX error:', err);
-                });
-            }
-        });
+                }
+            })
+            .catch(err => {
+                console.error('Failed to mark notifications as read:', err);
+            });
+        }
     });
+});
 </script>
