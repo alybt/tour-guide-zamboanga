@@ -10,7 +10,6 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
     header('Location: account-pending.php');
     exit;
 }
-require_once 'includes/header.php';
 require_once "../../classes/tourist.php";
 require_once "../../classes/tour-manager.php";
 
@@ -110,9 +109,8 @@ function buildStarList(float $avg, int $count): string
     <link rel="stylesheet" href="../../assets/css/tourist/header.css">
 </head>
 <body>
-
- <?php require_once "includes/header.php"; 
-    include_once "includes/header.php";?>
+    <?php require_once "includes/header.php";  ?>
+ 
 
 <!-- Mobile Filter Toggle -->
 <button class="filter-toggle btn btn-warning d-md-none position-fixed bottom-0 start-0 m-3 shadow-lg rounded-circle p-0 d-flex align-items-center justify-content-center"
@@ -188,7 +186,7 @@ function buildStarList(float $avg, int $count): string
     </form>
 </aside>
 
-<main id="packagesContainer" class="main-contents row">
+<main id="packagesContainer" class="main-contents ">
     <?php foreach ($packages as $package): ?>
         <?php
         $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
@@ -208,6 +206,8 @@ function buildStarList(float $avg, int $count): string
         <?php include 'card-template.php'; ?>
     <?php endforeach; ?>
 </main>
+
+
 <script>
     // === Dual Price Slider ===
     const priceMinValue = document.getElementById('priceMinValue');

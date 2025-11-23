@@ -7,8 +7,9 @@
 }
 
 body{
-    background-color: var(--muted-color);
     display: flex;
+    background-color: var(--muted-color);
+    
 }
 
 main {
@@ -70,19 +71,19 @@ main {
 /* Desktop: show aside normally */
 @media (min-width: 768px) {
     .aside-tourist {
-        position: static;
-        left: auto;
-        height: 37rem;
-        margin-top: 5rem;
-        margin-left: 1rem;
-        width: 15rem;
-        transition: none;
-        z-index: 1;
+position: static;
+left: auto;
+height: 37rem;
+margin-top: 5rem;
+margin-left: 1rem;
+width: 15rem;
+transition: none;
+z-index: 1;
     }
 
     .filter-overlay,
     #filterToggle {
-        display: none !important;
+display: none !important;
     }
 }
 
@@ -92,8 +93,9 @@ main {
     gap: 1.5rem;
     padding: 1rem;
     max-width: 1400px;
-    margin: 0 auto;
     margin-top: 4rem;
+    margin-left: 0; /* ⬅ left alignment */
+    margin-right: auto;
 }
 
 /* Responsive Grid */
@@ -105,19 +107,21 @@ main {
 }
 
 /* CARD: Fixed height + full control */
-.main-contents .card {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+.main-contents {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1rem;
+
     width: 100%;
-    max-width: none !important;
-    margin: 0 !important;/* ← YOUR FIXED HEIGHT */
-    
-    height: 100% !important;
+    max-width: none;
+    margin: 0;
+
+    margin-top: 4rem;
 }
 
+
 .main-contents .card img {
-    height: 10rem;                    /* Fixed image height */
+    height: 10rem;    /* Fixed image height */
     object-fit: cover;
     width: 100%;
 }
@@ -130,57 +134,60 @@ main {
 }
 
 .main-contents .card-body .btn {
-    margin-top: auto;                 /* Push button to bottom */
+    margin-top: auto; /* Push button to bottom */
 }
 
-        .range-slider {
-            position: relative;
-            height: 40px;
-            margin: 15px 0;
-        }
-        .range-slider input[type=range] {
-            position: absolute;
-            left: 0; right: 0;
-            width: 100%;
-            background: none;
-            pointer-events: none;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        .range-slider input[type=range]::-webkit-slider-thumb {
-            height: 18px; width: 18px;
-            border-radius: 50%;
-            background: #ffc107;
-            cursor: pointer;
-            pointer-events: auto;
-            border: 3px solid #fff;
-            box-shadow: 0 0 6px rgba(0,0,0,.2);
-        }
-        .range-slider input[type=range]::-moz-range-thumb {
-            height: 18px; width: 18px;
-            border-radius: 50%;
-            background: #ffc107;
-            cursor: pointer;
-            pointer-events: auto;
-            border: 3px solid #fff;
-            box-shadow: 0 0 6px rgba(0,0,0,.2);
-        }
-        .range-slider__track,
-        .range-slider__fill {
-            position: absolute;
-            left: 0; right: 0;
-            height: 6px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-radius: 3px;
-        }
-        .range-slider__track { background: #ddd; }
-        .range-slider__fill { background: #ffc107; }
 
-         
+
+/* ==== SLIDER ==== */
+.range-slider {
+    position: relative;
+    height: 40px;
+    margin: 15px 0;
+}
+.range-slider input[type=range] {
+    position: absolute;
+    left: 0; right: 0;
+    width: 100%;
+    background: none;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.range-slider input[type=range]::-webkit-slider-thumb {
+    height: 18px; width: 18px;
+    border-radius: 50%;
+    background: #ffc107;
+    cursor: pointer;
+    pointer-events: auto;
+    border: 3px solid #fff;
+    box-shadow: 0 0 6px rgba(0,0,0,.2);
+}
+.range-slider input[type=range]::-moz-range-thumb {
+    height: 18px; width: 18px;
+    border-radius: 50%;
+    background: #ffc107;
+    cursor: pointer;
+    pointer-events: auto;
+    border: 3px solid #fff;
+    box-shadow: 0 0 6px rgba(0,0,0,.2);
+}
+.range-slider__track,
+.range-slider__fill {
+    position: absolute;
+    left: 0; right: 0;
+    height: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 3px;
+}
+.range-slider__track { background: #ddd; }
+.range-slider__fill { background: #ffc107; }
+
+ 
 
 @media (min-width: 992px) {
     .notification-dropdown{
-        width: 320px;
+width: 320px;
     }
 }
