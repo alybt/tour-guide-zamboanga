@@ -38,10 +38,9 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
     <link rel="stylesheet" href="assets/css/index.css">
     <link rel="stylesheet" href="assets/css/header.css">
     
-
-    <!-- ✅ Bootstrap 5.3.3 (CSS) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="vendor/components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
     
 </head>
 <body>
@@ -198,10 +197,13 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
     <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
     <script src="assets/vendor/glightbox/js/glightbox.min.js"></script> -->
 
-    <!-- ✅ Bootstrap JS (includes Popper.js for dropdowns/collapse) -->
+    <!-- ✅ Bootstrap JS (includes Popper.js for dropdowns/collapse)
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script> -->
+    
+    <script src="assets/vendor/components/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

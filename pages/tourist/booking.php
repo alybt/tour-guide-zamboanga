@@ -21,12 +21,12 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tourismo Zamboanga - My Bookings</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/index.min.css">
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" >
+    
     <link rel="stylesheet" href="../../assets/css/tourist/booking.css">
-    <link rel="stylesheet" href="/../../assets/css/header.css">
-
+    <link rel="stylesheet" href="../../assets/css/tourist/header.css">
+    
     <style>
         :root {
             --primary-color: #ffffff;
@@ -754,81 +754,86 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
 </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/index.global.min.js"></script>
+<script src="../../assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/vendor/components/jquery/jquery.min.js"></script>
+
+
+<script src="../../assets/node_modules/@fullcalendar/core/index.global.min.js"></script>
+    
+<script src="../../assets/node_modules/@fullcalendar/daygrid/index.global.min.js"></script>
+
 
 <script>
-$(document).ready(function() {
-    // Initialize FullCalendar
-    var calendarEl = document.getElementById('calendar');
-    
-    if (calendarEl) {
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listWeek'
-            },
-            events: [
-                <?php foreach ($bookings as $booking): 
-                    if (!in_array($booking['booking_status'], ['Pending for Payment', 'Pending for Approval', 'Approved', 'In Progress'])) continue;
-                    
-                    $color = '#E5A13E';
-                    if ($booking['booking_status'] == 'Pending for Payment' || $booking['booking_status'] == 'Pending for Approval') {
-                        $color = '#CFE7E5';
-                    } elseif ($booking['booking_status'] == 'Approved') {
-                        $color = '#E5A13E';
-                    } elseif ($booking['booking_status'] == 'In Progress') {
-                        $color = '#213638';
-                    }
-                ?>
-                {
-                    title: '<?= addslashes($booking['tourpackage_name']) ?>',
-                    start: '<?= $booking['booking_start_date'] ?>',
-                    end: '<?= date('Y-m-d', strtotime($booking['booking_end_date'] . ' +1 day')) ?>',
-                    color: '<?= $color ?>',
-                    url: 'booking-view.php?id=<?= $booking['booking_ID'] ?>',
-                    textColor: '<?= $color == '#CFE7E5' ? '#213638' : '#ffffff' ?>'
+    $(document).ready(function() {
+        // Initialize FullCalendar
+        var calendarEl = document.getElementById('calendar');
+        
+        if (calendarEl) {
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
                 },
-                <?php endforeach; ?>
-            ],
-            eventClick: function(info) {
-                info.jsEvent.preventDefault();
-                if (info.event.url) {
-                    window.location.href = info.event.url;
+                events: [
+                    <?php foreach ($bookings as $booking): 
+                        if (!in_array($booking['booking_status'], ['Pending for Payment', 'Pending for Approval', 'Approved', 'In Progress'])) continue;
+                        
+                        $color = '#E5A13E';
+                        if ($booking['booking_status'] == 'Pending for Payment' || $booking['booking_status'] == 'Pending for Approval') {
+                            $color = '#CFE7E5';
+                        } elseif ($booking['booking_status'] == 'Approved') {
+                            $color = '#E5A13E';
+                        } elseif ($booking['booking_status'] == 'In Progress') {
+                            $color = '#213638';
+                        }
+                    ?>
+                    {
+                        title: '<?= addslashes($booking['tourpackage_name']) ?>',
+                        start: '<?= $booking['booking_start_date'] ?>',
+                        end: '<?= date('Y-m-d', strtotime($booking['booking_end_date'] . ' +1 day')) ?>',
+                        color: '<?= $color ?>',
+                        url: 'booking-view.php?id=<?= $booking['booking_ID'] ?>',
+                        textColor: '<?= $color == '#CFE7E5' ? '#213638' : '#ffffff' ?>'
+                    },
+                    <?php endforeach; ?>
+                ],
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    if (info.event.url) {
+                        window.location.href = info.event.url;
+                    }
                 }
+            });
+            
+            calendar.render();
+        }
+
+        // Cancel booking confirmation
+        $('.cancel-booking').on('click', function(e) {
+            e.preventDefault();
+            const url = $(this).attr('href');
+            const tourName = $(this).data('name');
+
+            if (confirm(`Are you sure you want to cancel your booking for "${tourName}"?`)) {
+                window.location.href = url;
             }
         });
-        
-        calendar.render();
-    }
 
-    // Cancel booking confirmation
-    $('.cancel-booking').on('click', function(e) {
-        e.preventDefault();
-        const url = $(this).attr('href');
-        const tourName = $(this).data('name');
+        // View toggle
+        $('#gridViewBtn').on('click', function() {
+            $('#bookingsContainer').removeClass('list-view').addClass('grid-view');
+            $(this).addClass('active');
+            $('#listViewBtn').removeClass('active');
+        });
 
-        if (confirm(`Are you sure you want to cancel your booking for "${tourName}"?`)) {
-            window.location.href = url;
-        }
+        $('#listViewBtn').on('click', function() {
+            $('#bookingsContainer').removeClass('grid-view').addClass('list-view');
+            $(this).addClass('active');
+            $('#gridViewBtn').removeClass('active');
+        });
     });
-
-    // View toggle
-    $('#gridViewBtn').on('click', function() {
-        $('#bookingsContainer').removeClass('list-view').addClass('grid-view');
-        $(this).addClass('active');
-        $('#listViewBtn').removeClass('active');
-    });
-
-    $('#listViewBtn').on('click', function() {
-        $('#bookingsContainer').removeClass('grid-view').addClass('list-view');
-        $(this).addClass('active');
-        $('#gridViewBtn').removeClass('active');
-    });
-});
 </script>
 </body>
 </html>

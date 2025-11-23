@@ -49,10 +49,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <!-- ✅ Bootstrap 5.3.3 (CSS) -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 
+
+    <!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
+    <!-- <link href="https://cdnjs.cloudflare.com/ajaxs/libs/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> -->
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="assets/vendor/components/font-awesome/css/font-awesome.min.css">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="assets/vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+    
+    <!-- In File CSS-->
     <link rel="stylesheet" href="assets/css/public-pages/login.css">
 </head>
 <body>
@@ -125,8 +132,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     
         <!-- <a href="registration/tourist-registration.php">Register as A Tourist</a> -->
 
-        <!-- ✅ Bootstrap JS (includes Popper.js for dropdowns/collapse) -->
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!-- Local Jquery-->
+        <script src="assets/vendor/components/jquery/jquery.min.js"></script>
+        <script src="assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script> -->
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
 </body>
 </html>
