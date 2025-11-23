@@ -43,11 +43,9 @@ $totalRatings = $guideObj->guideRating($guide_ID);
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Guide Dashboard | TourGuide PH</title>
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-    <!-- Google Fonts -->
+     
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css"> 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
     <link rel="stylesheet" href="../../assets/css/guide/dashboard.css">
@@ -194,12 +192,9 @@ $totalRatings = $guideObj->guideRating($guide_ID);
                 </div>
             </div>
         </div>
-    </main>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Live Clock (PH Time) -->
+    </main> 
+    <script src="../../assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+ 
     <script>
         function updateClock() {
             const now = new Date();
