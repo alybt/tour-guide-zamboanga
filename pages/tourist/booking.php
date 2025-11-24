@@ -200,11 +200,8 @@ foreach ($bookings as $booking) {
 </main>
 
 <script src="../../assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../../assets/vendor/components/jquery/jquery.min.js"></script>
-
-
-<script src="../../assets/node_modules/@fullcalendar/core/index.global.min.js"></script>
-    
+<script src="../../assets/vendor/components/jquery/jquery.min.js"></script> 
+<script src="../../assets/node_modules/@fullcalendar/core/index.global.min.js"></script> 
 <script src="../../assets/node_modules/@fullcalendar/daygrid/index.global.min.js"></script>
 
 

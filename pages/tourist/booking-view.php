@@ -52,16 +52,10 @@ $statusColor = match($booking['booking_status']) {
     <title>Booking #<?= $booking_ID ?> - Tourismo Zamboanga</title>
     <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" >
-    <style>
-        main {
-            margin-top:2rem;
-        }
-        .booking-card { border-left: 5px solid #0d6efd; }
-        .status-badge { font-size: 1rem; padding: 0.5rem 1rem; }
-        .spot-img { height: 80px; object-fit: cover; border-radius: 8px; }
-    </style>
+    <link rel="stylesheet" href="../../assets/css/tourist/booking-view.css">
+
 </head>
-<body class="bg-light">
+<body class=" ">
      <?php require_once "includes/header.php"; 
     include_once "includes/header.php";?>
 <main>
@@ -70,7 +64,7 @@ $statusColor = match($booking['booking_status']) {
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <!-- Header -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="header-booking d-flex justify-content-between align-items-center mb-4">
                     <h2 class="fw-bold text-primary">
                         <i class="bi bi-receipt"></i> Booking #<?= str_pad($booking_ID, 5, '0', STR_PAD_LEFT) ?>
                     </h2>
@@ -95,7 +89,7 @@ $statusColor = match($booking['booking_status']) {
                     </div>
                 <?php endif; ?>
 
-                <div class="row g-4">
+                <div class="package-details row g-4">
                     <!-- Package Details -->
                     <div class="col-md-8">
                         <div class="card shadow-sm booking-card h-100">
@@ -154,7 +148,7 @@ $statusColor = match($booking['booking_status']) {
                     </div>
 
                     <!-- Booking Summary Sidebar -->
-                    <div class="col-md-4">
+                    <div class="booking-summary col-md-4">
                         <div class="card shadow-sm sticky-top" style="top: 100px;">
                             <div class="card-header bg-primary text-white">
                                 <h5 class="mb-0"><i class="bi bi-people"></i> Travelers</h5>
@@ -197,7 +191,7 @@ $statusColor = match($booking['booking_status']) {
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="mt-4">
+                        <div class="action-btn mt-4">
                             <?php if ($booking['booking_status'] === 'Pending'): ?>
                                 <a href="payment-form.php?id=<?= $booking_ID ?>" class="btn btn-success btn-lg w-100 mb-2">
                                     <i class="bi bi-credit-card"></i> Pay Now
@@ -212,9 +206,16 @@ $statusColor = match($booking['booking_status']) {
                                 </button>
                             <?php endif; ?>
 
-                            <a href="my-bookings.php" class="btn btn-outline-secondary w-100">
+                            <a href="booking.php" class="btn btn-outline-secondary w-100">
                                 <i class="bi bi-arrow-left"></i> Back to My Bookings
                             </a>
+
+                            <?php if ($booking['booking_status'] == 'Pending for Payment'){ ?>
+                            <a href="payment-form.php?id=<?= $booking['booking_ID'] ?>" class="btn btn btn-outline-secondary btn-sm w-100"> Pay </a> 
+                            <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-danger btn-sm cancel-booking w-100" data-name="<?= htmlspecialchars($booking['tourpackage_name']) ?>"> Cancel </a>
+                            <?php } else if (in_array($booking['booking_status'], [ 'Completed', 'Cancelled', 'Refunded','Failed', 'Rejected by the Guide', 'Booking Expired — Payment Not Completed', 'Booking Expired — Guide Did Not Confirm in Time' ], true)){ ?>
+                            <a href="booking-again.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-success btn-sm w-100"> Book Again </a>
+                            <?php } ?>
                         </div>
                     </div>
                 </div>

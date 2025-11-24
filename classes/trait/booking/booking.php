@@ -2,8 +2,7 @@
 
 trait BookingDetails{
 
-    public function getBookingByIDAndTourist(int $booking_ID, int $tourist_ID): array|false
-    {
+    public function getBookingByIDAndTourist(int $booking_ID, int $tourist_ID): array|false {
         $db = $this->connect();
         
         $sql = "SELECT 
@@ -41,8 +40,7 @@ trait BookingDetails{
         }
     } 
     // Add to your Booking class
-    public function markItinerarySent(int $booking_ID): bool
-    {
+    public function markItinerarySent(int $booking_ID): bool {
         try {
             $sql = "UPDATE booking SET itinerary_sent = 1, itinerary_sent_at = NOW() WHERE booking_ID = :id";
             $stmt = $this->connect()->prepare($sql);
@@ -54,8 +52,7 @@ trait BookingDetails{
         }
     } 
 
-    public function hasItineraryBeenSent(int $booking_ID): bool
-    {
+    public function hasItineraryBeenSent(int $booking_ID): bool {
         $sql = "SELECT itinerary_sent FROM booking WHERE booking_ID = :id";
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([':id' => $booking_ID]);

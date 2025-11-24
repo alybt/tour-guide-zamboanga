@@ -94,24 +94,15 @@ class Tourist extends Database {
                 return 0;
         }
     }
-
-    /**
-     * Get tourist's email by tourist account_ID
-     * 
-     * @param int $tourist_ID The account_ID from the account_info table (your current session ID)
-     * @return string|null Email address or null if not found
-     */
-    public function getEmailByID(int $tourist_ID): ?string
-    {
-        $sql = "
-            SELECT ci.contactinfo_email 
+ 
+    public function getEmailByID(int $tourist_ID): ?string {
+        $sql = " SELECT ci.contactinfo_email 
             FROM contact_info ci
             INNER JOIN person p ON p.contactinfo_ID = ci.contactinfo_ID
             INNER JOIN user_login u ON u.person_ID = p.person_ID
             INNER JOIN account_info a ON a.user_ID = u.user_ID
             WHERE a.account_ID = :tourist_ID
-            LIMIT 1
-        ";
+            LIMIT 1 ";
 
         try {
             $stmt = $this->connect()->prepare($sql);
@@ -124,20 +115,14 @@ class Tourist extends Database {
             return null;
         }
     }
-
-    /**
-     * Get tourist's full name by account_ID
-     */
-    public function getFullNameByID(int $tourist_ID): ?string
-    {
-        $sql = "
-            SELECT CONCAT(p.person_firstname, ' ', p.person_lastname) AS fullname
+ 
+    public function getFullNameByID(int $tourist_ID): ?string  {
+        $sql = " SELECT CONCAT(p.person_firstname, ' ', p.person_lastname) AS fullname
             FROM person p
             INNER JOIN user_login u ON u.person_ID = p.person_ID
             INNER JOIN account_info a ON a.user_ID = u.user_ID
             WHERE a.account_ID = :tourist_ID
-            LIMIT 1
-        ";
+            LIMIT 1 ";
 
         try {
             $stmt = $this->connect()->prepare($sql);
@@ -260,12 +245,8 @@ class Tourist extends Database {
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([':tourist_ID' => $tourist_ID]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-    
-    /**
-     * Get tourist basic info (lighter version)
-     * Just name, email, and phone
-     */
+    } 
+
     public function getTouristBasicInfo($tourist_ID) {
         $sql = "SELECT 
                     ai.account_ID,
@@ -286,10 +267,7 @@ class Tourist extends Database {
         $stmt->execute([':tourist_ID' => $tourist_ID]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    
-    /**
-     * Get tourist's full address as formatted string
-     */
+     
     public function getTouristFullAddress($tourist_ID) {
         $sql = "SELECT 
                     CONCAT(
@@ -322,10 +300,7 @@ class Tourist extends Database {
         
         return $result ? $result['full_address'] : null;
     }
-    
-    /**
-     * Get all bookings for a specific tourist
-     */
+     
     public function getTouristBookings($tourist_ID) {
         $sql = "SELECT 
                     b.booking_ID,
@@ -357,10 +332,7 @@ class Tourist extends Database {
         $stmt->execute([':tourist_ID' => $tourist_ID]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
-    /**
-     * Get tourist statistics
-     */
+     
     public function getTouristStats($tourist_ID) {
         $sql = "SELECT 
                     COUNT(b.booking_ID) AS total_bookings,
@@ -377,10 +349,7 @@ class Tourist extends Database {
         $stmt->execute([':tourist_ID' => $tourist_ID]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    
-    /**
-     * Update tourist profile
-     */
+     
     public function updateTouristProfile($tourist_ID, $data) {
         try {
             $db = $this->connect();
@@ -450,6 +419,36 @@ class Tourist extends Database {
             $db->rollBack();
             return ['success' => false, 'message' => $e->getMessage()];
         }
+    }
+
+    public function getBookingHistory($tourist_ID) {
+        $sql = "SELECT 
+                    b.booking_ID,
+                    b.booking_status,
+                    b.booking_created_at,
+                    b.booking_start_date,
+                    b.booking_end_date,
+                    tp.tourpackage_name,
+                    pi.paymentinfo_total_amount,
+                    pr.pricing_currency
+                    
+                    
+                FROM Booking b
+                JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+                LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
+                LEFT JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
+                LEFT JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
+                LEFT JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
+                JOIN booking_bundle bb ON b.booking_ID = bb.booking_ID
+                JOIN companion c ON bb.companion_ID = c.companion_ID
+                JOIN companion_category cc ON c.companion_category_ID = cc.companion_category_ID
+                
+                WHERE b.tourist_ID = :tourist_ID AND b.booking_status IN ('Completed', 'Cancelled', 'Refunded', 'Failed', 'Rejected by the Guide', 'Booking Expired — Payment Not Completed', 'Booking Expired — Guide Did Not Confirm in Time')
+                ORDER BY b.booking_created_at DESC";
+        
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([':tourist_ID' => $tourist_ID]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
