@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
     header('Location: ../../index.php');
@@ -50,6 +51,7 @@ foreach ($guides as $guide) {
 }
 
 $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
+$categories = $bookingObj->getAllCompanionCategories(); // Fetch categories once for PHP/JS use
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -149,14 +151,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <title>Booking</title>
     <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" >
-    <link rel="stylesheet" href="../../assets/css/tourist/booking-view.css">
     <link rel="stylesheet" href="../../assets/css/tourist/header.css">
+    <link rel="stylesheet" href="../../assets/css/tourist/booking-add.css">
 
 </head>
 <body>
-     <?php require_once "includes/header.php"; 
+    <?php require_once "includes/header.php"; 
     include_once "includes/header.php";?>
-    <div class="container">
+<main>
+    <div class="cointainer-class">
         <h1>Book Tour Package</h1>
 
         <?php if (!empty($errors)): ?>
@@ -211,36 +214,50 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <label><input type="radio" name="is_selfIncluded" value="no" required> No</label>
 
 
-
-            <div id="inputContainer">
+            <div id="inputContainerClass">
                 <div>
                     <input type="text" name="companion_name[]" placeholder="Name" required>
                     <select name="companion_category[]" required>
                         <option value="">-- SELECT CATEGORY ---</option>
-                        <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
-                            <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
+                        <?php foreach ($categories as $c) { ?>
+                            <option value="<?= $c['companion_category_ID'] ?>"> <?= htmlspecialchars($c['companion_category_name']) ?> </option>
                         <?php } ?>
                     </select>
+                    <button type="button" onclick="this.parentNode.remove();">Remove</button>
                 </div>
             </div>
-            <button type="button" onclick="addInput()">Add Companion</button><br><br>
+            <button type="button" onclick="addInput()">Add Companion</button>
 
             <input type="submit" value="Proceed to Payment">
         </form>
 
-        <a href="tour-packages-browse.php">← Back to Tour Packages</a>
+        <a href="index.php">← Back to Tour Packages</a>
     </div>
+</main>
 <script>
     const maxPeople = <?= intval($package['numberofpeople_maximum']); ?>;
     const minPeople = <?= intval($package['numberofpeople_based']); ?>;
-    const inputContainer = document.getElementById('inputContainer');
+    const inputContainerClass = document.getElementById('inputContainerClass');
     const addBtn = document.querySelector('button[onclick="addInput()"]');
     const selfIncludedRadios = document.querySelectorAll('input[name="is_selfIncluded"]');
+
+    // Companion Categories are passed via PHP for the addInput function
+    const categoriesJson = '<?= json_encode($categories); ?>';
+    let categories;
+    try {
+        categories = JSON.parse(categoriesJson);
+    } catch (e) {
+        console.error("Failed to parse companion categories.", e);
+        categories = [];
+    }
 
     // Initially hide add companion button if max = 1
     if (maxPeople === 1) {
         addBtn.style.display = 'none';
-        inputContainer.innerHTML = ''; // remove any companion field
+        inputContainerClass.innerHTML = ''; // remove any companion field
+    } else if (inputContainerClass.children.length === 1 && inputContainerClass.children[0].querySelectorAll('input[type="text"]').length === 1 && inputContainerClass.children[0].querySelectorAll('input[type="text"]')[0].value === '') {
+        // If it's a fresh booking and maxPeople > 1, ensure at least one companion slot is ready if 'No' is selected initially.
+        // For now, we'll leave the initial empty slot as rendered by PHP.
     }
 
     // Handle self-inclusion change
@@ -252,31 +269,46 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if (maxPeople === 1) {
                 if (selfIncluded) {
                     // User included themselves → remove companion fields
-                    inputContainer.innerHTML = '';
+                    inputContainerClass.innerHTML = '';
                 } else {
                     // User not included → add exactly one companion
-                    if (inputContainer.children.length === 0) {
-                        addInput();
+                    if (inputContainerClass.children.length === 0) {
+                        addInput(false); // Add one, but suppress subsequent removal for the first element
                     }
                 }
             }
         });
     });
 
+    // Function to generate the <select> HTML
+    function getCategoriesHtml() {
+        let options = '<option value="">-- SELECT CATEGORY ---</option>';
+        categories.forEach(c => {
+            // Note: If companion_category_ID is null/empty, the value won't be set, which is okay for this context.
+            options += `<option value="${c.companion_category_ID}">${c.companion_category_name}</option>`;
+        });
+        return `<select name="companion_category[]" required>${options}</select>`;
+    }
+
     // Function to add companion fields
-    function addInput() {
+    function addInput(showRemove = true) {
+        // Prevent adding if maxPeople is reached (only applies if maxPeople > 1)
+        if (maxPeople > 1) {
+            const selfIncluded = document.querySelector('input[name="is_selfIncluded"]:checked')?.value === 'yes' ? 1 : 0;
+            const currentCompanions = inputContainerClass.children.length;
+            if (selfIncluded + currentCompanions >= maxPeople) {
+                alert(`You have reached the maximum allowed people for this package (${maxPeople}).`);
+                return;
+            }
+        }
+
         const div = document.createElement('div');
         div.innerHTML = `
             <input type="text" name="companion_name[]" placeholder="Name" required>
-            <select name="companion_category[]" required>
-                <option value="">-- SELECT CATEGORY ---</option>
-                <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
-                    <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
-                <?php } ?>
-            </select>
-            <button type="button" onclick="this.parentNode.remove();">Remove</button>
+            ${getCategoriesHtml()}
+            ${showRemove ? '<button type="button" onclick="this.parentNode.remove();">Remove</button>' : ''}
         `;
-        inputContainer.appendChild(div);
+        inputContainerClass.appendChild(div);
     }
 
     // Auto-calculate booking end date
@@ -322,12 +354,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
         }
 
-        // Recheck when date changes
-        startDateInput.addEventListener('change', checkOverlap);
+        // Combine date change and overlap check
+        startDateInput.addEventListener('change', function() {
+            // Update End Date
+            const startDate = new Date(this.value);
+            if (!isNaN(startDate.getTime())) {
+                startDate.setDate(startDate.getDate() + scheduleDays - 1);
+                endDateInput.value = startDate.toISOString().split('T')[0];
+            } else {
+                endDateInput.value = '';
+            }
+            
+            // Check for overlap after date calculation
+            checkOverlap();
+        });
         endDateInput.addEventListener('change', checkOverlap);
 
 </script>
 
 
 </body>
-</html>
+</html> 
