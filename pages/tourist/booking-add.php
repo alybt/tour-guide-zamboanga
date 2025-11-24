@@ -142,10 +142,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Add Booking</title>
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Booking</title>
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" >
+    <link rel="stylesheet" href="../../assets/css/tourist/booking-view.css">
+    <link rel="stylesheet" href="../../assets/css/tourist/header.css">
+
 </head>
 <body>
      <?php require_once "includes/header.php"; 

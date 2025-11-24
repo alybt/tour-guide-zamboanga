@@ -63,7 +63,7 @@ foreach ($guides as $guide) {
         $guideName = $guide['guide_name'];
         break;
     }
-} // ✅ FIXED: closed missing bracket properly
+} 
 
 // ✅ Handle form submission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -154,14 +154,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Book Tour Package</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Booking Again</title>
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" >
+    <link rel="stylesheet" href="../../assets/css/tourist/header.css">
+    <link rel="stylesheet" href="../../assets/css/tourist/booking-again.css">
 </head>
 <body>
-     <?php require_once "includes/header.php"; 
+    <?php require_once "includes/header.php"; 
     include_once "includes/header.php";?>
-    <div class="container">
+<main>
+    <div class="cointainer-class">
         <h1>Book Tour Package</h1>
 
         <?php if (!empty($errors)): ?>
@@ -205,14 +212,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <h2>Booking Dates</h2>
             <label for="booking_start_date">Start Date:</label>
             <input type="date" name="booking_start_date" id="booking_start_date"
-                   value="<?= htmlspecialchars($rebookData['booking_start_date'] ?? '') ?>" required>
+                    value="<?= htmlspecialchars($rebookData['booking_start_date'] ?? '') ?>" required>
 
             <label for="booking_end_date">End Date:</label>
             <input type="date" name="booking_end_date" id="booking_end_date"
-                   value="<?= htmlspecialchars($rebookData['booking_end_date'] ?? '') ?>" readonly required>
+                    value="<?= htmlspecialchars($rebookData['booking_end_date'] ?? '') ?>" readonly required>
 
             <div id="overlapWarning" style="color:red; display:none;">
-                ⚠️ The selected dates overlap with another booking for this guide.
+                The selected dates overlap with another booking for this guide.
             </div>
 
             <h2>Companions</h2>
@@ -228,9 +235,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 No
             </label>
 
-            <div id="inputContainer">
+            <div id="inputcointainer-class">
                 <?php
                 $oldCompanions = [];
+                $categories = $bookingObj->getAllCompanionCategories();
+                
                 if (!empty($rebookData)) {
                     $oldCompanions = $bookingObj->getCompanionsByBooking($oldBookingID);
                 }
@@ -241,9 +250,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             <input type="text" name="companion_name[]" value="<?= htmlspecialchars($comp['companion_name']) ?>" placeholder="Name" required>
                             <select name="companion_category[]" required>
                                 <option value="">-- SELECT CATEGORY ---</option>
-                                <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
-                                    <option value="<?= $c['companion_category_ID'] ?>" <?= $comp['companion_category_ID'] == $c['companion_category_ID'] ? 'selected' : '' ?>>
-                                        <?= $c['companion_category_name'] ?>
+                                <?php foreach ($categories as $c) { ?>
+                                    <option value="<?= $c['companion_category_ID'] ?? ''?>" 
+                                        <?= (isset($comp['companion_category_ID']) && $comp['companion_category_ID'] == $c['companion_category_ID']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($c['companion_category_name']) ?>
                                     </option>
                                 <?php } ?>
                             </select>
@@ -251,15 +261,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         </div>
                     <?php }
                 } else { ?>
-                    <!-- Default empty companion field if no rebook data -->
                     <div>
                         <input type="text" name="companion_name[]" placeholder="Name" required>
                         <select name="companion_category[]" required>
                             <option value="">-- SELECT CATEGORY ---</option>
-                            <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
-                                <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
+                            <?php foreach ($categories as $c) { ?>
+                                <option value="<?= $c['companion_category_ID'] ?>"> <?= htmlspecialchars($c['companion_category_name']) ?> </option>
                             <?php } ?>
                         </select>
+                        <button type="button" onclick="this.parentNode.remove();">Remove</button>
                     </div>
                 <?php } ?>
             </div>
@@ -272,46 +282,108 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         <a href="tour-packages-browse.php">← Back to Tour Packages</a>
     </div>
+</main>
 
+<script src="../../assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const guideID = <?= intval($package['guide_ID']); ?>;
-const startDateInput = document.getElementById('booking_start_date');
-const endDateInput = document.getElementById('booking_end_date');
-const overlapWarning = document.getElementById('overlapWarning');
+    const guideID = <?= intval($package['guide_ID']); ?>;
+    const startDateInput = document.getElementById('booking_start_date');
+    const endDateInput = document.getElementById('booking_end_date');
+    const overlapWarning = document.getElementById('overlapWarning');
+    const scheduleDays = <?= intval($package['schedule_days']); ?>;
+    const inputcointainer-class = document.getElementById('inputcointainer-class');
 
-async function checkOverlap() {
-    const startDate = startDateInput.value;
-    const endDate = endDateInput.value;
-
-    if (!startDate || !endDate) return;
-
-    try {
-        const response = await fetch('booking-overlap.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                guide_ID: guideID,
-                start_date: startDate,
-                end_date: endDate
-            })
-        });
-
-        const result = await response.json();
-        console.log("Overlap response:", result);
-
-        if (result.overlap) {
-            overlapWarning.style.display = 'block';
-        } else {
-            overlapWarning.style.display = 'none';
-        }
-    } catch (error) {
-        console.error("Error checking overlap:", error);
+    // --- Date Logic & Calculation ---
+    function calculateEndDate(startDateString, days) {
+        if (!startDateString || days <= 0) return '';
+        const date = new Date(startDateString);
+        date.setDate(date.getDate() + (days - 1));
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
-}
 
-startDateInput.addEventListener('change', checkOverlap);
-endDateInput.addEventListener('change', checkOverlap);
+    function updateEndDate() {
+        const startDate = startDateInput.value;
+        if (startDate) {
+            endDateInput.value = calculateEndDate(startDate, scheduleDays);
+        } else {
+            endDateInput.value = '';
+        }
+    }
 
+    // --- Companion Input Management ---
+    function createCompanionInput() {
+        // PHP variables used to populate category options in JavaScript
+        const categoriesHtml = `
+            <select name="companion_category[]" required>
+                <option value="">-- SELECT CATEGORY ---</option>
+                <?php foreach ($categories as $c) { ?>
+                    <option value="<?= $c['companion_category_ID'] ?>"> <?= htmlspecialchars($c['companion_category_name']) ?> </option>
+                <?php } ?>
+            </select>`;
+
+        const newDiv = document.createElement('div');
+        newDiv.innerHTML = `
+            <input type="text" name="companion_name[]" placeholder="Name" required>
+            ${categoriesHtml}
+            <button type="button" onclick="this.parentNode.remove();">Remove</button>
+        `;
+        return newDiv;
+    }
+
+    function addInput() {
+        inputcointainer-class.appendChild(createCompanionInput());
+    }
+
+
+    // --- Overlap Check (AJAX Simulation) ---
+    async function checkOverlap() {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+
+        if (!startDate || !endDate) return;
+
+        try {
+            const response = await fetch('booking-overlap.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    guide_ID: guideID,
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            });
+
+            const result = await response.json();
+            console.log("Overlap response:", result);
+
+            if (result.overlap) {
+                overlapWarning.style.display = 'block';
+            } else {
+                overlapWarning.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Error checking overlap:", error);
+        }
+    }
+
+    // --- Event Listeners ---
+    startDateInput.addEventListener('change', () => {
+        updateEndDate();
+        checkOverlap();
+    });
+    endDateInput.addEventListener('change', checkOverlap);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (startDateInput.value) {
+            updateEndDate();
+        }
+        if (startDateInput.value && endDateInput.value) {
+            checkOverlap();
+        }
+    });
 </script>
 </body>
 </html>
