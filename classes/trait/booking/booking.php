@@ -159,8 +159,7 @@ trait BookingDetails{
     }
 
     public function getPaymentInfoByBookingID(int $bookingID): ?array {
-        $sql = "
-            SELECT 
+        $sql = " SELECT 
                 paymentinfo_ID,
                 booking_ID,
                 paymentinfo_total_amount AS total_amount,
