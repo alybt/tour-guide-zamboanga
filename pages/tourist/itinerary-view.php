@@ -544,7 +544,7 @@ $payment = $bookingObj->getPaymentInfoByBookingID($booking_ID);
                         <div class="info-label">Total Paid</div>
                         <div class="info-value">
                             <?= htmlspecialchars($package['pricing_currency']) ?> 
-                            <?= number_format($payment['paymentinfo_total_amount'], 2) ?>
+                            <?= number_format($payment['total_amount'] ?? 0, 2) ?>
                         </div>
                     </div>
                     <div class="info-item">
