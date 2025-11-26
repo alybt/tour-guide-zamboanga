@@ -63,7 +63,7 @@ if ($account_ID && is_numeric($account_ID)) {
 
                             <!-- Scrollable Area -->
                             <div id="notification-list-container" class="px-2" style="max-height: 70vh; overflow-y: auto; overflow-x: hidden;">
-                                <?php include __DIR__ . '/components/notification-list.php'; ?>
+                                <?php require_once "components/notification-list.php";  ?>
                             </div>
 
                             <li><hr class="dropdown-divider my-0"></li>
@@ -95,36 +95,134 @@ if ($account_ID && is_numeric($account_ID)) {
 document.addEventListener('DOMContentLoaded', function () {
     const toggle = document.querySelector('.dropdown-toggle[aria-expanded]');
     const container = document.getElementById('notification-list-container');
-    if (!toggle || !container) return;
+    console.log('Notification script loaded. Toggle:', toggle, 'Container:', container);
+    
+    if (!toggle || !container) {
+        console.error('ERROR: toggle or container not found');
+        return;
+    }
 
     let marked = false;
 
     toggle.addEventListener('click', function () {
+        console.log('Dropdown toggle clicked');
+        
         // Always refresh list
+        console.log('Fetching notifications from includes/ajax/get-notifications.php');
         fetch('includes/ajax/get-notifications.php', {
             credentials: 'same-origin',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(r => r.text())
-        .then(html => container.innerHTML = html);
+        .then(r => {
+            console.log('Refresh response status:', r.status);
+            return r.text();
+        })
+        .then(html => {
+            console.log('Refresh HTML received, updating container');
+            container.innerHTML = html;
+        })
+        .catch(err => console.error('Refresh error:', err));
 
         // Mark all as read only once
         if (!marked && <?= $unread_count ?> > 0) {
+            console.log('Marking all notifications as read. Unread count:', <?= $unread_count ?>);
+            
             fetch('includes/ajax/mark-notifications-read.php', {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(() => {
-                document.querySelectorAll('.badge.rounded-pill.bg-danger').forEach(b => {
-                    if (b.textContent.trim() !== 'New') {
-                        b.textContent = '0';
-                        b.classList.add('d-none');
-                    }
-                });
-            });
+            .then(r => {
+                console.log('Mark-all response status:', r.status);
+                return r.json();
+            })
+            .then(data => {
+                console.log('Mark-all response data:', data);
+                if (data.success) {
+                    // Hide the badge
+                    document.querySelectorAll('.badge.rounded-pill.bg-danger').forEach(b => {
+                        if (b.textContent.trim() !== 'New') {
+                            console.log('Hiding badge, setting to 0');
+                            b.textContent = '0';
+                            b.classList.add('d-none');
+                        }
+                    });
+                    
+                    // Refresh the notification list to show updated status
+                    console.log('Refreshing notification list after mark-all');
+                    fetch('includes/ajax/get-notifications.php', {
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.text())
+                    .then(html => {
+                        console.log('Notification list refreshed');
+                        container.innerHTML = html;
+                    })
+                    .catch(err => console.error('Refresh after mark-all error:', err));
+                } else {
+                    console.error('Mark-all failed:', data);
+                }
+            })
+            .catch(err => console.error('Mark-all error:', err));
+            
             marked = true;
         }
     });
+
+    // Handle individual notification clicks
+    document.addEventListener('click', function(e) {
+        const notifEl = e.target.closest('.mark-as-read');
+        if (!notifEl) return;
+        
+        e.preventDefault();
+        
+        const activityId = notifEl.getAttribute('data-activity-id');
+        const accountId = notifEl.getAttribute('data-account-id');
+        
+        console.log('Notification clicked - Activity ID:', activityId, 'Account ID:', accountId);
+
+        if (!activityId || !accountId) {
+            console.error('ERROR: Missing activity_id or account_id');
+            return;
+        }
+
+        // Remove unread styling
+        notifEl.classList.remove('bg-primary', 'bg-opacity-10', 'fw-semibold', 'border-start', 'border-primary', 'border-4');
+        notifEl.classList.add('text-muted');
+        
+        // Remove "New" badge
+        const newBadge = notifEl.querySelector('.badge.bg-danger');
+        if (newBadge) newBadge.remove();
+
+        console.log('Sending AJAX to mark-single-notification-read.php');
+        
+        fetch('includes/ajax/mark-single-notification-read.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                activity_id: activityId,
+                account_id: accountId
+            })
+        })
+        .then(r => {
+            console.log('Mark-single response status:', r.status);
+            return r.json();
+        })
+        .then(data => {
+            console.log('Mark-single response data:', data);
+            if (data.success) {
+                console.log('Notification marked as read successfully');
+            } else {
+                console.error('Failed to mark notification as read:', data);
+            }
+        })
+        .catch(err => console.error('Mark-single AJAX error:', err));
+    });
 });
+
 </script>

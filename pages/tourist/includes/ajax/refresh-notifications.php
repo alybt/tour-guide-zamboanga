@@ -1,10 +1,14 @@
 <?php
-// includes/ajax/refresh-notifications.php
+ 
 session_start();
 
 $account_ID = $_SESSION['account_ID'] ?? null;
 
+error_log("=== REFRESH NOTIFICATIONS ===");
+error_log("Account ID: " . ($account_ID ?? 'NOT SET'));
+
 if (!$account_ID || !is_numeric($account_ID)) {
+    error_log("ERROR: Invalid account_ID for refresh");
     echo '<div class="text-center text-muted py-5">
             <i class="bi bi-bell-slash fs-2 mb-3 text-muted"></i>
             <div>No notifications yet</div>
@@ -12,14 +16,23 @@ if (!$account_ID || !is_numeric($account_ID)) {
     exit;
 }
 
-require_once __DIR__ . '/../../../classes/booking.php';
-require_once __DIR__ . '/../../../classes/activity-log.php';
+require_once "../../../../classes/booking.php";
+require_once "../../../../classes/activity-log.php";
 
-$bookingObj  = new Booking();
-$activityObj = new ActivityLogs();
-$touristNotification = $activityObj->touristNotification((int)$account_ID);
-
-// This file should output ONLY the content inside <div class="px-2">...</div>
+try {
+    $bookingObj  = new Booking();
+    $activityObj = new ActivityLogs();
+    $touristNotification = $activityObj->touristNotification((int)$account_ID);
+    error_log("Notifications retrieved: " . count($touristNotification) . " items");
+} catch (Throwable $e) {
+    error_log("EXCEPTION in refresh_notifications: " . $e->getMessage());
+    echo '<div class="text-center text-muted py-5">
+            <i class="bi bi-exclamation-triangle-fill fs-2 mb-3 text-danger"></i>
+            <div>Error loading notifications</div>
+          </div>';
+    exit;
+}
+ 
 ?>
 <?php if (empty($touristNotification)): ?>
     <div class="text-center text-muted py-5">
