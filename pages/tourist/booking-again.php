@@ -107,9 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $booking_end_date = $_POST['booking_end_date'] ?? '';
 
     $bookings = $bookingObj->existingBookingsInGuide($package['guide_ID']);
-    echo "<pre>";
-    print_r($bookings);
-    echo "</pre>";
+
     foreach ($bookings as $b) {
         if (
             strtotime($booking_start_date) <= strtotime($b['booking_end_date']) &&
