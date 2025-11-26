@@ -42,18 +42,20 @@ trait NotificationTrait{
             return []; // Return an empty array on failure
         }
     }
-
-    // In your ActivityLogs class
+ 
     public function markTouristNotificationsAsViewed(int $tourist_ID): bool {
         $db = $this->connect();
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $sql = "INSERT INTO Activity_View (activity_ID, account_ID, activity_isViewed)
-                SELECT  al.activity_ID, al.account_ID, 1 AS activity_isViewed
-                FROM  activity_log al 
-                INNER JOIN  `action` a ON al.action_ID = a.action_ID
-                WHERE   al.account_ID = :touristID  AND a.action_name NOT IN ('Logout', 'Login', 'Change Account Into Tourist')
-                ON DUPLICATE KEY UPDATE activity_isViewed = 1";
+        $sql = "UPDATE Activity_View AS av
+                INNER JOIN activity_log AS al 
+                    ON al.activity_ID = av.activity_ID 
+                AND al.account_ID = av.account_ID
+                INNER JOIN action AS a 
+                    ON al.action_ID = a.action_ID
+                SET av.activity_isViewed = 1
+                WHERE al.account_ID = :touristID
+                AND a.action_name NOT IN ('Logout', 'Login', 'Change Account Into Tourist')";
 
         try {
             $query = $db->prepare($sql);

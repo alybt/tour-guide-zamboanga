@@ -39,8 +39,7 @@ $booking = $bookingObj->viewBookingByTouristANDBookingID($booking_ID);
 $companions = $bookingObj->getCompanionsByBooking($booking_ID);
 $companionBreakdown = $bookingObj->getCompanionBreakdown($booking_ID);
 $countryCodes = $touristObj->fetchCountryCode();
-
-// === Configuration ===
+ 
 $categories = ['Infant', 'Child', 'Young Adult', 'Adult', 'Senior', 'PWD'];
 $mealFee = (float)($booking['pricing_mealfee'] ?? 0);
 $transportFee = (float)($booking['transport_fee'] ?? 0);
@@ -56,8 +55,7 @@ $methodCategories = $paymentObj->viewAllPaymentMethodCategory();
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    // --- Collect POST data safely ---
+ 
     $methodcategory_ID = $_POST['methodcategory_ID'] ?? null;
     $method_amount = $_POST['method_amount'] ?? 0;
     $method_currency = 'PHP';
@@ -74,15 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $country_ID = $_POST['country_ID'] ?? '';
     $phone_number = trim($_POST['phone_number'] ?? '');
     $method_status = $_POST['method_status'] ?? 'Pending';
-
-    // --- Processing fee + total ---
+ 
     $methodcategory_processing_fee = (float)($_POST['methodcategory_processing_fee'] ?? 0);
     $paymentinfo_total_amount = (float)$method_amount + $methodcategory_processing_fee;
-
-    // --- If you use a specific Method table ---
+ 
     $method_ID = null;
-
-    // --- Validate required fields ---
+ 
     $required_fields = [
         'methodcategory_ID' => $methodcategory_ID,
         'method_name' => $method_name,
@@ -101,8 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    try {
-        // --- Save payment info ---
+    try { 
         $result = $paymentObj->addAllPaymentInfo($booking_ID, $paymentinfo_total_amount,
             $method_ID, $methodcategory_ID, $method_amount,
             $method_currency, $method_cardnumber, $method_expmonth, $method_expyear,
@@ -128,14 +122,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Booking Details & Payment</title>
-<style>
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourismo Zamboanga</title> 
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" >
+    <!-- <link rel="stylesheet" href="../../assets/css/tourist/index.css"> -->
+    <link rel="stylesheet" href="../../assets/css/tourist/header.css">
 </head>
 <body>
 
+    <?php include 'includes/header.php'; ?>
+
+<main>
     <h1>Booking Details</h1>
         <p><strong>Package Name:</strong> <?= htmlspecialchars($booking['tourpackage_name'] ?? '') ?></p>
         <p><strong>Description:</strong> <?= htmlspecialchars($booking['tourpackage_desc'] ?? '') ?></p>
@@ -266,216 +265,200 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label>Reference Number</label>
             <input type="text" name="bank_reference" placeholder="Enter Reference Number">
         </div>
-
-        <!-- Status (default pending) -->
+ 
         <input type="hidden" name="method_status" value="Pending">
 
         <button type="submit" class="pay-btn">Proceed to Pay</button>
     </form>
 
+</main>
 
-<script>
-// Data from PHP
-const bookingData = {
-    companions: <?= json_encode($companionBreakdown) ?>,
-    mealFee: <?= $mealFee ?>,
-    transportFee: <?= $transportFee ?>,
-    self_included: <?= $self_included ?>,
-    userCategory: <?= json_encode($userCategory) ?>,
-    userPrice: <?= $userPrice ?>,
-    discount: <?= $discount ?>
-};
 
-function calculateFees() {
-    console.log('Initial booking data:', bookingData);
-    const summary = {};
-    let grandTotal = 0;
+<script> 
+    const bookingData = {
+        companions: <?= json_encode($companionBreakdown) ?>,
+        mealFee: <?= $mealFee ?>,
+        transportFee: <?= $transportFee ?>,
+        self_included: <?= $self_included ?>,
+        userCategory: <?= json_encode($userCategory) ?>,
+        userPrice: <?= $userPrice ?>,
+        discount: <?= $discount ?>
+    };
 
-    // Initialize categories
-    ['Infant', 'Child', 'Young Adult', 'Adult', 'Senior', 'PWD'].forEach(cat => {
-        summary[cat] = { qty: 0, baseTotal: 0 };
-    });
-
-    // Add self if included
-    if (bookingData.self_included) {
-        console.log('Adding self:', {
-            category: bookingData.userCategory,
-            price: bookingData.userPrice
+    function calculateFees() {
+        console.log('Initial booking data:', bookingData);
+        const summary = {};
+        let grandTotal = 0;
+ 
+        ['Infant', 'Child', 'Young Adult', 'Adult', 'Senior', 'PWD'].forEach(cat => {
+            summary[cat] = { qty: 0, baseTotal: 0 };
         });
-        summary[bookingData.userCategory].qty += 1;
-        summary[bookingData.userCategory].baseTotal += parseFloat(bookingData.userPrice);
-    }
-
-    // Add companions
-    bookingData.companions.forEach(comp => {
-        const category = comp.category || 'Adult';
-        const qty = parseInt(comp.qty);
-        const total = parseFloat(comp.total);
-        console.log('Adding companion:', { category, qty, total });
-        summary[category].qty += qty;
-        summary[category].baseTotal += total;
-    });
-
-    // Generate table rows
-    const tbody = document.getElementById('feeBreakdownBody');
-    tbody.innerHTML = '';
-
-    for (const [category, data] of Object.entries(summary)) {
-        if (data.qty > 0) {
-            // Base price row
-            const baseRow = document.createElement('tr');
-            baseRow.innerHTML = `
-                <td>${category}</td>
-                <td style="text-align: right">${data.qty}</td>
-                <td style="text-align: right">₱${data.baseTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            `;
-            tbody.appendChild(baseRow);
-
-            let categorySubtotal = data.baseTotal;
-            console.log(`${category} base total:`, data.baseTotal);
-
-            // Meal fee (Infant: free)
-            const mealTotal = category === 'Infant' ? 0 : bookingData.mealFee * data.qty;
-            console.log(`${category} meal total:`, mealTotal);
-
-            const mealRow = document.createElement('tr');
-            mealRow.innerHTML = `
-                <td style="padding-left: 20px;">Meal Fee</td>
-                <td style="text-align: right">${data.qty}</td>
-                <td style="text-align: right">₱${mealTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            `;
-            tbody.appendChild(mealRow);
-            categorySubtotal += mealTotal;
-
-            // Transport fee
-            let transportTotal;
-            if (category === 'Infant') {
-                transportTotal = 0;
-            } else if (category === 'Child') {
-                transportTotal = (bookingData.transportFee * 0.5) * data.qty;
-            } else {
-                transportTotal = bookingData.transportFee * data.qty;
-            }
-            console.log(`${category} transport total:`, transportTotal);
-
-            const transportRow = document.createElement('tr');
-            transportRow.innerHTML = `
-                <td style="padding-left: 20px;">Transport Fee</td>
-                <td style="text-align: right">${data.qty}</td>
-                <td style="text-align: right">₱${transportTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            `;
-            tbody.appendChild(transportRow);
-            categorySubtotal += transportTotal;
-
-            console.log(`${category} subtotal:`, categorySubtotal);
-            grandTotal += categorySubtotal;
+ 
+        if (bookingData.self_included) {
+            console.log('Adding self:', {
+                category: bookingData.userCategory,
+                price: bookingData.userPrice
+            });
+            summary[bookingData.userCategory].qty += 1;
+            summary[bookingData.userCategory].baseTotal += parseFloat(bookingData.userPrice);
         }
-    }
+ 
+        bookingData.companions.forEach(comp => {
+            const category = comp.category || 'Adult';
+            const qty = parseInt(comp.qty);
+            const total = parseFloat(comp.total);
+            console.log('Adding companion:', { category, qty, total });
+            summary[category].qty += qty;
+            summary[category].baseTotal += total;
+        }); 
+        const tbody = document.getElementById('feeBreakdownBody');
+        tbody.innerHTML = '';
 
-    // Add discount row if there is a discount
-    if (bookingData.discount > 0) {
-        const discountRow = document.createElement('tr');
-        discountRow.innerHTML = `
-            <td>Discount</td>
-            <td style="text-align: right">-</td>
-            <td style="text-align: right">-₱${bookingData.discount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-        `;
-        tbody.appendChild(discountRow);
-    }
+        for (const [category, data] of Object.entries(summary)) {
+            if (data.qty > 0) { 
+                const baseRow = document.createElement('tr');
+                baseRow.innerHTML = `
+                    <td>${category}</td>
+                    <td style="text-align: right">${data.qty}</td>
+                    <td style="text-align: right">₱${data.baseTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                `;
+                tbody.appendChild(baseRow);
 
-    // Apply discount
-    console.log('Grand total before discount:', grandTotal);
-    console.log('Discount amount:', bookingData.discount);
-    grandTotal -= bookingData.discount;
-    console.log('Final grand total:', grandTotal);
+                let categorySubtotal = data.baseTotal;
+                console.log(`${category} base total:`, data.baseTotal);
+ 
+                const mealTotal = category === 'Infant' ? 0 : bookingData.mealFee * data.qty;
+                console.log(`${category} meal total:`, mealTotal);
 
-    // Update grand total
-    document.getElementById('grandTotal').textContent = 
-        `₱${grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-}
+                const mealRow = document.createElement('tr');
+                mealRow.innerHTML = `
+                    <td style="padding-left: 20px;">Meal Fee</td>
+                    <td style="text-align: right">${data.qty}</td>
+                    <td style="text-align: right">₱${mealTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                `;
+                tbody.appendChild(mealRow);
+                categorySubtotal += mealTotal;
+ 
+                let transportTotal;
+                if (category === 'Infant') {
+                    transportTotal = 0;
+                } else if (category === 'Child') {
+                    transportTotal = (bookingData.transportFee * 0.5) * data.qty;
+                } else {
+                    transportTotal = bookingData.transportFee * data.qty;
+                }
+                console.log(`${category} transport total:`, transportTotal);
 
-// Run calculation on page load
-document.addEventListener('DOMContentLoaded', calculateFees);
+                const transportRow = document.createElement('tr');
+                transportRow.innerHTML = `
+                    <td style="padding-left: 20px;">Transport Fee</td>
+                    <td style="text-align: right">${data.qty}</td>
+                    <td style="text-align: right">₱${transportTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                `;
+                tbody.appendChild(transportRow);
+                categorySubtotal += transportTotal;
 
-// FOR THE FORMS
-function forceCountryForEwallet(lock = false) {
-    const countrySelect = document.getElementById("country_ID");
-    if (!countrySelect) return;
-
-    if (lock) {
-        // Find and select Philippines
-        for (let option of countrySelect.options) {
-            const text = option.textContent.toLowerCase();
-            if (text.includes("philippines") || text.includes("+63")) {
-                countrySelect.value = option.value;
-                break;
+                console.log(`${category} subtotal:`, categorySubtotal);
+                grandTotal += categorySubtotal;
             }
         }
-        countrySelect.disabled = true; // Lock dropdown
-        console.log("✅ Country locked to Philippines (E-wallet selected).");
-    } else {
-        countrySelect.disabled = false; // Unlock dropdown
-        console.log("🔓 Country dropdown unlocked.");
-    }
-}
-
-    document.getElementById('methodcategory_ID').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const type = selectedOption.getAttribute('data-type');
-        const selected = this.options[this.selectedIndex];
-        const fee = parseFloat(selected.getAttribute('data-fee')) || 0;
-        const grandTotal = parseFloat(document.getElementById('grandTotal').textContent.replace(/[₱,]/g, '')) || 0;
-
-        document.getElementById('methodcategory_processing_fee').value = fee.toFixed(2);
-        document.getElementById('method_amount').value = (grandTotal + fee).toFixed(2);
-        // Hide all payment-type sections first
-        document.querySelectorAll('.payment-type-section').forEach(section => {
-            section.style.display = 'none';
-        });
-
-        // Show the corresponding section based on type
-        if (type === 'card') {
-            document.getElementById('cardSection').style.display = 'block';
-            forceCountryForEwallet(false);
-        } else if (type === 'ewallet') {
-            document.getElementById('ewalletSection').style.display = 'block';        
-            forceCountryForEwallet(true);
-        } else if (type === 'bank') {
-            document.getElementById('bankSection').style.display = 'block';
-            forceCountryForEwallet(false);
+ 
+        if (bookingData.discount > 0) {
+            const discountRow = document.createElement('tr');
+            discountRow.innerHTML = `
+                <td>Discount</td>
+                <td style="text-align: right">-</td>
+                <td style="text-align: right">-₱${bookingData.discount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            `;
+            tbody.appendChild(discountRow);
         }
-        
-    });
-
-function forceCountryForEwallet(shouldLock) {
-    const countrySelect = document.getElementById("country_ID");
-    if (!countrySelect) {
-        console.warn("⚠️ No country select element found!");
-        return;
+ 
+        console.log('Grand total before discount:', grandTotal);
+        console.log('Discount amount:', bookingData.discount);
+        grandTotal -= bookingData.discount;
+        console.log('Final grand total:', grandTotal);
+ 
+        document.getElementById('grandTotal').textContent = 
+            `₱${grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
+ 
+    document.addEventListener('DOMContentLoaded', calculateFees);
+ 
+    function forceCountryForEwallet(lock = false) {
+        const countrySelect = document.getElementById("country_ID");
+        if (!countrySelect) return;
 
-    if (shouldLock) {
-        let found = false;
-        for (let option of countrySelect.options) {
-            const text = option.textContent.toLowerCase();
-            if (text.includes("philippines") || text.includes("+63")) {
-                countrySelect.value = option.value; // Select Philippines
-                found = true;
-                break;
+        if (lock) { 
+            for (let option of countrySelect.options) {
+                const text = option.textContent.toLowerCase();
+                if (text.includes("philippines") || text.includes("+63")) {
+                    countrySelect.value = option.value;
+                    break;
+                }
             }
-        }
-
-        if (found) {
-            countrySelect.disabled = true; // Lock dropdown
-            console.log("✅ Country locked to Philippines.");
+            countrySelect.disabled = true;  
+            console.log("✅ Country locked to Philippines (E-wallet selected).");
         } else {
-            console.warn("⚠️ Philippines not found in dropdown.");
+            countrySelect.disabled = false;  
+            console.log("🔓 Country dropdown unlocked.");
         }
-    } else {
-        countrySelect.disabled = false; // Unlock dropdown
-        console.log("🔓 Country dropdown unlocked.");
     }
-}
+
+        document.getElementById('methodcategory_ID').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const type = selectedOption.getAttribute('data-type');
+            const selected = this.options[this.selectedIndex];
+            const fee = parseFloat(selected.getAttribute('data-fee')) || 0;
+            const grandTotal = parseFloat(document.getElementById('grandTotal').textContent.replace(/[₱,]/g, '')) || 0;
+
+            document.getElementById('methodcategory_processing_fee').value = fee.toFixed(2);
+            document.getElementById('method_amount').value = (grandTotal + fee).toFixed(2); 
+            document.querySelectorAll('.payment-type-section').forEach(section => {
+                section.style.display = 'none';
+            });
+ 
+            if (type === 'card') {
+                document.getElementById('cardSection').style.display = 'block';
+                forceCountryForEwallet(false);
+            } else if (type === 'ewallet') {
+                document.getElementById('ewalletSection').style.display = 'block';        
+                forceCountryForEwallet(true);
+            } else if (type === 'bank') {
+                document.getElementById('bankSection').style.display = 'block';
+                forceCountryForEwallet(false);
+            }
+            
+        });
+
+    function forceCountryForEwallet(shouldLock) {
+        const countrySelect = document.getElementById("country_ID");
+        if (!countrySelect) {
+            console.warn("  No country select element found!");
+            return;
+        }
+
+        if (shouldLock) {
+            let found = false;
+            for (let option of countrySelect.options) {
+                const text = option.textContent.toLowerCase();
+                if (text.includes("philippines") || text.includes("+63")) {
+                    countrySelect.value = option.value;  
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found) {
+                countrySelect.disabled = true;
+                console.log("  Country locked to Philippines.");
+            } else {
+                console.warn("  Philippines not found in dropdown.");
+            }
+        } else {
+            countrySelect.disabled = false;  
+            console.log(" Country dropdown unlocked.");
+        }
+    }
 
 </script>
 
