@@ -227,7 +227,7 @@ $payment = $bookingObj->getPaymentInfoByBookingID($booking_ID);
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Payment Status</div>
-                        <div class="info-value"><?= htmlspecialchars($payment['payment_status'] ?? 'Pending') ?></div>
+                        <div class="info-value"><?= htmlspecialchars($payment['transaction_status'] ?? 'Pending') ?></div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Total Paid</div>

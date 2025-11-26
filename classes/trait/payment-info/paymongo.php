@@ -1,33 +1,16 @@
 <?php
 
-/**
- * PayMongo Trait
- * 
- * Provides PayMongo payment processing functionality
- * Can be used in any class that needs payment processing
- * 
- * Usage:
- * class YourClass {
- *     use PayMongoTrait;
- *     
- *     public function processPayment() {
- *         $result = $this->processPayMongoPayment(...);
- *     }
- * }
- */
+ 
 
 trait PayMongoTrait {
     
-    /**
-     * Get PayMongo secret key from environment
-     */
+    // Get PayMongo secret key from environment
+     
     private function getPayMongoSecretKey() {
         return getenv('PAYMONGO_SECRET_KEY') ?: $_ENV['PAYMONGO_SECRET_KEY'] ?? null;
     }
 
-    /**
-     * Get PayMongo public key from environment
-     */
+    // Get PayMongo public key from environment
     private function getPayMongoPublicKey() {
         return getenv('PAYMONGO_PUBLIC_KEY') ?: $_ENV['PAYMONGO_PUBLIC_KEY'] ?? null;
     }
@@ -266,9 +249,8 @@ trait PayMongoTrait {
         }
     }
 
-    /**
-     * Make HTTP request to PayMongo API
-     */
+    // Make HTTP request to PayMongo API
+     
     private function makePayMongoRequest($url, $method = 'GET', $data = null) {
         $secretKey = $this->getPayMongoSecretKey();
         
@@ -306,9 +288,7 @@ trait PayMongoTrait {
         return $decoded;
     }
 
-    /**
-     * Retrieve Payment Intent status
-     */
+    // Retrieve Payment Intent status 
     public function getPayMongoPaymentIntent($paymentIntentId) {
         try {
             $url = "https://api.paymongo.com/v1/payment_intents/{$paymentIntentId}";
@@ -385,4 +365,152 @@ trait PayMongoTrait {
             ];
         }
     }
+
+    public function refundPayMongoPayment(string $paymentIntentId, float $amount, string $reason = 'Customer requested refund'): array {
+        try {
+            $url = "https://api.paymongo.com/v1/refunds";
+
+            $amountInCentavos = intval($amount * 100);
+
+            $data = [
+                'data' => [
+                    'attributes' => [
+                        'amount' => $amountInCentavos,
+                        'payment_intent' => $paymentIntentId,
+                        'reason' => $reason,
+                        'metadata' => [
+                            'refunded_by' => 'system_or_admin',
+                            'timestamp' => date('c')
+                        ]
+                    ]
+                ]
+            ];
+
+            $response = $this->makePayMongoRequest($url, 'POST', $data);
+
+            // Check if refund was created
+            if (isset($response['data']['id']) && $response['data']['attributes']['status'] === 'succeeded') {
+                return [
+                    'success' => true,
+                    'refund_id' => $response['data']['id'],
+                    'status' => $response['data']['attributes']['status'],
+                    'amount_refunded' => $response['data']['attributes']['amount'] / 100,
+                    'data' => $response['data']
+                ];
+            }
+
+            // Partial or pending refund
+            if (isset($response['data']['id'])) {
+                return [
+                    'success' => true,
+                    'refund_id' => $response['data']['id'],
+                    'status' => $response['data']['attributes']['status'],
+                    'note' => 'Refund may be processing (async)',
+                    'data' => $response['data']
+                ];
+            }
+
+            // Error from PayMongo
+            return [
+                'success' => false,
+                'error' => $response['errors'][0]['detail'] ?? 'Refund failed',
+                'raw' => $response
+            ];
+
+        } catch (Exception $e) {
+            error_log("[PayMongo Refund Failed] PaymentIntent: $paymentIntentId | Error: " . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => 'Exception during refund: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    public function approveAndProcessRefund(int $refund_ID): array {
+        $db = $this->connect();
+
+        try {
+            $db->beginTransaction();
+
+            // Get refund + transaction
+            $sql = "SELECT r.*, pt.paymongo_intent_id, pt.transaction_ID
+                    FROM Refund r
+                    JOIN Payment_Transaction pt ON r.transaction_ID = pt.transaction_ID
+                    WHERE r.refund_ID = :refund_ID 
+                    AND r.refund_status = 'Pending'";
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute([':refund_ID' => $refund_ID]);
+            $refund = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$refund) {
+                throw new Exception("Refund request not found or already processed.");
+            }
+
+            if (empty($refund['paymongo_intent_id'])) {
+                throw new Exception("No PayMongo Payment Intent ID found.");
+            }
+
+            // 1. Issue PayMongo Refund
+            $payMongoResult = $this->refundPayMongoPayment(
+                $refund['paymongo_intent_id'],
+                $refund['refund_refundfee'],  // this is the amount before fee
+                "Refund approved: " . $refund['refund_reason']
+            );
+
+            if (!$payMongoResult['success']) {
+                throw new Exception("PayMongo refund failed: " . ($payMongoResult['error'] ?? 'Unknown'));
+            }
+
+            // 2. Update Refund Record
+            $updateRefund = "UPDATE Refund 
+                            SET refund_status = 'Processed',
+                                paymongo_refund_id = :paymongo_refund_id,
+                                refund_approval_date = NOW()
+                            WHERE refund_ID = :refund_ID";
+
+            $ur = $db->prepare($updateRefund);
+            $ur->execute([
+                ':paymongo_refund_id' => $payMongoResult['refund_id'],
+                ':refund_ID' => $refund_ID
+            ]);
+
+            // 3. Update Transaction
+            $updateTrans = "UPDATE Payment_Transaction 
+                            SET transaction_status = 'Refunded',
+                                paymongo_refund_id = :refund_id,
+                                refunded_at = NOW()
+                            WHERE transaction_ID = :transaction_ID";
+
+            $ut = $db->prepare($updateTrans);
+            $ut->execute([
+                ':refund_id' => $payMongoResult['refund_id'],
+                ':transaction_ID' => $refund['transaction_ID']
+            ]);
+
+            // 4. Update Booking Status
+            $this->updateBookingStatus($refund['booking_ID'] ?? null, 'Cancelled - Refunded');
+
+            // 5. Log
+            $this->activity->adminApprovedRefund($refund_ID, $payMongoResult['refund_id']);
+
+            $db->commit();
+
+            return [
+                'success' => true,
+                'message' => "Refund processed successfully!",
+                'paymongo_refund_id' => $payMongoResult['refund_id'],
+                'amount_refunded' => $refund['refund_total_amount']
+            ];
+
+        } catch (Exception $e) {
+            $db->rollBack();
+            error_log("REFUND PROCESSING FAILED [Refund #$refund_ID]: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
 }

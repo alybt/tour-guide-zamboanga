@@ -414,6 +414,8 @@ CREATE TABLE Payment_Transaction(
     transaction_reference VARCHAR(100) NOT NULL UNIQUE,
     transaction_created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     transaction_updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    paymongo_intent_id VARCHAR(100) NULL,
+    paymongo_refund_id VARCHAR(100) NULL,
     FOREIGN KEY (paymentinfo_ID) REFERENCES Payment_Info(paymentinfo_ID),
     FOREIGN KEY (method_ID) REFERENCES Method(method_ID)
 );
@@ -433,6 +435,7 @@ CREATE TABLE Category_Refund (
 
 CREATE TABLE Refund(
     refund_ID INT AUTO_INCREMENT PRIMARY KEY,
+    paymongo_refund_id VARCHAR(100) NULL,
     transaction_ID INT,
     categoryrefund_ID INT,
     refund_reason TEXT,

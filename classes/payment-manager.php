@@ -136,6 +136,128 @@ class PaymentManager extends Database{
     }
     }
 
+    public function requestRefund( int $booking_ID, int $tourist_ID,  int $categoryrefund_ID,  string $refund_reason, ?float $custom_refund_amount = null ): array {
+        $db = $this->connect();
+
+        try {
+            $db->beginTransaction();
+
+            // 1. Get booking + transaction + payment info
+            $sql = "SELECT 
+                        b.booking_ID,
+                        pt.transaction_ID,
+                        pt.transaction_amount,
+                        pt.paymongo_intent_id,
+                        pi.paymentinfo_total_amount
+                    FROM booking b
+                    JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
+                    JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
+                    WHERE b.booking_ID = :booking_ID 
+                    AND b.tourist_ID = :tourist_ID
+                    AND pt.transaction_status = 'Paid'
+                    AND pt.paymongo_intent_id IS NOT NULL";
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute([
+                ':booking_ID' => $booking_ID,
+                ':tourist_ID' => $tourist_ID
+            ]);
+            $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$transaction) {
+                throw new Exception("No paid PayMongo transaction found for this booking.");
+            }
+
+            $originalAmount = (float)$transaction['transaction_amount'];
+            $refundAmount = $custom_refund_amount ?? $originalAmount;
+
+            if ($refundAmount > $originalAmount) {
+                throw new Exception("Refund amount cannot exceed original payment of ₱" . number_format($originalAmount, 2));
+            }
+
+            // 2. Get refund category details (for processing fee)
+            $catSql = "SELECT cr.*, crn.categoryrefundname_name 
+                    FROM Category_Refund cr
+                    JOIN CategoryRefund_Name crn ON cr.categoryrefundname_ID = crn.categoryrefundname_ID
+                    WHERE cr.categoryrefund_ID = :categoryrefund_ID";
+
+            $catStmt = $db->prepare($catSql);
+            $catStmt->execute([':categoryrefund_ID' => $categoryrefund_ID]);
+            $category = $catStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$category) {
+                throw new Exception("Invalid refund category.");
+            }
+
+            $processingFee = (float)($category['processing_fee'] ?? 0);
+            $finalRefund = $refundAmount - $processingFee;
+
+            if ($finalRefund < 0) {
+                throw new Exception("Processing fee exceeds refundable amount.");
+            }
+
+            // 3. Create Refund Request Record
+            $insertSql = "INSERT INTO Refund (
+                            transaction_ID,
+                            categoryrefund_ID,
+                            refund_reason,
+                            refund_status,
+                            refund_processingfee,
+                            refund_refundfee,
+                            refund_total_amount
+                        ) VALUES (
+                            :transaction_ID,
+                            :categoryrefund_ID,
+                            :refund_reason,
+                            'Pending',
+                            :processing_fee,
+                            :refund_amount,
+                            :total_refunded
+                        )";
+
+            $insertStmt = $db->prepare($insertSql);
+            $insertStmt->execute([
+                ':transaction_ID' => $transaction['transaction_ID'],
+                ':categoryrefund_ID' => $categoryrefund_ID,
+                ':refund_reason' => $refund_reason,
+                ':processing_fee' => $processingFee,
+                ':refund_amount' => $refundAmount,
+                ':total_refunded' => $finalRefund
+            ]);
+
+            $refund_ID = $db->lastInsertId();
+
+            // 4. Log Activity
+            $this->activity->touristRequestedRefund(
+                $tourist_ID,
+                $booking_ID,
+                $refund_ID,
+                $category['categoryrefundname_name'],
+                $refund_reason
+            );
+
+            $db->commit();
+
+            return [
+                'success' => true,
+                'message' => 'Refund request submitted successfully. Awaiting approval.',
+                'refund_ID' => $refund_ID,
+                'amount_requested' => $refundAmount,
+                'processing_fee' => $processingFee,
+                'net_refund' => $finalRefund,
+                'status' => 'Pending'
+            ];
+
+        } catch (Exception $e) {
+            $db->rollBack();
+            error_log("REFUND REQUEST FAILED [Booking #$booking_ID]: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
 }
 
 ?>

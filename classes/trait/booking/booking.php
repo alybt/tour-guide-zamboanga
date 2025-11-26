@@ -160,11 +160,13 @@ trait BookingDetails{
 
     public function getPaymentInfoByBookingID(int $bookingID): ?array {
         $sql = " SELECT 
-                paymentinfo_ID,
-                booking_ID,
-                paymentinfo_total_amount AS total_amount,
-                paymentinfo_date         AS payment_date
-            FROM Payment_Info
+                pi.paymentinfo_ID,
+                pi.booking_ID,
+                pi.paymentinfo_total_amount AS total_amount,
+                pi.paymentinfo_date         AS payment_date,
+                pt.transaction_status    AS transaction_status
+            FROM Payment_Info pi
+            JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
             WHERE booking_ID = :booking_id
             ORDER BY paymentinfo_date DESC
             LIMIT 1
