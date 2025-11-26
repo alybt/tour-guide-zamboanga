@@ -128,149 +128,170 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" >
     <!-- <link rel="stylesheet" href="../../assets/css/tourist/index.css"> -->
+    <link rel="stylesheet" href="../../assets/css/tourist/payment-form.css">
     <link rel="stylesheet" href="../../assets/css/tourist/header.css">
 </head>
 <body>
 
     <?php include 'includes/header.php'; ?>
 
-<main>
-    <h1>Booking Details</h1>
-        <p><strong>Package Name:</strong> <?= htmlspecialchars($booking['tourpackage_name'] ?? '') ?></p>
-        <p><strong>Description:</strong> <?= htmlspecialchars($booking['tourpackage_desc'] ?? '') ?></p>
-        <p><strong>Schedule Days:</strong> <?= htmlspecialchars($booking['schedule_days'] ?? '') ?></p>
-        <p><strong>Start Date:</strong> <?= htmlspecialchars($booking['booking_start_date'] ?? '') ?></p>
-        <p><strong>End Date:</strong> <?= htmlspecialchars($booking['booking_end_date'] ?? '') ?></p>
-        <p><strong>Tour Guide:</strong> <?= htmlspecialchars($booking['guide_name'] ?? '') ?></p>
-        <p><strong>Number of People:</strong> <?= $totalNumberOfPeople ?>/<?= htmlspecialchars($booking['numberofpeople_maximum'] ?? '') ?></p>
+<main class="container-fluid py-4">
+    <div class="row g-5">
+        <!-- LEFT COLUMN: Booking Summary + Fee Breakdown -->
+        <div class="col-lg-6">
+            <div class="summary-card">
+                <h1 class="mb-4">Booking Summary</h1>
 
-        <?php if ($totalNumberOfPeople > 0 && ($max_people > 1 || !$self_included)): ?>
-        <h2>Companion Details</h2>
-        <?php if (!empty($companions)): ?>
-        <ul>
-        <?php foreach ($companions as $c): ?>
-            <li><?= htmlspecialchars($c['companion_name'] ?? 'Unknown') ?> (<?= htmlspecialchars($c['companion_age'] ?? 'N/A') ?> yrs, <?= htmlspecialchars($c['companion_category_name'] ?? 'Unknown') ?>)</li>
-        <?php endforeach; ?>
-        </ul>
-        <?php else: ?>
-        <p>No companions added.</p>
-        <?php endif; ?>
-        <?php endif; ?>
+                <div class="info-grid">
+                    <div><strong>Package Name:</strong></div>
+                    <div><?= htmlspecialchars($booking['tourpackage_name'] ?? '') ?></div>
 
-    <h2>Category & Fee Breakdown</h2>
-    <table id="feeBreakdown" border="1" cellpadding="5" cellspacing="0">
-        <tr>
-            <th>Category</th>
-            <th>Qty</th>
-            <th>Total</th>
-        </tr>
-        <tbody id="feeBreakdownBody"></tbody>
-        <tr class="total-row">
-            <td colspan="2">Grand Total (After Discount)</td>
-            <td style="text-align: right;" id="grandTotal">₱0.00</td>
-        </tr>
-    </table>
-    <form id="paymentForm" method="POST" class="payment-form">
-        <h2>💳 Payment Section</h2>
+                    <div><strong>Description:</strong></div>
+                    <div><?= htmlspecialchars($booking['tourpackage_desc'] ?? '') ?></div>
 
-        <!-- Payment Category -->
-        <label for="methodcategory_ID">Select Payment Method</label>
-        <select name="methodcategory_ID" id="methodcategory_ID" required>
-            <option value="">-- Choose Payment Method --</option>
-            <?php foreach ($methodCategories as $category): ?>
-                <option value="<?= htmlspecialchars($category['methodcategory_ID']) ?>"
-                        data-type="<?= htmlspecialchars($category['methodcategory_type']) ?>"
-                        data-name="<?= htmlspecialchars(strtolower($category['methodcategory_name'])) ?>"
-                        data-fee="<?= htmlspecialchars($category['methodcategory_processing_fee']) ?>">
-                    <?= htmlspecialchars($category['methodcategory_name']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+                    <div><strong>Schedule:</strong></div>
+                    <div><?= htmlspecialchars($booking['schedule_days'] ?? '') ?></div>
 
-        <!-- Common Fields -->
-        <div class="common-section">
-            <label for="methodcategory_processing_fee">Processing Fee (₱)</label>
-            <input type="number" step="0.01" name="methodcategory_processing_fee" id="methodcategory_processing_fee" readonly>
+                    <div><strong>Start Date:</strong></div>
+                    <div><?= date('F j, Y', strtotime($booking['booking_start_date'])) ?></div>
 
+                    <div><strong>End Date:</strong></div>
+                    <div><?= date('F j, Y', strtotime($booking['booking_end_date'])) ?></div>
 
-            <label>Total Amount (₱)</label>
-            <input type="number" step="0.01" name="method_amount" id="method_amount" readonly>
-            
-            <br>
-            <label>Name</label>
-            <input type="text" name="method_name" required>
+                    <div><strong>Tour Guide:</strong></div>
+                    <div><?= htmlspecialchars($booking['guide_name'] ?? 'To be assigned') ?></div>
 
-            <label>Email</label>
-            <input type="email" name="method_email" required>
-            <br>
-            <label>Phone</label>
-            <select name="country_ID" id="country_ID">
-                <option value="">--SELECT COUNTRY CODE--</option>
-                
-                    
-                <?php foreach ($touristObj->fetchCountryCode() as $country_code){ 
-                    $temp = $country_code["country_ID"];
-                ?>
-                <option value="<?= $temp ?>" <?= ($temp == ($tourist["country_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["country_name"] ?> <?= $country_code["country_codenumber"]?> </option> 
-            <?php } ?>
-            </select>
-            <input type="text" name="phone_number" id="phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $tourist["phone_number"] ?? "" ?>">
-            <p style="color: red; font-weight: bold;"> <?= $errors["phone_number"] ?? "" ?> </p>
-            
-        </div>
-
-        <!-- Address Section -->
-        <fieldset class="address-section">
-            <legend>Billing Address</legend>
-            <input type="text" name="method_line1" placeholder="Street Address" required>
-            <input type="text" name="method_city" placeholder="City" required>
-            <input type="text" name="method_postalcode" placeholder="Postal Code" required>
-            <input type="text" name="method_country" placeholder="Country" required>
-        </fieldset>
-
-        <!-- Card Fields -->
-        <div id="cardSection" class="payment-type-section" style="display:none;">
-            <h3>Card Information</h3>
-            <label>Card Number</label>
-            <input type="text" name="method_cardnumber" maxlength="16" placeholder="1234 5678 9012 3456">
-            
-            <div class="row">
-                <div>
-                    <label>Expiry Month</label>
-                    <input type="text" name="method_expmonth" maxlength="2" placeholder="MM">
+                    <div><strong>Total People:</strong></div>
+                    <div><strong><?= $totalNumberOfPeople ?> / <?= $booking['numberofpeople_maximum'] ?></strong></div>
                 </div>
-                <div>
-                    <label>Expiry Year</label>
-                    <input type="text" name="method_expyear" maxlength="4" placeholder="YYYY">
-                </div>
-                <div>
-                    <label>CVC</label>
-                    <input type="text" name="method_cvc" maxlength="4" placeholder="123">
-                </div>
+
+                <?php if ($totalNumberOfPeople > 0 && !empty($companions)): ?>
+                <h2 class="mt-5 mb-3">Companion Details</h2>
+                <ul class="companion-list">
+                    <?php foreach ($companions as $c): ?>
+                        <li>
+                            <span class="name"><?= htmlspecialchars($c['companion_name']) ?></span>
+                            <span class="details">(<?= $c['companion_age'] ?> yrs • <?= htmlspecialchars($c['companion_category_name']) ?>)</span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php endif; ?>
+
+                <h2 class="mt-5 mb-3">Category & Fee Breakdown</h2>
+                <table id="feeBreakdown" class="table fee-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feeBreakdownBody"></tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2"><strong>Grand Total (After Discount)</strong></td>
+                            <td class="text-end"><strong id="grandTotal">₱0.00</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
 
-        <!-- E-Wallet Fields -->
-        <!-- <div id="ewalletSection" class="payment-type-section" style="display:none;">
-            <h3>E-Wallet Information</h3>
-            <label>E-Wallet Account / Email</label>
-            <input type="text" name="ewallet_account" placeholder="e.g., yourwallet@gmail.com">
-        </div> -->
+        <!-- RIGHT COLUMN: Payment Form -->
+        <div class="col-lg-6">
+            <div class="payment-card">
+                <form id="paymentForm" method="POST" class="payment-form">
+                    <h2 class="mb-4 text-primary">Complete Your Payment</h2>
 
-        <!-- Bank Transfer Fields -->
-        <div id="bankSection" class="payment-type-section" style="display:none;">
-            <h3>Bank Transfer Details</h3>
-            <label>Bank Name</label>
-            <input type="text" name="bank_name" placeholder="e.g., BDO, BPI, Metrobank">
-            <label>Reference Number</label>
-            <input type="text" name="bank_reference" placeholder="Enter Reference Number">
+                    <!-- Payment Method Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Select Payment Method</label>
+                        <select name="methodcategory_ID" id="methodcategory_ID" class="form-select form-select-lg" required>
+                            <option value="">-- Choose Payment Method --</option>
+                            <?php foreach ($methodCategories as $category): ?>
+                                <option value="<?= $category['methodcategory_ID'] ?>"
+                                        data-type="<?= strtolower($category['methodcategory_type']) ?>"
+                                        data-fee="<?= $category['methodcategory_processing_fee'] ?>">
+                                    <?= htmlspecialchars($category['methodcategory_name']) ?>
+                                    <?php if ($category['methodcategory_processing_fee'] > 0): ?>
+                                        (+₱<?= number_format($category['methodcategory_processing_fee'], 2) ?> fee)
+                                    <?php endif; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Processing Fee & Total -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Processing Fee</label>
+                            <input type="text" id="methodcategory_processing_fee" class="form-control form-control-lg text-end fw-bold text-success" readonly value="₱0.00">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Total Amount to Pay</label>
+                            <input type="text" name="method_amount" id="method_amount" class="form-control form-control-lg text-end fw-bold text-primary fs-4" readonly value="₱0.00">
+                        </div>
+                    </div>
+
+                    <!-- Common Fields -->
+                    <div class="common-fields mb-4">
+                        <input type="text" name="method_name" placeholder="Full Name on Card / Account" class="form-control mb-3" required>
+                        <input type="email" name="method_email" placeholder="Email Address" class="form-control mb-3" required>
+
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <select name="country_ID" id="country_ID" class="form-select" required>
+                                    <option value="">Code</option>
+                                    <?php foreach ($touristObj->fetchCountryCode() as $c): ?>
+                                        <option value="<?= $c['country_ID'] ?>" <?= ($c['country_codenumber'] == '+63') ? 'selected' : '' ?>>
+                                            <?= $c['country_name'] ?> (<?= $c['country_codenumber'] ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-8">
+                                <input type="text" name="phone_number" placeholder="9123456789" maxlength="10" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Billing Address -->
+                    <fieldset class="border rounded-3 p-4 mb-4">
+                        <legend class="float-none w-auto px-2 fw-bold text-muted">Billing Address</legend>
+                        <input type="text" name="method_line1" placeholder="Street Address" class="form-control mb-3" required>
+                        <div class="row g-3">
+                            <div class="col-md-6"><input type="text" name="method_city" placeholder="City" class="form-control" required></div>
+                            <div class="col-md-6"><input type="text" name="method_postalcode" placeholder="Postal Code" class="form-control" required></div>
+                        </div>
+                        <input type="text" name="method_country" placeholder="Country" class="form-control mt-3" value="Philippines" required>
+                    </fieldset>
+
+                    <!-- Dynamic Sections (Card, E-Wallet, Bank) -->
+                    <div id="cardSection" class="payment-type-section" style="display:none;">
+                        <h5 class="mb-3">Card Details</h5>
+                        <input type="text" name="method_cardnumber" placeholder="1234 5678 9012 3456" maxlength="19" class="form-control mb-3">
+                        <div class="row g-3">
+                            <div class="col-4"><input type="text" name="method_expmonth" placeholder="MM" maxlength="2" class="form-control"></div>
+                            <div class="col-4"><input type="text" name="method_expyear" placeholder="YYYY" maxlength="4" class="form-control"></div>
+                            <div class="col-4"><input type="text" name="method_cvc" placeholder="CVC" maxlength="4" class="form-control"></div>
+                        </div>
+                    </div>
+
+                    <div id="bankSection" class="payment-type-section" style="display:none;">
+                        <h5 class="mb-3">Bank Transfer Details</h5>
+                        <input type="text" name="bank_name" placeholder="Bank Name (e.g., BDO, BPI)" class="form-control mb-3">
+                        <input type="text" name="bank_reference" placeholder="Reference Number" class="form-control" required>
+                    </div>
+
+                    <input type="hidden" name="method_status" value="Pending">
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mt-4 shadow-lg pay-btn">
+                        <i class="bi bi-lock-fill me-2"></i> Proceed to Pay ₱<span id="payAmount">0.00</span>
+                    </button>
+                </form>
+            </div>
         </div>
- 
-        <input type="hidden" name="method_status" value="Pending">
-
-        <button type="submit" class="pay-btn">Proceed to Pay</button>
-    </form>
-
+    </div>
 </main>
 
 
