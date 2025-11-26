@@ -148,6 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         $_SESSION['success'] = "Booking successful. Proceeding to payment.";
+        $action = $activityObj->touristBook($booking_ID, $tourist_ID);
         header("Location: payment-form.php?id=" . $booking_ID);
         exit();
     }
