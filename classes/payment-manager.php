@@ -110,15 +110,26 @@ class PaymentManager extends Database{
             if (!$query->execute()) {
                 throw new Exception("Failed to update booking status.");
             }
+            // SELECT * FROM booking b JOIN payment_info pi ON b.booking_ID = pi.booking_ID JOIN payment_transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
+            // SELECT b.booking_ID, b.booking_status, pt.transaction_status FROM booking b JOIN payment_info pi ON b.booking_ID = pi.booking_ID JOIN payment_transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
+            $sql = "UPDATE Payment_Transaction pt
+                JOIN Payment_Info pi ON pt.paymentinfo_ID = pi.paymentinfo_ID
+                SET pt.transaction_status = 'Refunded'
+                WHERE pi.booking_ID = :booking_ID;";
+            $query = $db->prepare($sql);
+            $query->bindParam(':booking_ID', $booking_ID);
 
-            // ✅ If all steps succeeded, commit
+            if (!$query->execute()) {
+                throw new Exception("Failed to update Transaction status.");
+            }
+
+
+ 
             $db->commit();
             return true;
+ 
+        }catch (Exception $e) { 
 
-
-
-        }catch (Exception $e) {
-        // 🔴 Roll back everything on failure
         $db->rollBack();
         error_log("[addAllPaymentInfo] " . $e->getMessage());
         return false;
