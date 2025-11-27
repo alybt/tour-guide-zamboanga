@@ -110,8 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $paymentData = $paymentObj->getPaymentByBooking($booking_ID);
             $paymentinfo_ID = $paymentData['paymentinfo_ID'] ?? null;
 
-            if ($paymentinfo_ID && $method_cardnumber) {
-                // Step 3: Process payment through Paymongo
+            if ($paymentinfo_ID && $method_cardnumber) { 
                 $paymongoResult = $paymentObj->processPayMongoPayment(
                     $paymentinfo_total_amount * 100, // Convert to centavos
                     $method_currency,

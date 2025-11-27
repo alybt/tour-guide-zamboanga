@@ -3,11 +3,42 @@
 trait UpdateBookings{
  
     public function updateBookings($timedate = null) {
-        $now = $timedate ? new DateTime($timedate, new DateTimeZone('Asia/Manila')) 
-                        : new DateTime('now', new DateTimeZone('Asia/Manila'));
-        $nowStr = $now->format('Y-m-d H:i:s'); 
+        $now = $timedate
+            ? new DateTime($timedate, new DateTimeZone('Asia/Manila'))
+            : new DateTime('now', new DateTimeZone('Asia/Manila'));
 
-        $sql = "UPDATE booking
+        $nowStr = $now->format('Y-m-d H:i:s');
+
+        try {
+            $db = $this->connect(); 
+
+            // SELECT OLD STATUSES BEFORE UPDATE 
+            $sqlSelectBefore = " SELECT booking_ID, booking_status
+                FROM booking
+                WHERE booking_status IN ('Pending for Payment', 'Pending for Approval', 'Approved', 'In Progress' )
+                AND ( booking_start_date <= DATE_ADD(?, INTERVAL 1 DAY) OR booking_end_date <= ? ) ";
+
+            $stmt = $db->prepare($sqlSelectBefore);
+            $stmt->execute([$nowStr, $nowStr]);
+            $oldRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($oldRows)) {
+                return [
+                    'success' => true,
+                    'updated' => 0,
+                    'updated_ids' => [],
+                    'message' => "No bookings matched the auto-update criteria."
+                ];
+            }
+
+            // Convert to map: [bookingId => oldStatus]
+            $oldMap = [];
+            foreach ($oldRows as $row) {
+                $oldMap[$row['booking_ID']] = $row['booking_status'];
+            } 
+            
+            // UPDATE BOOKING STATUSES 
+            $sqlUpdate = " UPDATE booking
                 SET booking_status = CASE
                     WHEN booking_status = 'Pending for Payment'
                         AND booking_start_date <= DATE_ADD(?, INTERVAL 1 DAY)
@@ -23,48 +54,80 @@ trait UpdateBookings{
 
                     ELSE booking_status
                 END
-                WHERE booking_status IN ('Pending for Payment', 'Pending for Approval', 'Approved', 'In Progress')
-                AND (booking_start_date <= DATE_ADD(?, INTERVAL 1 DAY) OR booking_end_date <= ?)
-                HAVING booking_status <> OLD.booking_status  
-                RETURNING booking_ID, 
-                        OLD.booking_status AS old_status, 
-                        booking_status AS new_status";
+                WHERE booking_status IN (
+                    'Pending for Payment',
+                    'Pending for Approval',
+                    'Approved',
+                    'In Progress'
+                )
+                AND (
+                    booking_start_date <= DATE_ADD(?, INTERVAL 1 DAY)
+                    OR booking_end_date <= ?
+                ) ";
 
-        try {
-            $db = $this->connect();
-            $stmt = $db->prepare($sql);
+            $stmt = $db->prepare($sqlUpdate);
             $stmt->execute([$nowStr, $nowStr, $nowStr, $nowStr, $nowStr]);
+ 
+            // SELECT UPDATED STATUSES AFTER UPDATE 
+            $bookingIds = array_column($oldRows, 'booking_ID');
+            $placeholder = implode(',', array_fill(0, count($bookingIds), '?'));
 
-            $updatedRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $updatedCount = count($updatedRows);
+            $sqlSelectAfter = "  SELECT booking_ID, booking_status
+                FROM booking WHERE booking_ID IN ($placeholder) ";
+
+            $stmt = $db->prepare($sqlSelectAfter);
+            $stmt->execute($bookingIds);
+            $newRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Convert to map: [bookingId => newStatus]
+            $newMap = [];
+            foreach ($newRows as $row) {
+                $newMap[$row['booking_ID']] = $row['booking_status'];
+            }
  
-            if ($updatedCount > 0) {
-                foreach ($updatedRows as $row) {
-                    $bookingId = $row['booking_ID'];
-                    $oldStatus = $row['old_status'];
-                    $newStatus = $row['new_status'];
- 
+            // COMPARE OLD AND NEW — LOG ONLY CHANGES 
+            $updatedIds = [];
+
+            foreach ($oldMap as $id => $oldStatus) {
+                $newStatus = $newMap[$id] ?? $oldStatus;
+
+                if ($oldStatus !== $newStatus) {
+                    $updatedIds[] = $id;
+
+                    // Choose description
                     $description = match ($newStatus) {
-                        'Booking Expired — Payment Not Completed' => "Booking expired: Payment not completed in time",
-                        'Booking Expired — Guide Did Not Confirm in Time' => "Booking expired: Guide did not confirm on time",
-                        'Completed' => "Booking completed successfully",
-                        default => "Booking status changed from '$oldStatus' to '$newStatus'"
-                    };
- 
-                    $this->logBookingStatusChange($bookingId, $newStatus, $description);
-                }
+                        'Booking Expired — Payment Not Completed'
+                            => "Booking expired: Payment not completed in time",
 
-                $this->activity->systemUpdateBooking();  
+                        'Booking Expired — Guide Did Not Confirm in Time'
+                            => "Booking expired: Guide did not confirm on time",
+
+                        'Completed'
+                            => "Booking completed successfully",
+
+                        default
+                            => "Booking status changed from '$oldStatus' to '$newStatus'"
+                    };
+
+                    // Log
+                    $this->logBookingStatusChange($id, $newStatus, $description);
+                }
             }
 
-            error_log("[AUTO-UPDATE SUCCESS] $nowStr (PH) | Updated: $updatedCount bookings | IDs: " . 
-                    implode(', ', array_column($updatedRows, 'booking_ID')));
+            // Trigger general system activity log
+            if (!empty($updatedIds)) {
+                $this->activity->systemUpdateBooking();
+            }
+
+            error_log("[AUTO-UPDATE SUCCESS] $nowStr | Updated: "
+                . count($updatedIds)
+                . " | IDs: " . implode(', ', $updatedIds));
 
             return [
                 'success' => true,
-                'updated' => $updatedCount,
-                'updated_ids' => array_column($updatedRows, 'booking_ID'),
-                'message' => "$updatedCount booking(s) auto-updated"
+                'updated' => count($updatedIds),
+                'updated_ids' => $updatedIds,
+                'message' => count($updatedIds) . " booking(s) auto-updated"
             ];
 
         } catch (Exception $e) {
@@ -72,6 +135,7 @@ trait UpdateBookings{
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
+
 
     private function logBookingStatusChange($bookingId, $newStatus, $description) {
         try {
