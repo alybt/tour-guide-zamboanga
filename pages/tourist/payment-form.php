@@ -97,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try { 
+        // Step 1: Save payment info to database first
         $result = $paymentObj->addAllPaymentInfo($booking_ID, $paymentinfo_total_amount,
             $method_ID, $methodcategory_ID, $method_amount,
             $method_currency, $method_cardnumber, $method_expmonth, $method_expyear,
@@ -105,15 +106,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $country_ID, $phone_number );
 
         if ($result) {
-            $paymentResolve = $activityObj->touristpayment($booking_ID, $tourist_ID);
-            header("Location: itinerary-view.php?id=" . urlencode($booking_ID));
-            exit;
+            // Step 2: Get the payment info ID for Paymongo processing
+            $paymentData = $paymentObj->getPaymentByBooking($booking_ID);
+            $paymentinfo_ID = $paymentData['paymentinfo_ID'] ?? null;
+
+            if ($paymentinfo_ID && $method_cardnumber) {
+                // Step 3: Process payment through Paymongo
+                $paymongoResult = $paymentObj->processPayMongoPayment(
+                    $paymentinfo_total_amount * 100, // Convert to centavos
+                    $method_currency,
+                    $method_cardnumber,
+                    $method_expmonth,
+                    $method_expyear,
+                    $method_cvc,
+                    $method_name,
+                    $method_email,
+                    $phone_number,
+                    $method_line1,
+                    $method_city,
+                    $method_postalcode,
+                    $method_country,
+                    "Booking #$booking_ID",
+                    ['booking_id' => $booking_ID, 'tourist_id' => $tourist_ID]
+                );
+
+                if ($paymongoResult['success']) {
+                    // Payment succeeded
+                    $paymentResolve = $activityObj->touristpayment($booking_ID, $tourist_ID);
+                    header("Location: itinerary-view.php?id=" . urlencode($booking_ID));
+                    exit;
+                } else {
+                    // Payment failed
+                    $errors['payment'] = "Payment processing failed: " . ($paymongoResult['error'] ?? 'Unknown error');
+                }
+            } else {
+                // No card number or payment ID - payment saved but not processed
+                $paymentResolve = $activityObj->touristpayment($booking_ID, $tourist_ID);
+                header("Location: itinerary-view.php?id=" . urlencode($booking_ID));
+                exit;
+            }
         } else {
-            echo "❌ Failed to save payment information.";
+            $errors['payment'] = "Failed to save payment information.";
         }
 
     } catch (Exception $e) {
-        echo "⚠️ Error saving payment info: " . htmlspecialchars($e->getMessage());
+        $errors['payment'] = "Error processing payment: " . htmlspecialchars($e->getMessage());
     }
 
 }
@@ -293,6 +330,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include 'includes/header.php'; ?>
 
 <main class="payment-container">
+
+    <!-- ERROR MESSAGES -->
+    <?php if (!empty($errors)): ?>
+        <div style="grid-column: 1 / -1; background: #fee; border: 1px solid #fcc; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <h3 style="color: #c33; margin: 0 0 10px 0;">⚠️ Payment Error</h3>
+            <?php foreach ($errors as $error): ?>
+                <p style="margin: 5px 0; color: #c33;"><?= htmlspecialchars($error) ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
     <!-- LEFT SIDE: Booking Details + Fee Breakdown -->
     <div class="section-card">

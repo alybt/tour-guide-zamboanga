@@ -392,13 +392,13 @@ class Guide extends Database {
                 ci.contactinfo_email AS guide_email,
                 
                 -- Primary Phone Number (with country code)
-                CONCAT(COALESCE(pn.country_codenumber, ''), pn.phone_number) AS guide_phonenumber,
+                CONCAT(COALESCE(c.country_codenumber, ''), pn.phone_number) AS guide_phonenumber,
                 pn.phone_number AS phone_number_only,
                 c.country_name,
                 
                 -- Address (concatenated for convenience)
                 CONCAT(
-                    TRIM(CONCAT(addr.street, ' ', addr.building)),
+                    TRIM(CONCAT(addr.address_street, ' ', addr.address_houseno)),
                     IF(addr.barangay_ID IS NOT NULL, CONCAT(', ', b.barangay_name), ''),
                     IF(city.city_ID IS NOT NULL, CONCAT(', ', city.city_name), ''),
                     IF(prov.province_ID IS NOT NULL, CONCAT(', ', prov.province_name), ''),
