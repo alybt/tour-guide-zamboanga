@@ -1,5 +1,6 @@
 <?php
 session_start();
+$current_page = basename($_SERVER['PHP_SELF']);
 
 // Redirect if not logged in or not a Guide
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
@@ -25,6 +26,10 @@ $guideObj = new Guide();
 
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
 $bookings = $bookingObj->getBookingByGuideID($guide_ID);
+function isActive($page) {
+    global $current_page;
+    return ($current_page === $page) ? 'active' : '';
+}
 ?>
 
 <!DOCTYPE html>
@@ -39,6 +44,7 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
     <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../../assets/css/guide/dashboard.css">
 
     <style>
         :root {
@@ -57,56 +63,7 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
             min-height: 100vh;
         }
 
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 260px;
-            background: var(--secondary-color);
-            color: var(--primary-color);
-            padding-top: 1.5rem;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-
-        .sidebar .logo {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--accent);
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.85);
-            padding: 0.85rem 1.5rem;
-            border-radius: 0;
-            transition: all 0.2s;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(229, 161, 62, 0.15);
-            color: var(--accent);
-        }
-
-        .sidebar .nav-link i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .sidebar .nav-text {
-            white-space: nowrap;
-        }
-
+       
         /* Main Content */
         .main-content {
             margin-left: 260px;

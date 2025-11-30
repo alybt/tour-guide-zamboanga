@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+$current_page = basename($_SERVER['PHP_SELF']);
 // Redirect if not logged in or not a Guide
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
     header('Location: ../../index.php');
@@ -33,7 +33,10 @@ $activebookings = $bookingObj->getActiveBookingCount($guide_ID);
 $totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID);
 $totalEarnings = $guideObj->getTotalEarnings($guide_ID);
 $totalRatings = $guideObj->guideRating($guide_ID);
-
+function isActive($page) {
+    global $current_page;
+    return ($current_page === $page) ? 'active' : '';
+}
 ?>
 
 <!DOCTYPE html>
