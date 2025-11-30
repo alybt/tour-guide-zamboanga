@@ -325,7 +325,7 @@ class Guide extends Database {
             JOIN payment_info pi ON pi.booking_ID = b.booking_ID
             JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
             WHERE tp.guide_ID = :guide_ID
-            AND b.booking_status IN ('Approved', 'Completed')";
+            AND b.booking_status IN ('Completed')";
 
         try {
             $db = $this->connect();

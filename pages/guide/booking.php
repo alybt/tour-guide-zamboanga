@@ -26,10 +26,7 @@ $guideObj = new Guide();
 
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
 $bookings = $bookingObj->getBookingByGuideID($guide_ID);
-function isActive($page) {
-    global $current_page;
-    return ($current_page === $page) ? 'active' : '';
-}
+
 ?>
 
 <!DOCTYPE html>

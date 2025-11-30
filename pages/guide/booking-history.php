@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+$current_page = basename($_SERVER['PHP_SELF']);
 // Redirect if not logged in or not a Guide
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
     header('Location: ../../index.php');

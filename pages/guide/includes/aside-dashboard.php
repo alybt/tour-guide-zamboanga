@@ -1,3 +1,8 @@
+<?php
+function isActive($page) {
+    global $current_page;
+    return ($current_page === $page) ? 'active' : '';
+}?>
 <aside class="sidebar">
     <div class="logo px-3">
         <span>Tourismo Zamboanga</span>

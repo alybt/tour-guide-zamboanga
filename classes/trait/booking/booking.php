@@ -210,6 +210,9 @@ trait BookingDetails{
         }
     }
 
+
+
+    // FOR GUIDE DASHBOARD - Get booking history for a guide
     public function getBookingHistoryByGuideID(int $guide_ID): array{
         $sql = "SELECT 
             b.booking_ID,
@@ -270,76 +273,120 @@ trait BookingDetails{
         }
     }
 
+    private function getBaseSql(): string {
+        return " SELECT  b.booking_ID, b.booking_created_at AS booking_date,
+                DATE(b.booking_start_date) AS tour_date,
+                b.booking_status, 
+                tp.tourpackage_name, 
+                TRIM(CONCAT(
+                    ni.name_first, 
+                    IF(ni.name_middle IS NOT NULL AND TRIM(ni.name_middle) != '', CONCAT(' ', ni.name_middle), ''), 
+                    ' ', ni.name_last
+                )) AS tourist_name, 
+                
+                (COUNT(c.companion_ID) + IF(b.booking_isselfIncluded = 1 OR b.booking_isselfIncluded IS NULL, 1, 0)) AS total_pax, 
+                 
+                COALESCE(pi.paymentinfo_total_amount, 0) AS total_amount,
+                
+                pt.transaction_status AS payment_status, 
+                CONCAT(COALESCE(coun.country_codenumber, ''), pn.phone_number) AS phone_number,
+
+            FROM booking b
+                JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
+                JOIN account_info ai ON ai.account_ID = b.tourist_ID
+                JOIN user_login ul ON ul.user_ID = ai.user_ID
+                JOIN person p ON p.person_ID = ul.person_ID
+                JOIN name_info ni ON ni.name_ID = p.name_ID
+                LEFT JOIN contact_info ci ON ci.contactinfo_ID = p.contactinfo_ID
+                LEFT JOIN phone_number pn ON pn.phone_ID = ci.phone_ID
+                LEFT JOIN country coun ON coun.country_ID = pn.country_ID
+                LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
+                LEFT JOIN companion c ON c.companion_ID = bb.companion_ID
+                LEFT JOIN payment_info pi ON pi.booking_ID = b.booking_ID
+                LEFT JOIN payment_transaction pt ON pt.paymentinfo_ID = pi.paymentinfo_ID 
+                
+            WHERE tp.guide_ID = :guide_ID 
+            AND b.booking_status IN (
+                'Completed','Cancelled','Refunded','Failed','Rejected by the Guide',
+                'Booking Expired — Payment Not Completed',
+                'Booking Expired — Guide Did Not Confirm in Time',
+                'Cancelled - No Refund'
+            )
+
+            GROUP BY 
+                b.booking_ID, tp.tourpackage_name, ni.name_first, ni.name_middle, ni.name_last,
+                b.booking_isselfIncluded, b.booking_created_at, b.booking_start_date, b.booking_status,
+                pi.paymentinfo_total_amount, pt.transaction_status,
+                coun.country_codenumber, pn.phone_number
+
+            ORDER BY
+                FIELD(b.booking_status,
+                    'In Progress', 'Approved', 'Pending for Approval', 'Pending for Payment',
+                    'Completed', 'Cancelled', 'Cancelled - No Refund', 'Refunded', 'Failed',
+                    'Rejected by the Guide', 'Booking Expired — Payment Not Completed',
+                    'Booking Expired — Guide Did Not Confirm in Time'
+                ),
+                b.booking_start_date DESC,
+                b.booking_created_at DESC ";
+    }
+
+    private function executeQuery(string $sql, int $guide_ID, string $extraWhere = '', array $extraParams = []): array {
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql . $extraWhere);
+            $stmt->bindParam(':guide_ID', $guide_ID, PDO::PARAM_INT);
+            foreach ($extraParams as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error in BookingHistoryModel: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Variants of booking history based on time frames
+    public function getTodayBookings(int $guide_ID): array {
+        $extraWhere = " AND DATE(b.booking_start_date) = CURDATE()";
+        return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
+    }
+
+    public function getPastWeekBookings(int $guide_ID): array {
+        $extraWhere = " AND b.booking_start_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+        return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
+    }
+
+    public function getPastMonthBookings(int $guide_ID): array {
+        $extraWhere = " AND b.booking_start_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)";
+        return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
+    }
+
+    public function getFirstHalfMonthBookings(int $guide_ID): array {
+        $extraWhere = " AND DAY(b.booking_start_date) BETWEEN 1 AND 15 
+                        AND MONTH(b.booking_start_date) = MONTH(CURDATE()) 
+                        AND YEAR(b.booking_start_date) = YEAR(CURDATE())";
+        return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
+    }
+
+    public function getSecondHalfMonthBookings(int $guide_ID): array {
+        $extraWhere = " AND DAY(b.booking_start_date) >= 16 
+                        AND MONTH(b.booking_start_date) = MONTH(CURDATE()) 
+                        AND YEAR(b.booking_start_date) = YEAR(CURDATE())";
+        return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
+    }
+
+    public function getPast3MonthsBookings(int $guide_ID): array {
+        $extraWhere = " AND b.booking_start_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)";
+        return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
+    }
+
+    public function getPast6MonthsBookings(int $guide_ID): array {
+        $extraWhere = " AND b.booking_start_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+        return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
+    }
+
 
 }
 
 ?>
-
-<!-- SELECT 
-    b.booking_ID AS booking_id,
-    b.booking_created_at AS booking_date,
-    DATE(b.booking_start_date) AS tour_date,
-    b.booking_status,
-    
-    tp.tourpackage_name AS package_name,
-    
-    -- Full tourist name
-    TRIM(
-        CONCAT(
-            ni.name_first,
-            IF(ni.name_middle IS NOT NULL AND TRIM(ni.name_middle) != '', 
-  CONCAT(' ', ni.name_middle), 
-  ''
-            ),
-            ' ', ni.name_last
-        )
-    ) AS tourist_name,
-    
-    -- CORRECT TOTAL PAX using your booking_isselfIncluded flag
-    (
-        COUNT(c.companion_ID) + 
-        IF(b.booking_isselfIncluded = 1 OR b.booking_isselfIncluded IS NULL, 1, 0)
-    ) AS total_pax,
-
-
-    -- Money
-    pi.paymentinfo_total_amount AS total_paid,
-    pt.transaction_status AS payment_status,
-
-    -- Contact
-    CONCAT(COALESCE(coun.country_codenumber, ''), pn.phone_number) AS phone_number
-
-
-FROM booking b
-    JOIN tour_package tp  ON b.tourpackage_ID = tp.tourpackage_ID
-    JOIN account_info ai  ON ai.account_ID = b.tourist_ID
-    JOIN user_login ul    ON ul.user_ID = ai.user_ID
-    JOIN person p         ON p.person_ID = ul.person_ID
-    JOIN name_info ni     ON ni.name_ID = p.name_ID
-
-    -- Primary phone only
-    LEFT JOIN contact_info ci ON ci.contactinfo_ID = p.contactinfo_ID
-    LEFT JOIN phone_number pn ON pn.phone_ID = ci.phone_ID
-    LEFT JOIN country coun    ON coun.country_ID = pn.country_ID
-
-    -- Companions
-    LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
-    LEFT JOIN companion c ON c.companion_ID = bb.companion_ID
-
-    -- Latest successful payment
-    LEFT JOIN payment_info pi ON pi.booking_ID = b.booking_ID
-    LEFT JOIN payment_transaction pt        ON pt.paymentinfo_ID = pi.paymentinfo_ID 
-
-GROUP BY 
-    b.booking_ID,
-    tp.tourpackage_name,
-    ni.name_first, ni.name_middle, ni.name_last,
-    b.booking_isselfIncluded,
-    b.booking_created_at,
-    b.booking_start_date,
-    b.booking_status,
-    pi.paymentinfo_total_amount,
-    pt.transaction_status,
-    coun.country_codenumber,
-    pn.phone_number
-ORDER BY tour_date ASC -->
