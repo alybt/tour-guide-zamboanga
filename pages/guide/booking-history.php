@@ -32,7 +32,7 @@ $bookings = $bookingObj->getBookingHistoryByGuideID($guide_ID);
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Bookings | TourGuide PH</title>
+    <title>Bookings History</title>
 
     <!-- Bootstrap 5 CSS -->
     <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
@@ -54,8 +54,8 @@ $bookings = $bookingObj->getBookingHistoryByGuideID($guide_ID);
         <!-- Header -->
         <div class="header-card d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
             <div>
-                <h3 class="mb-1 fw-bold">My Bookings</h3>
-                <p class="text-muted mb-0">Manage and track all your tour bookings.</p>
+                <h3 class="mb-1 fw-bold">Booking History</h3>
+                <!-- <p class="text-muted mb-0">Manage and track all your tour bookings.</p> -->
             </div>
             <div class="text-md-end">
                 <div class="d-flex align-items-center gap-3 flex-wrap justify-content-md-end">
@@ -98,14 +98,16 @@ $bookings = $bookingObj->getBookingHistoryByGuideID($guide_ID);
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Package</th>
-                            <th>Description</th>
-                            <th>Days</th>
-                            <th>Tourist</th>
-                            <th>Start</th>
-                            <th>End</th>
-                            <th>Status</th>
-                            <th>Spots</th>
+                            <th>Booking Date</th>
+                            <th>Booking ID</th>
+                            <th>Tour Package</th>
+                            <th>Tour Date</th>
+                            <th>Booked By</th>
+                            <th>Contact Number</th>
+                            <th>Booking Status</th>
+                            <th>Total PAX</th>
+                            <th>Total Amount</th>
+                            <th>Payment Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -119,14 +121,14 @@ $bookings = $bookingObj->getBookingHistoryByGuideID($guide_ID);
                                 ?>
                                 <tr>
                                     <td><?= $no++ ?></td>
-                                    <td><strong><?= htmlspecialchars($booking['tourpackage_name']) ?></strong></td>
+                                    <td><?= date('M d, Y', strtotime($booking['booking_date'])) ?></td>
+                                    <td><?= htmlspecialchars($booking['booking_ID']) ?></td>
                                     <td class="text-truncate" style="max-width: 180px;">
-                                        <?= htmlspecialchars($booking['tourpackage_desc']) ?>
+                                        <?= htmlspecialchars($booking['tourpackage_name']) ?>
                                     </td>
-                                    <td><?= htmlspecialchars($booking['schedule_days']) ?> days</td>
+                                    <td><?= date('M d, Y', strtotime($booking['tour_date'])) ?> days</td>
                                     <td><?= htmlspecialchars($booking['tourist_name']) ?></td>
-                                    <td><?= date('M d, Y', strtotime($booking['booking_start_date'])) ?></td>
-                                    <td><?= date('M d, Y', strtotime($booking['booking_end_date'])) ?></td>
+                                    <td><?= htmlspecialchars($booking['phone_number'])?></td>
                                     <td>
                                         <?php
                                         $badgeClass = match($status) {
@@ -149,27 +151,13 @@ $bookings = $bookingObj->getBookingHistoryByGuideID($guide_ID);
                                             <?= htmlspecialchars($status) ?>
                                         </span>
                                     </td>
-                                    <td class="text-truncate" style="max-width: 120px;">
-                                        <?= htmlspecialchars($booking['tour_spots'] ?? '—') ?>
-                                    </td>
+                                    <td><?= htmlspecialchars($booking['total_pax']) ?></td>
+                                    <td>₱ <?= number_format($booking['total_amount'], 2) ?></td>
+                                    <td><?= htmlspecialchars($booking['payment_status']) ?></td>
+                                
                                     <td>
-                                        <?php if ($status === 'Pending for Payment'): ?>
-                                            <a href="booking-view.php?booking_ID=<?= $booking['booking_ID'] ?? ''; ?>&tourist_ID=<?= $booking['tourist_ID'] ?? ''; ?>" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="booking-view.php?booking_ID=<?= $booking['booking_ID'] ?? ''; ?>&tourist_ID=<?= $booking['tourist_ID'] ?? ''; ?>" class="btn btn-sm btn-outline-primary">View</a>
 
-                                        <?php elseif ($status === 'Pending for Approval'): ?>
-                                            <a href="booking-approve.php?id=<?= $booking['booking_ID'] ?>" 
-                                               class="btn btn-sm btn-success"
-                                               onclick="return confirm('Approve this booking?')">
-                                                Approve
-                                            </a>
-                                            <a href="booking-reject.php?id=<?= $booking['booking_ID'] ?>" 
-                                               class="btn btn-sm btn-danger"
-                                               onclick="return confirm('Reject this booking?')">
-                                                Reject
-                                            </a>
-                                        <?php else: ?>
-                                            <span class="text-muted">—</span>
-                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

@@ -6,24 +6,24 @@ trait BookingDetails{
         $db = $this->connect();
         
         $sql = "SELECT 
-                b.*,
-                tp.tourpackage_name,
-                tp.tourpackage_desc,
-                s.schedule_days,
-                nop.numberofpeople_maximum,
-                nop.numberofpeople_based,
-                p.pricing_currency,
-                p.pricing_foradult,
-                p.pricing_discount,
-                tp.guide_ID
+  b.*,
+  tp.tourpackage_name,
+  tp.tourpackage_desc,
+  s.schedule_days,
+  nop.numberofpeople_maximum,
+  nop.numberofpeople_based,
+  p.pricing_currency,
+  p.pricing_foradult,
+  p.pricing_discount,
+  tp.guide_ID
             FROM booking b
             INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
             INNER JOIN schedule s ON s.schedule_ID = tp.schedule_ID
             INNER JOIN number_of_people nop ON nop.numberofpeople_ID = s.numberofpeople_ID
             INNER JOIN pricing p ON p.pricing_ID = nop.pricing_ID
             WHERE 
-                b.booking_ID = :booking_ID 
-                AND b.tourist_ID = :tourist_ID
+  b.booking_ID = :booking_ID 
+  AND b.tourist_ID = :tourist_ID
             LIMIT 1
         ";
 
@@ -63,78 +63,78 @@ trait BookingDetails{
     // Method to get complete booking details with all joins
     public function getBookingWithDetails($booking_ID) {
         $sql = "SELECT 
-                    -- Booking Info
-                    b.booking_ID,
-                    b.booking_status,
-                    b.booking_created_at,
-                    b.booking_start_date,
-                    b.booking_end_date,
-                    b.booking_isselfincluded,
-                    
-                    -- Tourist Info
-                    ai.account_ID AS tourist_account_ID,
-                    CONCAT(ni.name_first, 
-                        IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
-                        ' ', ni.name_last) AS tourist_fullname,
-                    ci.contactinfo_email AS tourist_email,
-                    
-                    -- Tour Package Info
-                    tp.tourpackage_ID,
-                    tp.tourpackage_name,
-                    tp.tourpackage_desc,
-                    
-                    -- Pricing Info
-                    pr.pricing_currency,
-                    pr.pricing_foradult,
-                    pr.pricing_discount,
-                    
-                    -- Guide Info
-                    g.guide_ID,
-                    CONCAT(gn.name_first, ' ', gn.name_last) AS guide_fullname,
-                    gci.contactinfo_email AS guide_email,
-                    gpn.phone_number AS guide_phone,
-                    
-                    -- Payment Info
-                    pi.paymentinfo_ID,
-                    pi.paymentinfo_total_amount,
-                    pi.paymentinfo_date,
-                    
-                    -- Transaction Info
-                    pt.transaction_ID,
-                    pt.transaction_status,
-                    pt.transaction_reference,
-                    pt.transaction_created_date
-                    
-                FROM Booking b
-                
-                -- Tourist Info
-                JOIN Account_Info ai ON b.tourist_ID = ai.account_ID
-                JOIN User_Login ul ON ai.user_ID = ul.user_ID
-                JOIN Person p ON ul.person_ID = p.person_ID
-                JOIN Name_Info ni ON p.name_ID = ni.name_ID
-                LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
-                
-                -- Tour Package Info
-                JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
-                JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
-                JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-                JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
-                
-                -- Guide Info
-                LEFT JOIN Guide g ON tp.guide_ID = g.guide_ID
-                LEFT JOIN Account_Info gai ON g.account_ID = gai.account_ID
-                LEFT JOIN User_Login gul ON gai.user_ID = gul.user_ID
-                LEFT JOIN Person gp ON gul.person_ID = gp.person_ID
-                LEFT JOIN Name_Info gn ON gp.name_ID = gn.name_ID
-                LEFT JOIN Contact_Info gci ON gp.contactinfo_ID = gci.contactinfo_ID
-                LEFT JOIN Phone_Number gpn ON gci.phone_ID = gpn.phone_ID
-                
-                -- Payment Info
-                LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
-                LEFT JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
-                
-                WHERE b.booking_ID = :booking_ID";
-                
+  -- Booking Info
+  b.booking_ID,
+  b.booking_status,
+  b.booking_created_at,
+  b.booking_start_date,
+  b.booking_end_date,
+  b.booking_isselfincluded,
+  
+  -- Tourist Info
+  ai.account_ID AS tourist_account_ID,
+  CONCAT(ni.name_first, 
+      IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
+      ' ', ni.name_last) AS tourist_fullname,
+  ci.contactinfo_email AS tourist_email,
+  
+  -- Tour Package Info
+  tp.tourpackage_ID,
+  tp.tourpackage_name,
+  tp.tourpackage_desc,
+  
+  -- Pricing Info
+  pr.pricing_currency,
+  pr.pricing_foradult,
+  pr.pricing_discount,
+  
+  -- Guide Info
+  g.guide_ID,
+  CONCAT(gn.name_first, ' ', gn.name_last) AS guide_fullname,
+  gci.contactinfo_email AS guide_email,
+  gpn.phone_number AS guide_phone,
+  
+  -- Payment Info
+  pi.paymentinfo_ID,
+  pi.paymentinfo_total_amount,
+  pi.paymentinfo_date,
+  
+  -- Transaction Info
+  pt.transaction_ID,
+  pt.transaction_status,
+  pt.transaction_reference,
+  pt.transaction_created_date
+  
+  FROM Booking b
+  
+  -- Tourist Info
+  JOIN Account_Info ai ON b.tourist_ID = ai.account_ID
+  JOIN User_Login ul ON ai.user_ID = ul.user_ID
+  JOIN Person p ON ul.person_ID = p.person_ID
+  JOIN Name_Info ni ON p.name_ID = ni.name_ID
+  LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+  
+  -- Tour Package Info
+  JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+  JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
+  JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
+  JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
+  
+  -- Guide Info
+  LEFT JOIN Guide g ON tp.guide_ID = g.guide_ID
+  LEFT JOIN Account_Info gai ON g.account_ID = gai.account_ID
+  LEFT JOIN User_Login gul ON gai.user_ID = gul.user_ID
+  LEFT JOIN Person gp ON gul.person_ID = gp.person_ID
+  LEFT JOIN Name_Info gn ON gp.name_ID = gn.name_ID
+  LEFT JOIN Contact_Info gci ON gp.contactinfo_ID = gci.contactinfo_ID
+  LEFT JOIN Phone_Number gpn ON gci.phone_ID = gpn.phone_ID
+  
+  -- Payment Info
+  LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
+  LEFT JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
+  
+  WHERE b.booking_ID = :booking_ID";
+  
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([':booking_ID' => $booking_ID]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -143,16 +143,16 @@ trait BookingDetails{
     // Get companions with their category names and age
     public function getCompanionsByBookingID($booking_ID) {
         $sql = "SELECT 
-                    c.companion_ID,
-                    c.companion_name,
-                    c.companion_age,
-                    cc.companion_category_name
-                FROM Booking_Bundle bb
-                JOIN Companion c ON bb.companion_ID = c.companion_ID
-                JOIN Companion_Category cc ON c.companion_category_ID = cc.companion_category_ID
-                WHERE bb.booking_ID = :booking_ID
-                ORDER BY c.companion_name";
-                
+  c.companion_ID,
+  c.companion_name,
+  c.companion_age,
+  cc.companion_category_name
+  FROM Booking_Bundle bb
+  JOIN Companion c ON bb.companion_ID = c.companion_ID
+  JOIN Companion_Category cc ON c.companion_category_ID = cc.companion_category_ID
+  WHERE bb.booking_ID = :booking_ID
+  ORDER BY c.companion_name";
+  
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([':booking_ID' => $booking_ID]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -160,11 +160,11 @@ trait BookingDetails{
 
     public function getPaymentInfoByBookingID(int $bookingID): ?array {
         $sql = " SELECT 
-                pi.paymentinfo_ID,
-                pi.booking_ID,
-                pi.paymentinfo_total_amount AS total_amount,
-                pi.paymentinfo_date         AS payment_date,
-                pt.transaction_status    AS transaction_status
+  pi.paymentinfo_ID,
+  pi.booking_ID,
+  pi.paymentinfo_total_amount AS total_amount,
+  pi.paymentinfo_date         AS payment_date,
+  pt.transaction_status    AS transaction_status
             FROM Payment_Info pi
             JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
             WHERE booking_ID = :booking_id
@@ -212,31 +212,49 @@ trait BookingDetails{
 
     public function getBookingHistoryByGuideID(int $guide_ID): array{
         $sql = "SELECT 
-                    b.*,
-                    tp.tourpackage_name,
-                    tp.tourpackage_desc,
-                    s.schedule_days,
-                    ai.account_ID AS tourist_account_ID,
-                    CONCAT(
-                        ni.name_first, 
-                        IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
-                        ' ', ni.name_last
-                    ) AS tourist_name
-                FROM booking b
-                JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-                JOIN schedule s ON tp.schedule_ID = s.schedule_ID
-                JOIN account_info ai ON b.tourist_ID = ai.account_ID
-                JOIN user_login ul ON ai.user_ID = ul.user_ID
-                JOIN person p ON ul.person_ID = p.person_ID
-                JOIN name_info ni ON p.name_ID = ni.name_ID
-                WHERE tp.guide_ID = :guide_ID 
-                AND b.booking_status IN (
-                    'Completed','Cancelled','Refunded','Failed','Rejected by the Guide',
-                    'Booking Expired — Payment Not Completed',
-                    'Booking Expired — Guide Did Not Confirm in Time',
-                    'Cancelled - No Refund'
-                )
-                ORDER BY b.booking_created_at DESC";
+            b.booking_ID,
+            b.booking_created_at AS booking_date,
+            DATE(b.booking_start_date) AS tour_date,
+            b.booking_status, 
+            tp.tourpackage_name, 
+            -- Full tourist name
+            TRIM( CONCAT( ni.name_first, IF(ni.name_middle IS NOT NULL AND TRIM(ni.name_middle) != '', CONCAT(' ', ni.name_middle),  '' ), ' ', ni.name_last ) ) AS tourist_name, 
+            -- CORRECT TOTAL PAX using your booking_isselfIncluded flag
+            ( COUNT(c.companion_ID) +  IF(b.booking_isselfIncluded = 1 OR b.booking_isselfIncluded IS NULL, 1, 0) ) AS total_pax, 
+            -- Money
+            pi.paymentinfo_total_amount AS total_amount,
+            pt.transaction_status AS payment_status, 
+            -- Contact
+            CONCAT(COALESCE(coun.country_codenumber, ''), pn.phone_number) AS phone_number
+
+            FROM booking b
+            JOIN tour_package tp  ON b.tourpackage_ID = tp.tourpackage_ID
+            JOIN account_info ai  ON ai.account_ID = b.tourist_ID
+            JOIN user_login ul ON ul.user_ID = ai.user_ID
+            JOIN person p ON p.person_ID = ul.person_ID
+            JOIN name_info ni ON ni.name_ID = p.name_ID
+
+            LEFT JOIN contact_info ci ON ci.contactinfo_ID = p.contactinfo_ID
+            LEFT JOIN phone_number pn ON pn.phone_ID = ci.phone_ID
+            LEFT JOIN country coun    ON coun.country_ID = pn.country_ID
+            LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
+            LEFT JOIN companion c ON c.companion_ID = bb.companion_ID
+            LEFT JOIN payment_info pi ON pi.booking_ID = b.booking_ID
+            LEFT JOIN payment_transaction pt        ON pt.paymentinfo_ID = pi.paymentinfo_ID 
+            
+            WHERE tp.guide_ID = :guide_ID  AND b.booking_status IN (
+            'Completed','Cancelled','Refunded','Failed','Rejected by the Guide',
+            'Booking Expired — Payment Not Completed',
+            'Booking Expired — Guide Did Not Confirm in Time',
+            'Cancelled - No Refund' )
+            
+            GROUP BY b.booking_ID, tp.tourpackage_name, 
+                ni.name_first, ni.name_middle, ni.name_last,
+                b.booking_isselfIncluded, b.booking_created_at, b.booking_start_date, b.booking_status,
+                pi.paymentinfo_total_amount, pt.transaction_status,
+                coun.country_codenumber, pn.phone_number
+            
+            ORDER BY booking_date DESC";
 
         try {
             $db = $this->connect();
@@ -256,3 +274,72 @@ trait BookingDetails{
 }
 
 ?>
+
+<!-- SELECT 
+    b.booking_ID AS booking_id,
+    b.booking_created_at AS booking_date,
+    DATE(b.booking_start_date) AS tour_date,
+    b.booking_status,
+    
+    tp.tourpackage_name AS package_name,
+    
+    -- Full tourist name
+    TRIM(
+        CONCAT(
+            ni.name_first,
+            IF(ni.name_middle IS NOT NULL AND TRIM(ni.name_middle) != '', 
+  CONCAT(' ', ni.name_middle), 
+  ''
+            ),
+            ' ', ni.name_last
+        )
+    ) AS tourist_name,
+    
+    -- CORRECT TOTAL PAX using your booking_isselfIncluded flag
+    (
+        COUNT(c.companion_ID) + 
+        IF(b.booking_isselfIncluded = 1 OR b.booking_isselfIncluded IS NULL, 1, 0)
+    ) AS total_pax,
+
+
+    -- Money
+    pi.paymentinfo_total_amount AS total_paid,
+    pt.transaction_status AS payment_status,
+
+    -- Contact
+    CONCAT(COALESCE(coun.country_codenumber, ''), pn.phone_number) AS phone_number
+
+
+FROM booking b
+    JOIN tour_package tp  ON b.tourpackage_ID = tp.tourpackage_ID
+    JOIN account_info ai  ON ai.account_ID = b.tourist_ID
+    JOIN user_login ul    ON ul.user_ID = ai.user_ID
+    JOIN person p         ON p.person_ID = ul.person_ID
+    JOIN name_info ni     ON ni.name_ID = p.name_ID
+
+    -- Primary phone only
+    LEFT JOIN contact_info ci ON ci.contactinfo_ID = p.contactinfo_ID
+    LEFT JOIN phone_number pn ON pn.phone_ID = ci.phone_ID
+    LEFT JOIN country coun    ON coun.country_ID = pn.country_ID
+
+    -- Companions
+    LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
+    LEFT JOIN companion c ON c.companion_ID = bb.companion_ID
+
+    -- Latest successful payment
+    LEFT JOIN payment_info pi ON pi.booking_ID = b.booking_ID
+    LEFT JOIN payment_transaction pt        ON pt.paymentinfo_ID = pi.paymentinfo_ID 
+
+GROUP BY 
+    b.booking_ID,
+    tp.tourpackage_name,
+    ni.name_first, ni.name_middle, ni.name_last,
+    b.booking_isselfIncluded,
+    b.booking_created_at,
+    b.booking_start_date,
+    b.booking_status,
+    pi.paymentinfo_total_amount,
+    pt.transaction_status,
+    coun.country_codenumber,
+    pn.phone_number
+ORDER BY tour_date ASC -->
