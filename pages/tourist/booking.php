@@ -156,9 +156,21 @@ foreach ($bookings as $booking) {
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <small class="text-white-50">#<?= $no++ ?></small>
                                     <span class="badge 
-                                        <?= $booking['booking_status'] == 'Pending for Payment' ? 'bg-warning' : 
-                                           ($booking['booking_status'] == 'Pending for Approval' ? 'bg-info' : 
-                                           ($booking['booking_status'] == 'Approved' ? 'bg-success' : 'bg-secondary')) ?>">
+                                        <?= match($booking['booking_status']) {
+                                            'Pending for Payment' => 'bg-pending-for-payment',
+                                            'Pending for Approval' => 'bg-pending-for-approval',
+                                            'Approved' => 'bg-approved',
+                                            'In Progress' => 'bg-in-progress',
+                                            'Completed' => 'bg-completed',
+                                            'Cancelled' => 'bg-cancelled',
+                                            'Cancelled - No Refund' => 'bg-cancelled-no-refund',
+                                            'Refunded' => 'bg-refunded',
+                                            'Failed' => 'bg-failed',
+                                            'Rejected by the Guide' => 'bg-rejected-by-guide',
+                                            'Booking Expired — Payment Not Completed' => 'bg-booking-expired-payment-not-completed',
+                                            'Booking Expired — Guide Did Not Confirm in Time' => 'bg-booking-expired-guide-did-not-confirm-in-time',
+                                            default => 'bg-secondary'
+                                        } ?>">
                                         <?= htmlspecialchars($booking['booking_status']) ?>
                                     </span>
                                 </div>
@@ -222,14 +234,13 @@ foreach ($bookings as $booking) {
                     <?php foreach ($bookings as $booking): 
                         if (!in_array($booking['booking_status'], ['Pending for Payment', 'Pending for Approval', 'Approved', 'In Progress'])) continue;
                         
-                        $color = '#E5A13E';
-                        if ($booking['booking_status'] == 'Pending for Payment' || $booking['booking_status'] == 'Pending for Approval') {
-                            $color = '#CFE7E5';
-                        } elseif ($booking['booking_status'] == 'Approved') {
-                            $color = '#E5A13E';
-                        } elseif ($booking['booking_status'] == 'In Progress') {
-                            $color = '#213638';
-                        }
+                        $color = match($booking['booking_status']) {
+                            'Pending for Payment' => '#F9A825',
+                            'Pending for Approval' => '#EF6C00',
+                            'Approved' => '#3A8E5C',
+                            'In Progress' => '#009688',
+                            default => '#E5A13E'
+                        };
                     ?>
                     {
                         title: '<?= addslashes($booking['tourpackage_name']) ?>',
@@ -237,7 +248,7 @@ foreach ($bookings as $booking) {
                         end: '<?= date('Y-m-d', strtotime($booking['booking_end_date'] . ' +1 day')) ?>',
                         color: '<?= $color ?>',
                         url: 'booking-view.php?id=<?= $booking['booking_ID'] ?>',
-                        textColor: '<?= $color == '#CFE7E5' ? '#213638' : '#ffffff' ?>'
+                        textColor: '<?= $color == '#EF6C00' ? '#ffffff' : '#ffffff' ?>'
                     },
                     <?php endforeach; ?>
                 ],

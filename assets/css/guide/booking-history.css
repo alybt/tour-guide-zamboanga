@@ -6,6 +6,20 @@
     --secondary-accent: #CFE7E5;
     --text-dark: #2d3436;
     --text-light: #636e72;
+
+    /*Booking Status Color*/
+    --pending-for-payment: #F9A825 ;
+    --pending-for-approval: #EF6C00 ;
+    --approved: #3A8E5C;
+    --in-progress: #009688;
+    --completed: #1A6338;
+    --cancelled: #F44336;
+    --cancelled-no-refund: #BC2E2A;
+    --refunded: #42325D;    
+    --failed: #820000;
+    --rejected-by-guide: #B71C1C;
+    --booking-expired-payment-not-completed: #695985;
+    --booking-expired-guide-did-not-confirm-in-time: #695985;
 }
 
 body {
@@ -116,4 +130,64 @@ padding: 1.25rem;
 font-size: 0.85rem;
     }
 }
-    
+
+/* Booking Status Badge Colors */
+.badge.bg-pending-for-payment {
+    background-color: var(--pending-for-payment) !important;
+    color: #000 !important;
+}
+
+.badge.bg-pending-for-approval {
+    background-color: var(--pending-for-approval) !important;
+    color: #fff !important;
+}
+
+.badge.bg-approved {
+    background-color: var(--approved) !important;
+    color: #fff !important;
+}
+
+.badge.bg-in-progress {
+    background-color: var(--in-progress) !important;
+    color: #fff !important;
+}
+
+.badge.bg-completed {
+    background-color: var(--completed) !important;
+    color: #fff !important;
+}
+
+.badge.bg-cancelled {
+    background-color: var(--cancelled) !important;
+    color: #fff !important;
+}
+
+.badge.bg-cancelled-no-refund {
+    background-color: var(--cancelled-no-refund) !important;
+    color: #fff !important;
+}
+
+.badge.bg-refunded {
+    background-color: var(--refunded) !important;
+    color: #fff !important;
+}
+
+.badge.bg-failed {
+    background-color: var(--failed) !important;
+    color: #fff !important;
+}
+
+.badge.bg-rejected-by-guide {
+    background-color: var(--rejected-by-guide) !important;
+    color: #fff !important;
+}
+
+.badge.bg-booking-expired-payment-not-completed {
+    background-color: var(--booking-expired-payment-not-completed) !important;
+    color: #fff !important;
+}
+
+.badge.bg-booking-expired-guide-did-not-confirm-in-time {
+    background-color: var(--booking-expired-guide-did-not-confirm-in-time) !important;
+    color: #fff !important;
+}

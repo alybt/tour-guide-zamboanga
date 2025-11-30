@@ -210,6 +210,49 @@ trait BookingDetails{
         }
     }
 
+    public function getBookingHistoryByGuideID(int $guide_ID): array{
+        $sql = "SELECT 
+                    b.*,
+                    tp.tourpackage_name,
+                    tp.tourpackage_desc,
+                    s.schedule_days,
+                    ai.account_ID AS tourist_account_ID,
+                    CONCAT(
+                        ni.name_first, 
+                        IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
+                        ' ', ni.name_last
+                    ) AS tourist_name
+                FROM booking b
+                JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
+                JOIN schedule s ON tp.schedule_ID = s.schedule_ID
+                JOIN account_info ai ON b.tourist_ID = ai.account_ID
+                JOIN user_login ul ON ai.user_ID = ul.user_ID
+                JOIN person p ON ul.person_ID = p.person_ID
+                JOIN name_info ni ON p.name_ID = ni.name_ID
+                WHERE tp.guide_ID = :guide_ID 
+                AND b.booking_status IN (
+                    'Completed','Cancelled','Refunded','Failed','Rejected by the Guide',
+                    'Booking Expired — Payment Not Completed',
+                    'Booking Expired — Guide Did Not Confirm in Time',
+                    'Cancelled - No Refund'
+                )
+                ORDER BY b.booking_created_at DESC";
+
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':guide_ID', $guide_ID, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Error in getBookingHistoryByGuideID: "  . $e->getMessage());
+            return [];
+        }
+    }
+
+
 }
 
 ?>

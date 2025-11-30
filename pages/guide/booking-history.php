@@ -24,7 +24,7 @@ $bookingObj = new Booking();
 $guideObj = new Guide();
 
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
-$bookings = $bookingObj->getBookingByGuideID($guide_ID);
+$bookings = $bookingObj->getBookingHistoryByGuideID($guide_ID);
 ?>
 
 <!DOCTYPE html>
@@ -114,7 +114,7 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
                             <?php $no = 1; foreach ($bookings as $booking): ?>
                                 <?php 
                                 $status = $booking['booking_status'];
-                                $isPending = in_array($status, ['Pending for Payment', 'Pending for Approval', 'Approved']);
+                                $isPending = in_array($status, ['Completed','Cancelled','Refunded','Failed','Rejected by the Guide', 'Booking Expired — Payment Not Completed', 'Booking Expired — Guide Did Not Confirm in Time', 'Cancelled - No Refund']);
                                 if (!$isPending) continue;
                                 ?>
                                 <tr>
@@ -130,9 +130,18 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
                                     <td>
                                         <?php
                                         $badgeClass = match($status) {
-                                            'Pending for Payment' => 'bg-warning text-dark',
-                                            'Pending for Approval' => 'bg-info text-white',
-                                            'Approved' => 'bg-success text-white',
+                                            'Pending for Payment' => 'bg-pending-for-payment',
+                                            'Pending for Approval' => 'bg-pending-for-approval',
+                                            'Approved' => 'bg-approved',
+                                            'In Progress' => 'bg-in-progress',
+                                            'Completed' => 'bg-completed',
+                                            'Cancelled' => 'bg-cancelled',
+                                            'Cancelled - No Refund' => 'bg-cancelled-no-refund',
+                                            'Refunded' => 'bg-refunded',
+                                            'Failed' => 'bg-failed',
+                                            'Rejected by the Guide' => 'bg-rejected-by-guide',
+                                            'Booking Expired — Payment Not Completed' => 'bg-booking-expired-payment-not-completed',
+                                            'Booking Expired — Guide Did Not Confirm in Time' => 'bg-booking-expired-guide-did-not-confirm-in-time',
                                             default => 'bg-secondary'
                                         };
                                         ?>

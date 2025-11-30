@@ -35,13 +35,21 @@ $companions = $bookingObj->getCompanionsByBooking($booking_ID);
 
 // Status badge color
 $statusColor = match($booking['booking_status']) {
-    'Pending'   => 'bg-warning text-dark',
-    'Confirmed' => 'bg-success',
-    'Paid'      => 'bg-primary',
-    'Cancelled' => 'bg-danger',
-    'Completed' => 'bg-secondary',
-    default     => 'bg-info'
+    'Pending for Payment' => 'bg-pending-for-payment',
+    'Pending for Approval' => 'bg-pending-for-approval',
+    'Approved' => 'bg-approved',
+    'In Progress' => 'bg-in-progress',
+    'Completed' => 'bg-completed',
+    'Cancelled' => 'bg-cancelled',
+    'Cancelled - No Refund' => 'bg-cancelled-no-refund',
+    'Refunded' => 'bg-refunded',
+    'Failed' => 'bg-failed',
+    'Rejected by the Guide' => 'bg-rejected-by-guide',
+    'Booking Expired — Payment Not Completed' => 'bg-booking-expired-payment-not-completed',
+    'Booking Expired — Guide Did Not Confirm in Time' => 'bg-booking-expired-guide-did-not-confirm-in-time',
+    default => 'bg-secondary'
 };
+
 ?>
 
 <!DOCTYPE html>
