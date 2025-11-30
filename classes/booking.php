@@ -1,7 +1,7 @@
 <?php 
 
 require_once __DIR__ . "/../config/database.php";
-require_once "trait/booking/booking_bundle.php";
+require_once "trait/booking/booking-bundle.php";
 require_once "trait/booking/companion.php";
 require_once "trait/booking/update.php";
 require_once "trait/booking/booking.php";

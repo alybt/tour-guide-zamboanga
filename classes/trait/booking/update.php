@@ -31,7 +31,7 @@ trait UpdateBookings{
                 ];
             }
 
-            // Convert to map: [bookingId => oldStatus]
+            
             $oldMap = [];
             foreach ($oldRows as $row) {
                 $oldMap[$row['booking_ID']] = $row['booking_status'];
@@ -49,6 +49,10 @@ trait UpdateBookings{
                         THEN 'Booking Expired — Guide Did Not Confirm in Time'
 
                     WHEN booking_status IN ('Approved', 'In Progress')
+                        AND booking_end_date <= ?
+                        THEN 'Completed'
+
+                    WHEN booking_status = 'Approved'
                         AND booking_end_date <= ?
                         THEN 'Completed'
 
