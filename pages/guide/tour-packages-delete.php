@@ -84,58 +84,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Delete Tour Package - Admin</title>
-    <style>
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffc107;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        .package-details {
-            background-color: #f8f9fa;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-        }
-        .package-details p {
-            margin: 10px 0;
-        }
-        .package-details strong {
-            display: inline-block;
-            width: 150px;
-        }
-        .spots-list {
-            margin-left: 150px;
-            padding-left: 20px;
-        }
-        .btn {
-            padding: 10px 20px;
-            margin: 5px;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tour Packages Delete</title>
+
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css"> 
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="../../assets/css/guide/tour-packages-delete.css">
+    <link rel="stylesheet" href="../../assets/css/guide/dashboard.css">
+    
 </head>
 <body>
     <div class="container">
