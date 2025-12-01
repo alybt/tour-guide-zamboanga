@@ -238,7 +238,7 @@ $totalRatings = $guideObj->guideRating($guide_ID);
                                                 </a>
                                             <?php elseif ($status === 'In Progress'): ?>
                                                 
-                                                <a href="booking-mark-complete.php?id=<?= $booking['booking_ID'] ?>" 
+                                                <a href="includes/ajax/booking-mark-complete.php?id=<?= $booking['booking_ID'] ?>" 
                                                 class="btn btn-sm btn-success"
                                                 onclick="return confirm('Mark as Complete?')">
                                                     Mark as Complete

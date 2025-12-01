@@ -1,17 +1,17 @@
 <?php
 session_start();
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
-    header('Location: ../../index.php');
+    header('Location: ../../../../index.php');
     exit;
 } else if ($_SESSION['user']['account_status'] == 'Suspended'){
-    header('Location: account-suspension.php');
+    header('Location: ../../account-suspension.php');
     exit;
 } else if ($_SESSION['user']['account_status'] == 'Pending'){
-    header('Location: account-pending.php');
+    header('Location: ../../account-pending.php');
 }
-require_once "../../classes/guide.php";
-require_once "../../classes/booking.php";
-require_once "../../classes/activity-log.php";
+require_once "../../../../classes/guide.php";
+require_once "../../../../classes/booking.php";
+require_once "../../../../classes/activity-log.php";
 
 if (isset($_GET['id']) && isset($_SESSION['user'])) {
     $booking_ID = $_GET['id'];
@@ -28,7 +28,7 @@ if (isset($_GET['id']) && isset($_SESSION['user'])) {
         $_SESSION['error'] = "Failed to completing the booking.";
     }
 
-    header("Location: dashboard.php");
+    header("Location: ../../dashboard.php");
     exit;
 }
 ?>

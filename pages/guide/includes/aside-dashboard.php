@@ -29,7 +29,7 @@ function isActive($page) {
             <span class="nav-text">Payments</span>
         </a>
         <hr class="bg-white opacity-25 my-3">
-        <a class="nav-link text-warning" href="account-change.php">
+        <a class="nav-link text-warning" href="includes/ajax/account-change.php">
             <i class="bi bi-person-walking"></i>
             <span class="nav-text">Switch to Tourist</span>
         </a>
