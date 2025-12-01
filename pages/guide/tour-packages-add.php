@@ -221,40 +221,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Tour Package</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .error { color: red; font-size: 0.9em; }
-        .success { color: green; font-weight: bold; }
-        .itinerary-item {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 15px;
-            position: relative;
-            background: #f9f9f9;
-            border-radius: 5px;
-        }
-        .itinerary-item .remove-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        label { display: inline-block; width: 180px; font-weight: bold; }
-        input, select, textarea { margin-bottom: 10px; padding: 5px; width: 300px; }
-        textarea { height: 80px; }
-        button { margin-top: 10px; padding: 8px 16px; }
-        h3 { margin-top: 20px; }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tour Packages Add</title>
+
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css"> 
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="../../assets/css/guide/tour-packages-add.css">
+    <link rel="stylesheet" href="../../assets/css/guide/dashboard.css">
+    
 </head>
 <body>
 <h1>Add Tour Package</h1>
