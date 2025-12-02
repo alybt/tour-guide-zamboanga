@@ -65,12 +65,7 @@ body {
     white-space: nowrap;
 }
 
-/* Main Content */
-.main-content {
-    margin-left: 260px;
-    padding: 2rem;
-    transition: all 0.3s ease;
-}
+
 
 .header-card {
     background: var(--primary-color);
