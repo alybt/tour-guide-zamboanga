@@ -16,7 +16,7 @@ function isActive($page) {
             <i class="bi bi-calendar-check"></i>
             <span class="nav-text">Bookings</span>
         </a>
-        <a class="nav-link <?= isActive('tour-packages.php') ?>" href="tour-packages.php">
+        <a class="nav-link <?= (isActive('tour-packages.php') || isActive('tour-packages-add.php') || isActive('tour-packages-edit.php')) ? 'active' : '' ?>" href="tour-packages.php">
             <i class="bi bi-box-seam"></i>
             <span class="nav-text">Tour Packages</span>
         </a>

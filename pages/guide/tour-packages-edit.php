@@ -1,5 +1,6 @@
 <?php
 session_start();
+$current_page = basename($_SERVER['PHP_SELF']);
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
     header('Location: ../../index.php');
     exit;
