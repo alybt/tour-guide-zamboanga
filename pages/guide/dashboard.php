@@ -36,8 +36,9 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
 $activebookings = $bookingObj->getActiveBookingCount($guide_ID);
 $totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID);
 $totalEarnings = $guideObj->getTotalEarnings($guide_ID);
-$totalRatings = $guideObj->guideRating($guide_ID);
-
+$origRatings = $guideObj->guideRating($guide_ID);
+$origTotalRating = $origRatings['account_rating_score'] ?? '0';
+$totalRatings = round((float)$origTotalRating, 1);
 
 ?>
 
@@ -158,16 +159,6 @@ $totalRatings = $guideObj->guideRating($guide_ID);
                     <?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
                 </div>
             <?php endif; ?>
-
-            <!-- Quick Links -->
-            <div class="d-flex gap-2 mb-4 flex-wrap">
-                <a href="tour-packages-browse.php" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-search"></i> Browse Packages
-                </a>
-                <a href="booking-history.php" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-clock-history"></i> Booking History
-                </a>
-            </div>
 
             <!-- Bookings Table -->
             <div class="table-container">
