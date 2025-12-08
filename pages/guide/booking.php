@@ -27,6 +27,58 @@ $guideObj = new Guide();
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
 $bookings = $bookingObj->getBookingByGuideID($guide_ID);
 
+// Calculate statistics by time period
+$today = new DateTime();
+$thisWeekStart = (clone $today)->modify('Monday this week');
+$thisMonthStart = (clone $today)->modify('first day of this month');
+$thisYearStart = (clone $today)->modify('first day of January');
+
+$statsThisWeek = 0;
+$statsThisMonth = 0;
+$statsThisYear = 0;
+$earningsThisWeek = 0;
+$earningsThisMonth = 0;
+$earningsThisYear = 0;
+
+if (!empty($bookings)) {
+    foreach ($bookings as $booking) {
+        $bookingDate = new DateTime($booking['booking_start_date']);
+        $amount = floatval($booking['booking_amount'] ?? 0);
+        
+        // This Week
+        if ($bookingDate >= $thisWeekStart && $bookingDate <= $today) {
+            $statsThisWeek++;
+            $earningsThisWeek += $amount;
+        }
+        
+        // This Month
+        if ($bookingDate >= $thisMonthStart && $bookingDate <= $today) {
+            $statsThisMonth++;
+            $earningsThisMonth += $amount;
+        }
+        
+        // This Year
+        if ($bookingDate >= $thisYearStart && $bookingDate <= $today) {
+            $statsThisYear++;
+            $earningsThisYear += $amount;
+        }
+    }
+}
+
+// Prepare calendar events
+$calendarEvents = [];
+if (!empty($bookings)) {
+    foreach ($bookings as $booking) {
+        $calendarEvents[] = [
+            'title' => $booking['tourpackage_name'],
+            'start' => $booking['booking_start_date'],
+            'end' => $booking['booking_end_date'],
+            'status' => $booking['booking_status'],
+            'id' => $booking['booking_ID']
+        ];
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -41,21 +93,22 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
     <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
 
     <link rel="stylesheet" href="../../assets/css/guide/booking.css">
     <link rel="stylesheet" href="../../assets/css/guide/dashboard.css">
 
     
 </head>
-<body>
+<body class="d-flex">
 
     <?php 
         require_once "includes/aside-dashboard.php"; 
-        include_once "includes/aside-dashboard.php";
     ?>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content d-flex flex-column">
         <!-- Header -->
         <div class="header-card d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
             <div>
@@ -94,6 +147,68 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
             <a href="booking-history.php" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-clock-history"></i> Booking History
             </a>
+        </div>
+
+        <!-- Statistics by Time Period -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #E5A13E, #f39c12);">
+                                <i class="bi bi-calendar-week"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-muted">This Week</h6>
+                                <h4 class="mb-1 fw-bold text-accent"><?= $statsThisWeek ?></h4>
+                                <small class="text-muted">₱ <?= number_format($earningsThisWeek, 2) ?></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #213638, #2e8b57);">
+                                <i class="bi bi-calendar-month"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-muted">This Month</h6>
+                                <h4 class="mb-1 fw-bold" style="color: var(--secondary-color);"><?= $statsThisMonth ?></h4>
+                                <small class="text-muted">₱ <?= number_format($earningsThisMonth, 2) ?></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #CFE7E5, #a8e6cf);">
+                                <i class="bi bi-calendar-year"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-muted">This Year</h6>
+                                <h4 class="mb-1 fw-bold" style="color: #27ae60;"><?= $statsThisYear ?></h4>
+                                <small class="text-muted">₱ <?= number_format($earningsThisYear, 2) ?></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div class="card mb-4" style="border: 1px solid #e9ecef;">
+            <div class="card-header" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 1.5rem;">
+                <h5 class="mb-0 fw-bold">Booking Calendar</h5>
+            </div>
+            <div class="card-body" style="padding: 1.5rem;">
+                <div id="calendar"></div>
+            </div>
         </div>
 
         <!-- Bookings Table -->
@@ -185,6 +300,8 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
 
     <!-- Bootstrap JS -->
     <script src="../../assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 
     <!-- Live Clock (PH Time) -->
     <script>
@@ -201,6 +318,43 @@ $bookings = $bookingObj->getBookingByGuideID($guide_ID);
         }
         updateClock();
         setInterval(updateClock, 1000);
+    </script>
+
+    <!-- Calendar Initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,listMonth'
+                },
+                events: <?= json_encode($calendarEvents) ?>,
+                eventClick: function(info) {
+                    const status = info.event.extendedProps.status;
+                    const id = info.event.extendedProps.id;
+                    alert('Booking: ' + info.event.title + '\nStatus: ' + status + '\nDate: ' + info.event.start.toDateString());
+                },
+                eventDidMount: function(info) {
+                    const status = info.event.extendedProps.status;
+                    let bgColor = '#6c757d';
+                    
+                    if (status === 'Approved') bgColor = '#28a745';
+                    else if (status === 'Pending for Payment') bgColor = '#ffc107';
+                    else if (status === 'Pending for Approval') bgColor = '#17a2b8';
+                    else if (status === 'In Progress') bgColor = '#007bff';
+                    else if (status === 'Completed') bgColor = '#20c997';
+                    
+                    info.el.style.backgroundColor = bgColor;
+                    info.el.style.borderColor = bgColor;
+                },
+                height: 'auto',
+                contentHeight: 'auto'
+            });
+            calendar.render();
+        });
     </script>
 </body>
 </html>
