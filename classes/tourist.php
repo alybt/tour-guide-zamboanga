@@ -450,5 +450,16 @@ class Tourist extends Database {
         $stmt->execute([':tourist_ID' => $tourist_ID]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getGuideRating($guide_ID){
+        $sql = "SELECT * FROM Account_Info ai
+            JOIN guide g ON ai.account_ID = g.guide_ID
+            WHERE g.guide_ID = :guide_ID";
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([':guide_ID' => $guide_ID]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+        
+    }
+
 }
 

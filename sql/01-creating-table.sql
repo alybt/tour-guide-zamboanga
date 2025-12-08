@@ -149,14 +149,21 @@ CREATE TABLE Role (
 -- ===============================
 -- ACCOUNT INFO
 -- ===============================
+-- ===============================
+-- ACCOUNT INFO (with Profile Fields)
+-- ===============================
 CREATE TABLE Account_Info (
     account_ID           INT AUTO_INCREMENT PRIMARY KEY,
     user_ID              INT,
     role_ID              INT,
-    account_status       ENUM('Active','Suspended','Pending'),
+    account_status       ENUM('Active','Suspended','Pending') DEFAULT 'Pending',
     account_rating_score DECIMAL(3,2) DEFAULT 0.00,
     account_created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_ID) REFERENCES User_Login(user_ID),
+    account_profilepic   VARCHAR(500) DEFAULT NULL, 
+    account_aboutme      TEXT DEFAULT NULL, 
+    account_bio          VARCHAR(255) DEFAULT NULL,
+    account_nickname     VARCHAR(100) DEFAULT NULL,
+    FOREIGN KEY (user_ID) REFERENCES User_Login(user_ID) ON DELETE CASCADE,
     FOREIGN KEY (role_ID) REFERENCES Role(role_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

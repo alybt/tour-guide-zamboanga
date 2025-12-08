@@ -34,9 +34,11 @@ if (!$package) {
 // Get guide name
 $guides = $guideObj->viewAllGuide();
 $guideName = "N/A";
+$guideID = null;
 foreach ($guides as $guide) {
     if ($guide['guide_ID'] == $package['guide_ID']) {
         $guideName = htmlspecialchars($guide['guide_name']);
+        $guideID = $guide['guide_ID'];
         break;
     }
 }
@@ -94,7 +96,13 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
                                 <p class="mb-3"><span class="info-label">Tour Guide:</span></p>
                                 <p class="ms-1">
                                     <i class="fas fa-user-tie text-primary"></i>
-                                    <strong><?= $guideName ?></strong>
+                                    <?php if ($guideID): ?>
+                                        <a href="guide_profile.php?guide_id=<?= $guideID ?>" class="text-decoration-none fw-bold" style="color: #007bff;">
+                                            <?= $guideName ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <strong><?= $guideName ?></strong>
+                                    <?php endif; ?>
                                 </p>
                             </div>
 

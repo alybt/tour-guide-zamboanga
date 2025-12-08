@@ -96,6 +96,20 @@ trait TourPackagesTrait {
 
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function viewAllPackagesInfo(){
+        $sql = "SELECT tp.guide_ID, tp.tourpackage_desc, tp.tourpackage_ID, tp.tourpackage_name,
+            s.schedule_days, nop.numberofpeople_maximum, nop.numberofpeople_based,
+            p.pricing_currency, p.pricing_foradult
+            FROM Tour_Package tp 
+            JOIN schedule s ON s.schedule_ID = tp.schedule_ID
+            JOIN number_of_people nop ON s.numberofpeople_ID = nop.numberofpeople_ID
+            JOIN pricing p ON nop.pricing_ID = p.pricing_ID";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
     
     public function getTourPackageDetailsByID($tourpackage_ID){
         $sql = "SELECT

@@ -43,6 +43,36 @@ class Guide extends Database {
         }
     }
 
+    public function viewAllGuideInfo(){
+        $sql = "SELECT 
+                    g.guide_ID,
+                    CONCAT(
+                        n.name_first, 
+                        IF(n.name_middle IS NOT NULL, CONCAT(' ', n.name_middle), ''),
+                        ' ', 
+                        n.name_last,
+                        IF(n.name_suffix IS NOT NULL, CONCAT(' ', n.name_suffix), '')
+                    ) AS guide_name,
+                    ci.contactinfo_email AS guide_email,
+                    gl.license_number AS guide_license
+                FROM Guide g
+                JOIN guide_license gl ON g.license_ID = gl.license_ID
+                JOIN Account_Info ai ON g.account_ID = ai.account_ID
+                JOIN User_Login ul ON ai.user_ID = ul.user_ID
+                JOIN Person p ON ul.person_ID = p.person_ID
+                JOIN Contact_Info ci ON ci.contactinfo_ID = p.contactinfo_ID
+                JOIN Name_Info n ON p.name_ID = n.name_ID
+                ORDER BY n.name_last, n.name_first";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+
+        if ($query->execute()){
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            return false;
+        }
+    }
+
 
     public function viewPackageByGuideID($guide_ID){
         $sql = "SELECT * FROM Tour_Package WHERE guide_ID = :guide_ID";
@@ -352,8 +382,7 @@ class Guide extends Database {
     }
 
     // classes/guide.php
-    public function getGuideByID(int $guide_ID): ?array
-    {
+    public function getGuideByID(int $guide_ID): ?array {
         $sql = " SELECT 
                 -- Guide & Account
                 g.guide_ID,

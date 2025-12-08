@@ -13,7 +13,7 @@ class TourManager extends Database {
     use TourSpotsTrait, TourPackageSpot;
 
     // spots_ID, packagespots_activityname, packagespots_starttime, packagespots_endtime, packagespot_day
-   public function addTourPackagesAndItsSpots($tour_spots, $packagespots_activityname, $packagespots_starttime, $packagespots_endtime, $packagespot_day, $guide_ID, $name, $desc, $days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount){
+    public function addTourPackagesAndItsSpots($tour_spots, $packagespots_activityname, $packagespots_starttime, $packagespots_endtime, $packagespot_day, $guide_ID, $name, $desc, $days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount){
         $db = $this->connect();
         $db->beginTransaction();
 
@@ -162,6 +162,19 @@ class TourManager extends Database {
     }
     // Additional methods specific to TourManager can be added here
 
+    public function guideAccountInfo(){
+        
+        $sql = "SELECT a.account_profilepic, a.account_aboutme, a.account_bio, a.account_nickname, a.account_rating_score
+            FROM Account_Info a
+            INNER JOIN Guide g ON a.account_ID = g.account_ID
+            WHERE g.guide_ID = :guide_ID";
+        $db = $this->connect();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':guide_ID', $guide_ID, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
 
 
