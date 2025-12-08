@@ -57,15 +57,14 @@ $totalRatings = round((float)$origTotalRating, 1);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="../../assets/css/guide/dashboard.css">
 </head>
-<body>
+<body class="d-flex">
 
     <?php 
     require_once "includes/aside-dashboard.php"; 
-    include_once "includes/aside-dashboard.php";
     ?>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content flex-grow-1">
         <!-- Header -->
         <div class="header-card d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
             <div>
@@ -103,7 +102,6 @@ $totalRatings = round((float)$origTotalRating, 1);
                     <div class="card-body d-flex align-items-center gap-3">
                         <div class="stat-icon" style="background: linear-gradient(135deg, #213638, #2e8b57);">
                             <i class="bi bi-box-seam"></i>
-                        Brenda>
                         </div>
                         <div>
                             <h6 class="mb-0 text-muted">Tour Packages</h6>

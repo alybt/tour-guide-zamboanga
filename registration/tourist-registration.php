@@ -238,34 +238,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $activty = $activityObj->touristRegister($result);
             $_SESSION['new_username'] = $tourist['username'];
 
-            $online = isOnline();
-
-            // === FIX PATH TO MAILER ===
-            require_once __DIR__ . '/../classes/Mailer.php'; // This is safe & correct
-
-            $mailer = new Mailer('gmail');
-            $mailer->setCredentials('your@gmail.com', 'your-app-password'); // Use App Password!
-            $mailer->setFrom('your@gmail.com', 'Zamboanga Tourist Platform');
-            $mailer->addRecipient($tourist['contactinfo_email'], $tourist['name_first']);
-
-            $mailer->setContent(
-                "Welcome to Zamboanga Adventures!",
-                "<h2>Hello {$tourist['name_first']}</h2>
-                 <p>Your account has been created successfully!</p>
-                 <p><strong>Username:</strong> {$tourist['username']}</p>
-                 <p><a href='https://yourdomain.com/login.php'>Click here to log in</a></p>",
-                "Hello {$tourist['name_first']},\nYour account is ready. Username: {$tourist['username']}"
-            );
-
-            if ($online) {
-                $emailSent = $mailer->send();
-                $_SESSION['email_sent'] = $emailSent;
-                if (!$emailSent) {
-                    $_SESSION['email_error'] = $mailer->getError();
+            // Send welcome email
+            try {
+                require_once __DIR__ . '/../classes/mailer.php';
+                $mailer = new Mailer();
+                
+                $subject = "Welcome to Zamboanga Adventures!";
+                $body = "
+                    <h2>Hello {$tourist['name_first']},</h2>
+                    <p>Your tourist account has been created successfully!</p>
+                    <p><strong>Username:</strong> {$tourist['username']}</p>
+                    <p>You can now log in and start exploring Zamboanga.</p>
+                    <p><a href='https://yourdomain.com/login.php' style='background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Click here to log in</a></p>
+                    <p>Best regards,<br>Zamboanga Tourist Platform</p>
+                ";
+                
+                $emailResult = $mailer->send($tourist['contactinfo_email'], $tourist['name_first'], $subject, $body);
+                $_SESSION['email_sent'] = $emailResult['success'];
+                if (!$emailResult['success']) {
+                    $_SESSION['email_error'] = $emailResult['message'] ?? 'Failed to send email';
                 }
-            } else {
+            } catch (Exception $e) {
+                error_log("Tourist registration email error: " . $e->getMessage());
                 $_SESSION['email_sent'] = false;
-                $_SESSION['email_error'] = 'You are offline. Email will be sent when you reconnect.';
+                $_SESSION['email_error'] = 'Email notification could not be sent.';
             }
 
             header("Location: registration-success.php");

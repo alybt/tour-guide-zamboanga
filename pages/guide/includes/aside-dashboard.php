@@ -1,7 +1,17 @@
 <?php
+// Set current page if not already set
+if (!isset($current_page)) {
+    $current_page = basename($_SERVER['PHP_SELF']);
+}
+
 function isActive($page) {
     global $current_page;
     return ($current_page === $page) ? 'active' : '';
+}
+
+function isActiveMultiple($pages) {
+    global $current_page;
+    return in_array($current_page, $pages) ? 'active' : '';
 }?>
 <aside class="sidebar">
     <div class="logo px-3">
@@ -16,7 +26,7 @@ function isActive($page) {
             <i class="bi bi-calendar-check"></i>
             <span class="nav-text">Bookings</span>
         </a>
-        <a class="nav-link <?= (isActive('tour-packages.php') || isActive('tour-packages-add.php') || isActive('tour-packages-edit.php')) ? 'active' : '' ?>" href="tour-packages.php">
+        <a class="nav-link <?= isActiveMultiple(['tour-packages.php', 'tour-packages-add.php', 'tour-packages-edit.php']) ?>" href="tour-packages.php">
             <i class="bi bi-box-seam"></i>
             <span class="nav-text">Tour Packages</span>
         </a>

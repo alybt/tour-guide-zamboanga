@@ -82,7 +82,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             );
 
             if ($result) {
-                $_SESSION['assigned_license'] = $registrationObj->getAssignedLicense();
+                $license = $registrationObj->getAssignedLicense();
+                $_SESSION['assigned_license'] = $license;
+                $_SESSION['new_username'] = $guide['username'];
+
+                // Send welcome email
+                try {
+                    require_once __DIR__ . '/../classes/mailer.php';
+                    $mailer = new Mailer();
+                    
+                    $subject = "Welcome to Zamboanga Adventures - Guide Registration!";
+                    $body = "
+                        <h2>Hello {$guide['name_first']},</h2>
+                        <p>Your guide account has been created successfully!</p>
+                        <p><strong>Username:</strong> {$guide['username']}</p>
+                        <p><strong>Guide License Number:</strong> {$license}</p>
+                        <p>Your registration is pending admin approval. You will be notified once approved.</p>
+                        <p>You can log in and view your profile at:</p>
+                        <p><a href='https://yourdomain.com/login.php' style='background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Click here to log in</a></p>
+                        <p>Best regards,<br>Zamboanga Tourist Platform</p>
+                    ";
+                    
+                    $emailResult = $mailer->send($guide['contactinfo_email'], $guide['name_first'], $subject, $body);
+                    $_SESSION['email_sent'] = $emailResult['success'];
+                    if (!$emailResult['success']) {
+                        $_SESSION['email_error'] = $emailResult['message'] ?? 'Failed to send email';
+                    }
+                } catch (Exception $e) {
+                    error_log("Guide registration email error: " . $e->getMessage());
+                    $_SESSION['email_sent'] = false;
+                    $_SESSION['email_error'] = 'Email notification could not be sent.';
+                }
+
                 header("Location: ?success=1");
                 exit;
             } else {
