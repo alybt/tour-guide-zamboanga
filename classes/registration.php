@@ -131,7 +131,9 @@ class Registration extends Database {
                 $stmt = $db->prepare($sql);
 
                 foreach ($languages as $l) {
-                    $stmt->execute([$guide_ID, $l]);
+                    $stmt->bindParam(':guide_ID', $guide_ID, PDO::PARAM_INT);
+                    $stmt->bindParam(':languages', $l, PDO::PARAM_INT);
+                    $stmt->execute();
                 }
 
                 if (!$guide_ID) {

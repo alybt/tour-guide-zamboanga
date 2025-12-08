@@ -186,7 +186,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors["emergency_phonenumber"] = "Emergency Phone must be at least 10 digits.";
     }
     
-    // Remove phone_number from required fields if empty
     if (empty($tourist["phone_number"])) {
         $key = array_search("phone_number", $required);
         if ($key !== false) {
@@ -194,12 +193,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-    // Validate email
     if (!empty($tourist["contactinfo_email"]) && !filter_var($tourist["contactinfo_email"], FILTER_VALIDATE_EMAIL)) {
         $errors["contactinfo_email"] = "Invalid email format.";
     }
 
-    // Proceed if no errors
+    // Validate age - must be at least 18 years old
+    if (!empty($tourist["person_dateofbirth"])) {
+        $today = new DateTime();
+        $birthDate = new DateTime($tourist["person_dateofbirth"]);
+        $age = $today->diff($birthDate)->y;
+        
+        if ($age < 18) {
+            $errors["person_dateofbirth"] = "You must be at least 18 years old to register.";
+        }
+    }
+
     // Proceed if no errors
     if (empty($errors)) {
     try {
@@ -227,7 +235,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         );
 
         if ($result) {
-            $activty = $activityObj->touristRegister($results['account_ID']);
+            $activty = $activityObj->touristRegister($result);
             $_SESSION['new_username'] = $tourist['username'];
 
             $online = isOnline();

@@ -339,7 +339,7 @@ class Guide extends Database {
     }
 
     public function guideRating($guide_ID){
-        $sql = "SELECT * FROM guide g JOIN account_info ai ON g.account_ID = ai.account_ID";
+        $sql = "SELECT account_rating_score FROM guide g JOIN account_info ai ON g.account_ID = ai.account_ID";
         try {
             $db = $this->connect();
             $query = $db->prepare($sql);

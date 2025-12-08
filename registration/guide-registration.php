@@ -44,6 +44,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors["languages"] = "Please select at least one language.";
     }
 
+    // Validate age - must be at least 18 years old
+    if (!empty($guide["person_dateofbirth"])) {
+        $today = new DateTime();
+        $birthDate = new DateTime($guide["person_dateofbirth"]);
+        $age = $today->diff($birthDate)->y;
+        
+        if ($age < 18) {
+            $errors["person_dateofbirth"] = "You must be at least 18 years old to register.";
+        }
+    }
+
     if (empty($errors)) {
         try {
             $result = $registrationObj->addgetGuide(
