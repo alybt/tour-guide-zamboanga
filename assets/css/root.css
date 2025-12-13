@@ -1,0 +1,21 @@
+:root {
+    --primary-color: #ffffff;
+    --secondary-color: #213638;
+    --accent: #E5A13E;
+    --secondary-accent: #CFE7E5;
+    --muted-color: gainsboro;
+
+    /*Booking Status Color*/
+    --pending-for-payment: #F9A825 ;
+    --pending-for-approval: #EF6C00 ;
+    --approved: #3A8E5C;
+    --in-progress: #009688;
+    --completed: #1A6338;
+    --cancelled: #F44336;
+    --cancelled-no-refund: #BC2E2A;
+    --refunded: #42325D;    
+    --failed: #820000;
+    --rejected-by-guide: #B71C1C;
+    --booking-expired-payment-not-completed: #695985;
+    --booking-expired-guide-did-not-confirm-in-time: #695985;
+}
