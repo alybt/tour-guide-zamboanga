@@ -20,7 +20,7 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tourismo Zamboanga - Discover the World with Local Guides</title>
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="assets/css/public-pages/index.css">
 </head>
 <body>
@@ -74,8 +74,8 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
                 <div class="col-md-4 mb-4">
                     <div class="feature-card">
                         <div class="feature-icon"><i class="fas fa-user-check"></i></div>
-                        <h4>Verified Local Guides</h4>
-                        <p>All guides are locals of the Cities</p>
+                        <h4>Local Guides</h4>
+                        <p>Guides are Locals</p>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4">
@@ -158,8 +158,9 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
                 <p>Explore the world's most amazing places with local experts</p>
             </div>
             <div class="row">
-                <?php int i = 0;
+                <?php $i = 0;
                     foreach($tourspots as $spot){
+                        if ($i++ >= 6) break;
                         $image = $tourmanagerObj->getAllSpotsImages($spot['spots_ID']);
                         ?>
                         <div class="col-md-4">

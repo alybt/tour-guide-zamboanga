@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@fontsource/poppins": "^5.2.7",
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@fullcalendar/core": "^6.1.19",
-    "@fullcalendar/daygrid": "^6.1.19"
+    "@fullcalendar/daygrid": "^6.1.19",
+    "bootstrap-icons": "^1.13.1"
   }
 }
