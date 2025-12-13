@@ -1,166 +1,247 @@
 :root {
-  --primary-color: #ffffff;
-  --secondary-color: #213638;
-  --accent: #E5A13E;
-  --secondary-accent: #CFE7E5;
-  --text--black: #130404;
-
+    --primary-color: #ffffff;
+    --secondary-color: #213638;
+    --accent: #E5A13E;
+    --secondary-accent: #CFE7E5;
+    --muted-color: gainsboro;
 }
 
 body {
-  color: var(--text--black);
-  overflow-x: hidden;
-  height: 100vh;
-  background-image: linear-gradient(to right, var(--secondary-color), var(--secondary-color));
-  background-repeat: no-repeat;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #2d4a4d 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* ===== Input and Textarea Styles ===== */
-input, textarea {
-  background-color: #F3E5F5;
-  border-radius: 50px !important;
-  padding: 12px 15px !important;
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #F3E5F5 !important;
-  font-size: 16px !important;
-  color: var(--text--black) !important;
-  font-weight: 400;
-}
-
-/* ✅ GRAY PLACEHOLDER FIX */
-::placeholder {
-  color: #808080 !important; /* Medium gray */
-  opacity: 1; /* Make sure it's visible */
-}
-
-:-ms-input-placeholder { /* IE 10-11 */
-  color: #808080 !important;
-}
-
-::-ms-input-placeholder { /* Microsoft Edge (Legacy) */
-  color: #808080 !important;
-}
-
-input:focus, textarea:focus {
-  box-shadow: none !important;
-  border: 1px solid var(--secondary-color) !important;
-  outline-width: 0;
-}
-
-/* ===== Buttons ===== */
-button:focus {
-  box-shadow: none !important;
-  outline-width: 0;
-}
-
-.btn-color {
-  border-radius: 50px;
-  color: var(--secondary-color);
-  background-image: linear-gradient(to right, var(--accent), var(--accent));
-  padding: 15px;
-  cursor: pointer;
-  border: none !important;
-  margin-top: 40px;
-}
-
-.btn-color:hover {
-  color: var(--primary-color);
-  background-image: linear-gradient(to right, var(--secondary-color), var(--secondary-color));
-}
-
-.btn-white {
-  border-radius: 50px;
-  color: var(--secondary-color);
-  background-color: var(--primary-color);
-  padding: 8px 40px;
-  cursor: pointer;
-  border: 2px solid var(--secondary-color) !important;
-}
-
-.btn-white:hover {
-  color: var(--primary-color);
-  background-image: linear-gradient(to right, var(--secondary-color), var(--secondary-color));
-}
-
-/* ===== Cards and Layout ===== */
-.card {
-  border-radius: 0;
-  border: none;
-}
-
-.card1 {
-  width: 50%;
-  padding: 40px 30px 10px 30px;
-}
-
-.card2 {
-  width: 50%;
-  background-image: 
-    linear-gradient(to top, #21363896, #e5a23ece), url('../../img/tour-spots/great-santa-cruz-island/1.jpg') !important;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-
-.heading {
-  margin-bottom: 60px !important;
-}
-
-.form-control-label {
-  font-size: 12px;
-  margin-left: 15px;
-  color: #000000 !important;
-}
-
-.msg-info {
-  padding-left: 15px;
-  margin-bottom: 30px;
-}
-
-/* ===== Bottom Section ===== */
-.bottom {
-  width: 100%;
-  margin-top: 50px !important;
-}
-
-.sm-text {
-  font-size: 15px;
-}
-
-/* ===== Responsive Layout ===== */
-@media screen and (max-width: 992px) {
-  .card1 {
+.login-container {
     width: 100%;
-    padding: 40px 30px 10px 30px;
-  }
+    max-width: 450px;
+    padding: 20px;
+}
 
-  .card2 {
+.login-card {
+    background: white;
+    border-radius: 20px;
+    padding: 50px 40px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from {
+opacity: 0;
+transform: translateY(30px);
+    }
+    to {
+opacity: 1;
+transform: translateY(0);
+    }
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo i {
+    font-size: 3rem;
+    color: var(--accent);
+}
+
+.logo h2 {
+    color: var(--secondary-color);
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.logo p {
+    color: #6c757d;
+    margin: 0;
+}
+
+.form-label {
+    color: var(--secondary-color);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    padding: 12px 15px;
+    border: 2px solid var(--muted-color);
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(229, 161, 62, 0.1);
+}
+
+.input-group-text {
+    background-color: transparent;
+    border: 2px solid var(--muted-color);
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    color: var(--secondary-color);
+}
+
+.input-group .form-control {
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+}
+
+.input-group:focus-within .input-group-text {
+    border-color: var(--accent);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+    z-index: 10;
+}
+
+.btn-login {
+    background-color: var(--accent);
+    border: none;
+    color: var(--secondary-color);
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
     width: 100%;
-  }
-
-  .right {
-    margin-top: 100px !important;
-    margin-bottom: 100px !important;
-  }
+    margin-top: 20px;
+    transition: all 0.3s;
 }
 
-@media screen and (max-width: 768px) {
-  .container {
-    padding: 10px !important;
-  }
-
-  .card2 {
-    padding: 50px;
-  }
-
-  .right {
-    margin-top: 50px !important;
-    margin-bottom: 50px !important;
-  }
+.btn-login:hover {
+    background-color: #d89435;
+    transform: scale(1.02);
 }
 
-.mb-51 {
-  margin-bottom: 1rem !important;
+.divider {
+    text-align: center;
+    margin: 30px 0;
+    position: relative;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--muted-color);
+}
+
+.divider span {
+    background-color: white;
+    padding: 0 15px;
+    color: #6c757d;
+    position: relative;
+    z-index: 1;
+}
+
+.social-login {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.btn-social {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--muted-color);
+    border-radius: 10px;
+    background: white;
+    color: var(--secondary-color);
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-social:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.btn-google { color: #DB4437; }
+.btn-facebook { color: #4267B2; }
+
+.remember-forgot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.form-check-input:checked {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.form-check-label {
+    color: var(--secondary-color);
+}
+
+.forgot-password {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.forgot-password:hover {
+    color: #d89435;
+}
+
+.signup-link {
+    text-align: center;
+    margin-top: 30px;
+    color: #6c757d;
+}
+
+.signup-link a {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.signup-link a:hover {
+    color: #d89435;
+    text-decoration: underline;
+}
+
+.back-home {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back-home a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.back-home a:hover {
+    opacity: 1;
+}
+
+/* Custom Alert Style for PHP error */
+.alert-custom {
+    border-radius: 10px;
+    border: none;
+    padding: 12px 15px;
+    margin-bottom: 20px;
 }
