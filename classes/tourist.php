@@ -494,5 +494,17 @@ class Tourist extends Database {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? (int)$result['spots_explored'] : 0;
     }
+
+    public function touristAveRating($account_ID){
+        $sql = "SELECT AVG(r.rating_value) AS average_rating
+            FROM Rating r
+            WHERE r.rater_account_ID = :account_ID";
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->bindParam(':account_ID', $account_ID, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? round((float)$result['average_rating'], 2) : 0.0;
+    }
+
 }
 

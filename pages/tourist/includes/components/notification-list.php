@@ -1,7 +1,5 @@
-<!-- includes/components/notification-list.php -->
+
 <?php
-// This file expects these variables to be defined:
-// $touristNotification, $account_ID, $bookingObj
 
 if (empty($touristNotification)): ?>
     <div class="text-center text-muted py-5">

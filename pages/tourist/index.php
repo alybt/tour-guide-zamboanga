@@ -12,13 +12,17 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 }
 require_once "../../classes/tourist.php";
 require_once "../../classes/tour-manager.php";
+require_once "../../classes/booking.php";
 
+$bookingObj = new Booking();
 $tourist_ID = $_SESSION['account_ID'];
 $touristObj = new Tourist();
 $tourist = $touristObj->getTouristByAccountID($tourist_ID);
 $tourmanagerObj = new TourManager();
 $upcomingTours = $tourmanagerObj->upcomingToursCountForTourist($tourist_ID);
 $tourspotexplored = $touristObj->tourSpotsExplored($tourist_ID);
+$touristAveRating = $touristObj->touristAveRating($tourist_ID);
+$bookings = $touristObj->getBookingHistory($tourist_ID);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -129,27 +133,6 @@ $tourspotexplored = $touristObj->tourSpotsExplored($tourist_ID);
             object-fit: cover;
         }
 
-        .status-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .status-approved {
-            background-color: var(--approved);
-            color: white;
-        }
-
-        .status-pending {
-            background-color: var(--pending-for-approval);
-            color: white;
-        }
-
-        .status-in-progress {
-            background-color: var(--in-progress);
-            color: white;
-        }
 
         .guide-card {
             background: var(--primary-color);
@@ -293,63 +276,20 @@ $tourspotexplored = $touristObj->tourSpotsExplored($tourist_ID);
             <div class="col-md-3 col-sm-6">
                 <div class="stat-card">
                     <i class="fas fa-star"></i>
-                    <h3>4.9</h3>
+                    <h3><?= $touristAveRating ?></h3>
                     <p>Avg. Experience</p>
                 </div>
             </div>
         </div>
-
-        'Tourist to Guide', 'Tourist To Tour Spots', 'Tourist to Tour Packages','Guide to Tourist'
-
         <!-- Upcoming Bookings -->
         <div class="row mt-4">
             <div class="col-12">
                 <h2 class="section-title">Upcoming Bookings</h2>
             </div>
             
-            <div class="col-md-6">
-                <div class="booking-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="d-flex">
-                            <img src="https://i.pravatar.cc/150?img=33" alt="Guide" class="guide-img me-3">
-                            <div>
-                                <h5 class="mb-1">Historic Rome Walking Tour</h5>
-                                <p class="text-muted mb-1"><i class="fas fa-user"></i> Guide: Marco Rossi</p>
-                                <p class="text-muted mb-1"><i class="fas fa-calendar"></i> Dec 15, 2025 at 9:00 AM</p>
-                                <p class="text-muted mb-0"><i class="fas fa-map-marker-alt"></i> Rome, Italy</p>
-                            </div>
-                        </div>
-                        <span class="status-badge status-approved">Approved</span>
-                    </div>
-                    <div class="mt-3">
-                        <button class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-comment"></i> Message</button>
-                        <button class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-map"></i> View Details</button>
-                        <button class="btn btn-outline-primary btn-sm"><i class="fas fa-directions"></i> Directions</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="booking-card">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="d-flex">
-                            <img src="https://i.pravatar.cc/150?img=45" alt="Guide" class="guide-img me-3">
-                            <div>
-                                <h5 class="mb-1">Street Food Adventure</h5>
-                                <p class="text-muted mb-1"><i class="fas fa-user"></i> Guide: Maria Garcia</p>
-                                <p class="text-muted mb-1"><i class="fas fa-calendar"></i> Dec 18, 2025 at 6:00 PM</p>
-                                <p class="text-muted mb-0"><i class="fas fa-map-marker-alt"></i> Barcelona, Spain</p>
-                            </div>
-                        </div>
-                        <span class="status-badge status-pending">Pending</span>
-                    </div>
-                    <div class="mt-3">
-                        <button class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-comment"></i> Message</button>
-                        <button class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-times"></i> Cancel</button>
-                        <button class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i> Modify</button>
-                    </div>
-                </div>
-            </div>
+            <?php 
+                include_once 'includes/components/booking-card.php';
+            ?>
         </div>
 
         <!-- Recommended Guides -->
@@ -381,51 +321,9 @@ $tourspotexplored = $touristObj->tourSpotsExplored($tourist_ID);
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="guide-card">
-                    <img src="https://i.pravatar.cc/300?img=68" alt="Guide">
-                    <div class="guide-card-body">
-                        <h5>Kenji Tanaka</h5>
-                        <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> Tokyo, Japan</p>
-                        <div class="rating mb-2">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                            <span class="text-muted">(89)</span>
-                        </div>
-                        <p class="mb-2"><small><i class="fas fa-language"></i> English, Japanese</small></p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-bold" style="color: var(--accent);">$50/hr</span>
-                            <button class="btn btn-primary btn-sm">View Profile</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="guide-card">
-                    <img src="https://i.pravatar.cc/300?img=31" alt="Guide">
-                    <div class="guide-card-body">
-                        <h5>Ahmed Hassan</h5>
-                        <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt</p>
-                        <div class="rating mb-2">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <span class="text-muted">(156)</span>
-                        </div>
-                        <p class="mb-2"><small><i class="fas fa-language"></i> English, Arabic</small></p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-bold" style="color: var(--accent);">$35/hr</span>
-                            <button class="btn btn-primary btn-sm">View Profile</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php
+                include_once 'includes/components/booking-card.php';
+            ?>
 
             <div class="col-md-3">
                 <div class="guide-card">

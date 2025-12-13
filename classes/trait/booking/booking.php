@@ -6,25 +6,25 @@ trait BookingDetails{
         $db = $this->connect();
         
         $sql = "SELECT 
-  b.*,
-  tp.tourpackage_name,
-  tp.tourpackage_desc,
-  s.schedule_days,
-  nop.numberofpeople_maximum,
-  nop.numberofpeople_based,
-  p.pricing_currency,
-  p.pricing_foradult,
-  p.pricing_discount,
-  tp.guide_ID
+                b.*,
+                tp.tourpackage_name,
+                tp.tourpackage_desc,
+                s.schedule_days,
+                nop.numberofpeople_maximum,
+                nop.numberofpeople_based,
+                p.pricing_currency,
+                p.pricing_foradult,
+                p.pricing_discount,
+                tp.guide_ID
             FROM booking b
             INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
             INNER JOIN schedule s ON s.schedule_ID = tp.schedule_ID
             INNER JOIN number_of_people nop ON nop.numberofpeople_ID = s.numberofpeople_ID
             INNER JOIN pricing p ON p.pricing_ID = nop.pricing_ID
             WHERE 
-  b.booking_ID = :booking_ID 
-  AND b.tourist_ID = :tourist_ID
-            LIMIT 1
+            b.booking_ID = :booking_ID 
+            AND b.tourist_ID = :tourist_ID
+                        LIMIT 1
         ";
 
         try {
@@ -63,95 +63,95 @@ trait BookingDetails{
     // Method to get complete booking details with all joins
     public function getBookingWithDetails($booking_ID) {
         $sql = "SELECT 
-  -- Booking Info
-  b.booking_ID,
-  b.booking_status,
-  b.booking_created_at,
-  b.booking_start_date,
-  b.booking_end_date,
-  b.booking_isselfincluded,
-  
-  -- Tourist Info
-  ai.account_ID AS tourist_account_ID,
-  CONCAT(ni.name_first, 
-      IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
-      ' ', ni.name_last) AS tourist_fullname,
-  ci.contactinfo_email AS tourist_email,
-  
-  -- Tour Package Info
-  tp.tourpackage_ID,
-  tp.tourpackage_name,
-  tp.tourpackage_desc,
-  
-  -- Pricing Info
-  pr.pricing_currency,
-  pr.pricing_foradult,
-  pr.pricing_discount,
-  
-  -- Guide Info
-  g.guide_ID,
-  CONCAT(gn.name_first, ' ', gn.name_last) AS guide_fullname,
-  gci.contactinfo_email AS guide_email,
-  gpn.phone_number AS guide_phone,
-  
-  -- Payment Info
-  pi.paymentinfo_ID,
-  pi.paymentinfo_total_amount,
-  pi.paymentinfo_date,
-  
-  -- Transaction Info
-  pt.transaction_ID,
-  pt.transaction_status,
-  pt.transaction_reference,
-  pt.transaction_created_date
-  
-  FROM Booking b
-  
-  -- Tourist Info
-  JOIN Account_Info ai ON b.tourist_ID = ai.account_ID
-  JOIN User_Login ul ON ai.user_ID = ul.user_ID
-  JOIN Person p ON ul.person_ID = p.person_ID
-  JOIN Name_Info ni ON p.name_ID = ni.name_ID
-  LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
-  
-  -- Tour Package Info
-  JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
-  JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
-  JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-  JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
-  
-  -- Guide Info
-  LEFT JOIN Guide g ON tp.guide_ID = g.guide_ID
-  LEFT JOIN Account_Info gai ON g.account_ID = gai.account_ID
-  LEFT JOIN User_Login gul ON gai.user_ID = gul.user_ID
-  LEFT JOIN Person gp ON gul.person_ID = gp.person_ID
-  LEFT JOIN Name_Info gn ON gp.name_ID = gn.name_ID
-  LEFT JOIN Contact_Info gci ON gp.contactinfo_ID = gci.contactinfo_ID
-  LEFT JOIN Phone_Number gpn ON gci.phone_ID = gpn.phone_ID
-  
-  -- Payment Info
-  LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
-  LEFT JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
-  
-  WHERE b.booking_ID = :booking_ID";
-  
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([':booking_ID' => $booking_ID]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+        -- Booking Info
+        b.booking_ID,
+        b.booking_status,
+        b.booking_created_at,
+        b.booking_start_date,
+        b.booking_end_date,
+        b.booking_isselfincluded,
+        
+        -- Tourist Info
+        ai.account_ID AS tourist_account_ID,
+        CONCAT(ni.name_first, 
+            IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
+            ' ', ni.name_last) AS tourist_fullname,
+        ci.contactinfo_email AS tourist_email,
+        
+        -- Tour Package Info
+        tp.tourpackage_ID,
+        tp.tourpackage_name,
+        tp.tourpackage_desc,
+        
+        -- Pricing Info
+        pr.pricing_currency,
+        pr.pricing_foradult,
+        pr.pricing_discount,
+        
+        -- Guide Info
+        g.guide_ID,
+        CONCAT(gn.name_first, ' ', gn.name_last) AS guide_fullname,
+        gci.contactinfo_email AS guide_email,
+        gpn.phone_number AS guide_phone,
+        
+        -- Payment Info
+        pi.paymentinfo_ID,
+        pi.paymentinfo_total_amount,
+        pi.paymentinfo_date,
+        
+        -- Transaction Info
+        pt.transaction_ID,
+        pt.transaction_status,
+        pt.transaction_reference,
+        pt.transaction_created_date
+        
+        FROM Booking b
+        
+        -- Tourist Info
+        JOIN Account_Info ai ON b.tourist_ID = ai.account_ID
+        JOIN User_Login ul ON ai.user_ID = ul.user_ID
+        JOIN Person p ON ul.person_ID = p.person_ID
+        JOIN Name_Info ni ON p.name_ID = ni.name_ID
+        LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+        
+        -- Tour Package Info
+        JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+        JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
+        JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
+        JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
+        
+        -- Guide Info
+        LEFT JOIN Guide g ON tp.guide_ID = g.guide_ID
+        LEFT JOIN Account_Info gai ON g.account_ID = gai.account_ID
+        LEFT JOIN User_Login gul ON gai.user_ID = gul.user_ID
+        LEFT JOIN Person gp ON gul.person_ID = gp.person_ID
+        LEFT JOIN Name_Info gn ON gp.name_ID = gn.name_ID
+        LEFT JOIN Contact_Info gci ON gp.contactinfo_ID = gci.contactinfo_ID
+        LEFT JOIN Phone_Number gpn ON gci.phone_ID = gpn.phone_ID
+        
+        -- Payment Info
+        LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
+        LEFT JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
+        
+        WHERE b.booking_ID = :booking_ID";
+        
+                $stmt = $this->connect()->prepare($sql);
+                $stmt->execute([':booking_ID' => $booking_ID]);
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+            }
 
-    // Get companions with their category names and age
-    public function getCompanionsByBookingID($booking_ID) {
-        $sql = "SELECT 
-  c.companion_ID,
-  c.companion_name,
-  c.companion_age,
-  cc.companion_category_name
-  FROM Booking_Bundle bb
-  JOIN Companion c ON bb.companion_ID = c.companion_ID
-  JOIN Companion_Category cc ON c.companion_category_ID = cc.companion_category_ID
-  WHERE bb.booking_ID = :booking_ID
-  ORDER BY c.companion_name";
+            // Get companions with their category names and age
+            public function getCompanionsByBookingID($booking_ID) {
+                $sql = "SELECT 
+        c.companion_ID,
+        c.companion_name,
+        c.companion_age,
+        cc.companion_category_name
+        FROM Booking_Bundle bb
+        JOIN Companion c ON bb.companion_ID = c.companion_ID
+        JOIN Companion_Category cc ON c.companion_category_ID = cc.companion_category_ID
+        WHERE bb.booking_ID = :booking_ID
+        ORDER BY c.companion_name";
   
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([':booking_ID' => $booking_ID]);
@@ -160,33 +160,33 @@ trait BookingDetails{
 
     public function getPaymentInfoByBookingID(int $bookingID): ?array {
         $sql = " SELECT 
-  pi.paymentinfo_ID,
-  pi.booking_ID,
-  pi.paymentinfo_total_amount AS total_amount,
-  pi.paymentinfo_date         AS payment_date,
-  pt.transaction_status    AS transaction_status
-            FROM Payment_Info pi
-            JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
-            WHERE booking_ID = :booking_id
-            ORDER BY paymentinfo_date DESC
-            LIMIT 1
-        ";
+        pi.paymentinfo_ID,
+        pi.booking_ID,
+        pi.paymentinfo_total_amount AS total_amount,
+        pi.paymentinfo_date         AS payment_date,
+        pt.transaction_status    AS transaction_status
+                    FROM Payment_Info pi
+                    JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
+                    WHERE booking_ID = :booking_id
+                    ORDER BY paymentinfo_date DESC
+                    LIMIT 1
+                ";
 
-        try {
-            $db = $this->connect();
-            $stmt = $db->prepare($sql);
-            $stmt->execute([':booking_id' => $bookingID]);
+                try {
+                    $db = $this->connect();
+                    $stmt = $db->prepare($sql);
+                    $stmt->execute([':booking_id' => $bookingID]);
 
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Return null if no payment found
-            return $result ?: null;
+                    // Return null if no payment found
+                    return $result ?: null;
 
-        } catch (PDOException $e) {
-            // Log error in production, don't expose details to user
-            error_log("Error in getPaymentInfoByBookingID: " . $e->getMessage());
-            return null;
-        }
+                } catch (PDOException $e) {
+                    // Log error in production, don't expose details to user
+                    error_log("Error in getPaymentInfoByBookingID: " . $e->getMessage());
+                    return null;
+                }
     }
 
     public function getTourPackageDetailsByBookingID($booking_ID){
@@ -210,9 +210,6 @@ trait BookingDetails{
         }
     }
 
-
-
-    // FOR GUIDE DASHBOARD - Get booking history for a guide
     public function getBookingHistoryByGuideID(int $guide_ID): array{
         $sql = "SELECT 
             b.booking_ID,
@@ -386,7 +383,100 @@ trait BookingDetails{
         return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
     }
 
+    public function getGuideAccountIDByBookingID(int $booking_ID): ?int
+    {
+        $sql = "
+            SELECT g.account_ID
+            FROM Booking b
+            INNER JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            INNER JOIN Guide g ON tp.guide_ID = g.guide_ID
+            WHERE b.booking_ID = :booking_ID
+            LIMIT 1
+        ";
 
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ? (int)$result['account_ID'] : null;
+
+        } catch (PDOException $e) {
+            error_log("Error in getGuideAccountIDByBookingID: " . $e->getMessage());
+            return null;
+        }
+    }
+
+
+    public function getGuideDetailsByAccountID(int $account_ID): ?array {
+        $sql = "SELECT ai.*,
+                g.guide_ID,
+                CONCAT(ni.name_first, 
+                    IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
+                    ' ', ni.name_last) AS guide_fullname,
+                ci.contactinfo_email AS guide_email,
+                pn.phone_number AS guide_phone
+            FROM guide g
+            JOIN account_info ai ON g.account_ID = ai.account_ID
+            JOIN user_login ul ON ai.user_ID = ul.user_ID
+            JOIN person p ON ul.person_ID = p.person_ID
+            JOIN name_info ni ON p.name_ID = ni.name_ID
+            LEFT JOIN contact_info ci ON p.contactinfo_ID = ci.contactinfo_ID
+            LEFT JOIN phone_number pn ON ci.phone_ID = pn.phone_ID
+            WHERE g.account_ID = :account_ID
+            LIMIT 1";
+
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':account_ID', $account_ID, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ?: null;
+
+        } catch (PDOException $e) {
+            error_log("Error in getGuideDetailsByAccountID: " . $e->getMessage());
+            return null;
+        }
+
+    }
+
+    public function getBookingDetailsByBookingID(int $booking_ID): ?array {
+        $sql = "SELECT 
+                b.*,
+                tp.tourpackage_name,
+                tp.tourpackage_desc,
+                s.schedule_days,
+                nop.numberofpeople_maximum,
+                nop.numberofpeople_based,
+                p.pricing_currency,
+                p.pricing_foradult,
+                p.pricing_discount
+            FROM booking b
+            INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            INNER JOIN schedule s ON s.schedule_ID = tp.schedule_ID
+            INNER JOIN number_of_people nop ON s.numberofpeople_ID = nop.numberofpeople_ID
+            INNER JOIN pricing p ON nop.pricing_ID = p.pricing_ID
+            WHERE b.booking_ID = :booking_ID
+            LIMIT 1";
+
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ?: null;
+
+        } catch (PDOException $e) {
+            error_log("Error in getBookingDetailsByBookingID: " . $e->getMessage());
+            return null;
+        }
+    }
 }
-
 ?>
