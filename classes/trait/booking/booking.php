@@ -519,5 +519,38 @@ trait BookingDetails{
         }
     }
 
+    public function getMeetingPoint(int $booking_ID): ?string {
+        $sql = "SELECT 
+                b.booking_ID,
+                CASE 
+                    WHEN b.booking_meeting_ID IS NOT NULL THEN b.booking_meeting_ID
+                    ELSE NULL  -- Or handle custom meeting separately in app logic
+                END AS meeting_ID,
+                mp.meeting_name,
+                mp.meeting_description,
+                mp.meeting_address,
+                mp.meeting_googlelink
+            FROM 
+                Booking b
+            LEFT JOIN 
+                Meeting_Point mp ON b.booking_meeting_ID = mp.meeting_ID
+            WHERE 
+                b.booking_ID = :booking_ID";
+
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ? $result['meeting_name'] : null;
+
+        } catch (PDOException $e) {
+            error_log("Error in getMeetingPoint: " . $e->getMessage());
+            return null;
+        }
+    }
+
 }
 ?>

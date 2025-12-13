@@ -89,6 +89,7 @@
     $bookingDetails = $bookingObj->getBookingDetailsByBookingID($booking['booking_ID']);
     $tourpackages = $bookingObj->getTourPackageDetailsByBookingID($booking['booking_ID']);
     $bookingdateattime = $bookingObj->startingDateAndTime($booking['booking_ID']);
+    $meetingpoint = $bookingObj->getMeetingPoint($booking['booking_ID']);
     $active_statuses = [ 'Pending for Payment','Pending for Approval','Approved','In Progress','Completed'];
     if (in_array($booking['booking_status'], $active_statuses)) {
 ?>
@@ -98,10 +99,10 @@
             <div class="d-flex">
                 <img src="<?= $guide['account_profilepic'] ?? ''; ?>"  alt = "Guide" class="guide-img me-3">
                 <div>
-                    <h5 class="mb-1"><?= $tourpackages['tourpackage_name'] ?? '';?></h5>
-                    <p class="text-muted mb-1"><i class="fas fa-user"></i><?= $guide['guide_fullname'] ?? '';?></p>
+                    <h5 class="mb-1"> <?= $tourpackages['tourpackage_name'] ?? '';?></h5>
+                    <p class="text-muted mb-1"><i class="fas fa-user"></i> <?= $guide['guide_fullname'] ?? '';?></p>
                     <p class="text-muted mb-1"><i class="fas fa-calendar"></i> <?= $bookingdateattime ?></p>
-                    <p class="text-muted mb-0"><i class="fas fa-map-marker-alt"></i> Rome, Italy</p>
+                    <p class="text-muted mb-0"><i class="fas fa-map-marker-alt"></i><strong> Meeting Point:</strong> <?= $meetingpoint ?></p>
                 </div>
             </div>
             <?php
