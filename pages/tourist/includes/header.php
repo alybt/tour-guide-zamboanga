@@ -28,6 +28,7 @@ if ($account_ID && is_numeric($account_ID)) {
 $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <head>
+    <link rel="stylesheet" href="../../assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
 </head>
 <style>
     /* Theme Variables from the provided HTML/CSS */

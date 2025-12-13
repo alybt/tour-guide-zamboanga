@@ -90,7 +90,7 @@
     $tourpackages = $bookingObj->getTourPackageDetailsByBookingID($booking['booking_ID']);
     $bookingdateattime = $bookingObj->startingDateAndTime($booking['booking_ID']);
     $meetingpoint = $bookingObj->getMeetingPoint($booking['booking_ID']);
-    $active_statuses = [ 'Pending for Payment','Pending for Approval','Approved','In Progress','Completed'];
+    $active_statuses = [ 'Pending for Payment','Pending for Approval','Approved','In Progress'];
     if (in_array($booking['booking_status'], $active_statuses)) {
 ?>
 <div class="col-md-6">
