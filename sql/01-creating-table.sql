@@ -383,12 +383,25 @@ CREATE TABLE Booking (
     tourpackage_ID     INT,
     booking_start_date DATE NOT NULL,
     booking_end_date   DATE NOT NULL,
+    booking_meeting_ID INT DEFAULT NULL,
+    booking_custom_meeting VARCHAR(255) DEFAULT NULL,
     itinerary_sent     TINYINT(1) DEFAULT 0,
     itinerary_sent_at  DATETIME,
     FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID),
-    FOREIGN KEY (tourist_ID) REFERENCES Account_Info(account_ID)
+    FOREIGN KEY (tourist_ID) REFERENCES Account_Info(account_ID),
+    FOREIGN KEY (booking_meeting_ID) REFERENCES Meeting_Point(meeting_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE Meeting_Point (
+    meeting_ID          INT AUTO_INCREMENT PRIMARY KEY,
+    guide_ID            INT NOT NULL,
+    meeting_name        VARCHAR(100) NOT NULL,
+    meeting_description VARCHAR(255),
+    meeting_address     VARCHAR(500),
+    meeting_googlelink  VARCHAR(500),
+    FOREIGN KEY (guide_ID) REFERENCES Guide(guide_ID) ON DELETE CASCADE,
+    UNIQUE KEY unique_meeting_per_guide (meeting_name, guide_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 -- ===============================
 -- BOOKING BUNDLE
 -- ===============================
