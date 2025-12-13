@@ -461,5 +461,38 @@ class Tourist extends Database {
         
     }
 
+    public function getTouristByAccountID($account_ID) {
+        $sql = "SELECT 
+                    ai.account_ID,
+                    ul.user_ID,
+                    p.person_ID,
+                    ni.name_first,
+                    ni.name_last,
+                    ci.contactinfo_email
+                FROM Account_Info ai
+                JOIN User_Login ul ON ai.user_ID = ul.user_ID
+                JOIN Person p ON ul.person_ID = p.person_ID
+                LEFT JOIN Name_Info ni ON p.name_ID = ni.name_ID
+                LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+                WHERE ai.account_ID = :account_ID";
+        
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([':account_ID' => $account_ID]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function tourSpotsExplored($account_ID){
+        $sql = "SELECT COUNT(DISTINCT ts.spots_ID) AS spots_explored
+            FROM Booking b
+            JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            JOIN Tour_Package_Spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
+            JOIN Tour_Spots ts ON tps.spots_ID = ts.spots_ID
+            WHERE b.tourist_ID = :account_ID AND b.booking_status = 'Completed'";
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->bindParam(':account_ID', $account_ID, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? (int)$result['spots_explored'] : 0;
+    }
 }
 

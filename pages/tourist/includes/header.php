@@ -1,5 +1,6 @@
 <?php
 // includes/header.php
+// --- PHP Backend Logic (KEPT INTACT) ---
 if (session_status() === PHP_SESSION_NONE) session_start();
 $account_ID = $_SESSION['account_ID'] ?? null;
 
@@ -8,6 +9,7 @@ $unread_count = 0;
 $badge_display = 'd-none';
 
 if ($account_ID && is_numeric($account_ID)) {
+    // NOTE: Paths kept as per previous file.
     require_once "../../classes/booking.php";
     require_once "../../classes/activity-log.php";
 
@@ -25,77 +27,188 @@ if ($account_ID && is_numeric($account_ID)) {
         error_log("Header notification error: " . $e->getMessage());
     }
 }
+
+// Helper variable for active state checking
+$currentPage = basename($_SERVER['PHP_SELF']);
+// --- END PHP Backend Logic ---
 ?>
 
+<style>
+    /* Theme Variables from the provided HTML/CSS */
+    :root {
+        --primary-color: #ffffff;
+        --secondary-color: #213638; /* Dark Teal/Green for Navbar Background */
+        --accent: #E5A13E; /* Orange/Gold Accent Color */
+        --secondary-accent: #CFE7E5;
+        --cancelled: #F44336; /* Used for Notification Badge Background */
+        /* ... (other variables like pending, approved etc., not strictly needed for header but good practice) */
+    }
+
+    /* Styles for Navbar */
+    .navbar {
+        background-color: var(--secondary-color) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .navbar-brand {
+        color: var(--primary-color) !important;
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+
+    /* Brand Icon Color */
+    .navbar-brand i {
+        color: var(--accent);
+    }
+
+    /* Nav Link Styling */
+    .nav-link {
+        color: var(--secondary-accent) !important;
+        margin: 0 10px;
+        transition: color 0.3s;
+    }
+
+    .nav-link:hover, .nav-item .active.nav-link {
+        color: var(--accent) !important;
+    }
+    
+    /* Notification Badge Styling */
+    .notification-badge-custom {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: var(--cancelled); /* Using the cancelled color for danger/unread */
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+    
+    /* Logout/Login Button Styling (using the primary/accent color scheme) */
+    .btn-custom-accent-outline {
+        color: var(--accent);
+        border-color: var(--accent);
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-custom-accent-outline:hover {
+        background-color: var(--accent);
+        border-color: var(--accent);
+        color: var(--secondary-color) !important;
+    }
+
+    /* Notification Dropdown Custom Scrollbar (kept from original) */
+    #notification-dropdown .dropdown-header { position: sticky; top: 0; z-index: 10; }
+    #notification-list-container { scrollbar-width: thin; scrollbar-color: var(--accent) var(--primary-color); }
+    #notification-list-container::-webkit-scrollbar { width: 6px; }
+    #notification-list-container::-webkit-scrollbar-track { background: var(--primary-color); border-radius: 10px; }
+    #notification-list-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+    #notification-list-container::-webkit-scrollbar-thumb:hover { background: #d89435; } /* slightly darker accent */
+
+    /* Ensure dropdown menu text is visible on dark navbar */
+    .dropdown-menu {
+        background-color: var(--primary-color);
+    }
+    .dropdown-item {
+        color: var(--secondary-color);
+    }
+    .dropdown-item:hover {
+        background-color: var(--secondary-accent);
+        color: var(--secondary-color);
+    }
+</style>
+
 <header class="header">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
+    <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.php">Tourismo Zamboanga</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <a class="navbar-brand" href="index.php">
+                <i class="fas fa-map-marked-alt"></i> Tourismo Zamboanga
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-                    <li class="nav-item"><a class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : '' ?>" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'booking.php' ? 'active' : '' ?>" href="booking.php">My Booking</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $currentPage === 'index.php' ? 'active' : '' ?>" href="index.php">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <?= ($currentPage === 'find-guide.php' || $currentPage === 'find-tour-packages.php') ? 'active' : '' ?>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search me-1"></i> Travel
+                        </a>
+                        <ul class="dropdown-menu shadow-sm">
+                            <li><a class="dropdown-item" href="find-guide.php">Find Guide</a></li>
+                            <li><a class="dropdown-item" href="find-tour-packages.php">Find Tour Packages</a></li>
+                        </ul>
+                    </li>
 
-                    <!-- Notification Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link <?= $currentPage === 'booking.php' ? 'active' : '' ?>" href="booking.php">
+                            <i class="fas fa-calendar-alt me-1"></i> My Booking
+                        </a>
+                    </li>
+
                     <li class="nav-item dropdown position-relative">
                         <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" 
-                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-bell-fill"></i>
-                            <span class="d-lg-none">Notifications</span>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger <?= $badge_display ?>"
-                                  style="font-size: 0.65rem; z-index: 10;">
+                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                            id="notification-toggle">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge-custom <?= $badge_display ?>">
                                 <?= $unread_count ?>
                                 <span class="visually-hidden">unread</span>
                             </span>
                         </a>
 
                         <ul id="notification-dropdown" class="dropdown-menu dropdown-menu-end mt-2 shadow-lg border-0" style="width: 380px; max-width: 95vw;">
-                            <li class="dropdown-header bg-primary text-white py-3 rounded-top">
+                            <li class="dropdown-header bg-primary text-white py-3 rounded-top" style="background-color: var(--secondary-color) !important;">
                                 <div class="d-flex justify-content-between align-items-center px-3">
                                     <strong>Notifications</strong>
-                                    <span class="badge bg-light text-primary"><?= count($touristNotification) ?></span>
+                                    <span class="badge bg-light text-primary" style="color: var(--secondary-color) !important; background-color: var(--secondary-accent) !important;"><?= count($touristNotification) ?></span>
                                 </div>
                             </li>
 
-                            <!-- Scrollable Area -->
                             <div id="notification-list-container" class="px-2" style="max-height: 70vh; overflow-y: auto; overflow-x: hidden;">
                                 <?php require_once "components/notification-list.php";  ?>
                             </div>
 
                             <li><hr class="dropdown-divider my-0"></li>
-                            <li><a class="dropdown-item text-center py-3 text-primary fw-bold" href="notifications.php">View All Notifications</a></li>
+                            <li><a class="dropdown-item text-center py-3 fw-bold" href="notifications.php" style="color: var(--secondary-color) !important;">View All Notifications</a></li>
                         </ul>
                     </li>
+                    
+                    <?php if ($account_ID): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $currentPage === 'profile.php' ? 'active' : '' ?>" href="profile.php">
+                                <i class="fas fa-user-circle me-1"></i> Profile
+                            </a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
 
                 <?php if ($account_ID): ?>
-                    <a href="logout.php" class="btn btn-outline-info ms-lg-3">Log out</a>
+                    <a href="logout.php" class="btn btn-custom-accent-outline ms-lg-3">Log out</a>
                 <?php else: ?>
-                    <a href="login.php" class="btn btn-outline-light ms-lg-3">Login</a>
+                    <a href="login.php" class="btn btn-custom-accent-outline ms-lg-3">Login</a>
                 <?php endif; ?>
             </div>
         </div>
     </nav>
 </header>
 
-<style>
-    #notification-dropdown .dropdown-header { position: sticky; top: 0; z-index: 10; }
-    #notification-list-container { scrollbar-width: thin; scrollbar-color: #0d6efd #f1f1f1; }
-    #notification-list-container::-webkit-scrollbar { width: 6px; }
-    #notification-list-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-    #notification-list-container::-webkit-scrollbar-thumb { background: #0d6efd; border-radius: 10px; }
-    #notification-list-container::-webkit-scrollbar-thumb:hover { background: #0b5ed7; }
-</style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const toggle = document.querySelector('.dropdown-toggle[aria-expanded]');
+    const toggle = document.getElementById('notification-toggle');
     const container = document.getElementById('notification-list-container');
-    console.log('Notification script loaded. Toggle:', toggle, 'Container:', container);
     
     if (!toggle || !container) {
         console.error('ERROR: toggle or container not found');
@@ -105,60 +218,38 @@ document.addEventListener('DOMContentLoaded', function () {
     let marked = false;
 
     toggle.addEventListener('click', function () {
-        console.log('Dropdown toggle clicked');
-        
-        // Always refresh list
-        console.log('Fetching notifications from includes/ajax/get-notifications.php');
+        // 1. Always refresh list
         fetch('includes/ajax/get-notifications.php', {
             credentials: 'same-origin',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(r => {
-            console.log('Refresh response status:', r.status);
-            return r.text();
-        })
-        .then(html => {
-            console.log('Refresh HTML received, updating container');
-            container.innerHTML = html;
-        })
+        .then(r => r.text())
+        .then(html => container.innerHTML = html)
         .catch(err => console.error('Refresh error:', err));
 
-        // Mark all as read only once
+        // 2. Mark all as read only once
         if (!marked && <?= $unread_count ?> > 0) {
-            console.log('Marking all notifications as read. Unread count:', <?= $unread_count ?>);
-            
             fetch('includes/ajax/mark-notifications-read.php', {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(r => {
-                console.log('Mark-all response status:', r.status);
-                return r.json();
-            })
+            .then(r => r.json())
             .then(data => {
-                console.log('Mark-all response data:', data);
                 if (data.success) {
-                    // Hide the badge
-                    document.querySelectorAll('.badge.rounded-pill.bg-danger').forEach(b => {
-                        if (b.textContent.trim() !== 'New') {
-                            console.log('Hiding badge, setting to 0');
-                            b.textContent = '0';
-                            b.classList.add('d-none');
-                        }
+                    // Hide the custom badge (using the new custom class)
+                    document.querySelectorAll('.notification-badge-custom').forEach(b => {
+                        b.textContent = '0';
+                        b.classList.add('d-none');
                     });
                     
                     // Refresh the notification list to show updated status
-                    console.log('Refreshing notification list after mark-all');
                     fetch('includes/ajax/get-notifications.php', {
                         credentials: 'same-origin',
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
                     })
                     .then(r => r.text())
-                    .then(html => {
-                        console.log('Notification list refreshed');
-                        container.innerHTML = html;
-                    })
+                    .then(html => container.innerHTML = html)
                     .catch(err => console.error('Refresh after mark-all error:', err));
                 } else {
                     console.error('Mark-all failed:', data);
@@ -170,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Handle individual notification clicks
+    // Handle individual notification clicks (KEPT INTACT)
     document.addEventListener('click', function(e) {
         const notifEl = e.target.closest('.mark-as-read');
         if (!notifEl) return;
@@ -180,12 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const activityId = notifEl.getAttribute('data-activity-id');
         const accountId = notifEl.getAttribute('data-account-id');
         
-        console.log('Notification clicked - Activity ID:', activityId, 'Account ID:', accountId);
-
-        if (!activityId || !accountId) {
-            console.error('ERROR: Missing activity_id or account_id');
-            return;
-        }
+        if (!activityId || !accountId) return;
 
         // Remove unread styling
         notifEl.classList.remove('bg-primary', 'bg-opacity-10', 'fw-semibold', 'border-start', 'border-primary', 'border-4');
@@ -195,8 +281,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const newBadge = notifEl.querySelector('.badge.bg-danger');
         if (newBadge) newBadge.remove();
 
-        console.log('Sending AJAX to mark-single-notification-read.php');
-        
         fetch('includes/ajax/mark-single-notification-read.php', {
             method: 'POST',
             credentials: 'same-origin',
@@ -209,20 +293,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 account_id: accountId
             })
         })
-        .then(r => {
-            console.log('Mark-single response status:', r.status);
-            return r.json();
-        })
+        .then(r => r.json())
         .then(data => {
-            console.log('Mark-single response data:', data);
-            if (data.success) {
-                console.log('Notification marked as read successfully');
-            } else {
-                console.error('Failed to mark notification as read:', data);
-            }
+            if (!data.success) console.error('Failed to mark notification as read:', data);
         })
         .catch(err => console.error('Mark-single AJAX error:', err));
     });
 });
-
 </script>

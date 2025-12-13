@@ -176,6 +176,34 @@ class TourManager extends Database {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function upcomingToursCount($guide_ID){
+        $sql = "SELECT COUNT(*) as upcoming_count
+            FROM Bookings b
+            INNER JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            WHERE tp.guide_ID = :guide_ID AND b.booking_status = 'Confirmed' AND b.tour_date >= CURDATE()";
+        $db = $this->connect();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':guide_ID', $guide_ID, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? (int)$result['upcoming_count'] : 0;
+    }
+
+    public function upcomingToursCountForTourist($tourist_ID){
+        $sql = "SELECT COUNT(*) as upcoming_count
+            FROM Booking b
+            INNER JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            WHERE b.tourist_ID = :tourist_ID AND b.booking_status = 'Confirmed' AND b.booking_start_date >= CURDATE()";
+        $db = $this->connect();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':tourist_ID', $tourist_ID, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? (int)$result['upcoming_count'] : 0;
+    }
+
 
 
 

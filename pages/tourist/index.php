@@ -13,312 +13,478 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 require_once "../../classes/tourist.php";
 require_once "../../classes/tour-manager.php";
 
-$TourManagerObj = new TourManager();
-$packages = $TourManagerObj->viewAllPackages();
-$packageCategory = $TourManagerObj->getTourSpotsCategory();
-
-/* -------------------------------------------------
-   AJAX: Return only filtered cards
-   ------------------------------------------------- */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ajax'])) {
-    // Properly handle categories[] from checkboxes
-    $rawCategories = isset($_POST['categories']) ? $_POST['categories'] : [];
-
-    // Ensure it's always an array
-    if (!is_array($rawCategories)) {
-        $rawCategories = $rawCategories === '' ? [] : [$rawCategories];
-    }
-
-    // Clean categories - trim whitespace but keep original case
-    $categories = array_filter(array_map('trim', $rawCategories));
-    $categories = array_values($categories); // reindex
-
-    // Debug logging
-    error_log("Categories received: " . print_r($categories, true));
-
-    $filters = [
-        'categories' => $categories,
-        'price_min'  => isset($_POST['price_min']) && $_POST['price_min'] !== '' ? $_POST['price_min'] : null,
-        'price_max'  => isset($_POST['price_max']) && $_POST['price_max'] !== '' ? $_POST['price_max'] : null,
-        'minPax'     => isset($_POST['minPax']) && $_POST['minPax'] !== '' ? $_POST['minPax'] : null,
-        'maxPax'     => isset($_POST['maxPax']) && $_POST['maxPax'] !== '' ? $_POST['maxPax'] : null,
-    ];
-
-    $packages = $TourManagerObj->filterPackages($filters);
-
-    if (empty($packages)) {
-        echo '<div class="w-100 text-center py-5 text-muted">
-                <i class="bi bi-emoji-frown fs-1"></i>
-                <p class="mt-3">No packages match the selected filters.</p>
-              </div>';
-        exit;
-    }
-
-    foreach ($packages as $package) {
-        $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
-        $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
-        $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
-        
-        // Handle rating errors gracefully
-        try {
-            $rating = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
-            $avg    = $rating['avg'] ?? 0;
-            $count  = $rating['count'] ?? 0;
-        } catch (Exception $e) {
-            $avg   = 0;
-            $count = 0;
-        }
-        
-        include 'card-template.php';
-    }
-    exit;
-}
-
-function buildStarList(float $avg, int $count): string
-{
-    $full  = (int)floor($avg);
-    $half  = ($avg - $full) >= 0.5 ? 1 : 0;
-    $empty = 5 - $full - $half;
-
-    $html = str_repeat('<li class="list-inline-item me-0"><i class="fas fa-star text-warning fa-xs"></i></li>', $full);
-    $html .= $half ? '<li class="list-inline-item me-0"><i class="fas fa-star-half-alt text-warning fa-xs"></i></li>' : '';
-    $html .= str_repeat('<li class="list-inline-item me-0"><i class="far fa-star text-warning fa-xs"></i></li>', $empty);
-    $html .= '<li class="list-inline-item"><small class="text-muted">'.number_format($avg,1).' ('.$count.')</small></li>';
-
-    return $html;
-}
-
+$tourist_ID = $_SESSION['account_ID'];
+$touristObj = new Tourist();
+$tourist = $touristObj->getTouristByAccountID($tourist_ID);
+$tourmanagerObj = new TourManager();
+$upcomingTours = $tourmanagerObj->upcomingToursCountForTourist($tourist_ID);
+$tourspotexplored = $touristObj->tourSpotsExplored($tourist_ID);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tourismo Zamboanga</title>
+    <title>Tourist Dashboard - Tourismo Zamboanga</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ffffff;
+            --secondary-color: #213638;
+            --accent: #E5A13E;
+            --secondary-accent: #CFE7E5;
+            --muted-color: gainsboro;
+            --pending-for-payment: #F9A825;
+            --pending-for-approval: #EF6C00;
+            --approved: #3A8E5C;
+            --in-progress: #009688;
+            --completed: #1A6338;
+            --cancelled: #F44336;
+        }
 
-    
-    
-    <!-- <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-    
-    <link rel="stylesheet" href="../../assets/css/header.css"> -->
-    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" >
-    <link rel="stylesheet" href="../../assets/css/tourist/index.css">
-    <link rel="stylesheet" href="../../assets/css/tourist/header.css">
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin-top: 5rem;
+        }
+
+        .navbar {
+            background-color: var(--secondary-color) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .navbar-brand i {
+            color: var(--accent);
+        }
+
+        .nav-link {
+            color: var(--secondary-accent) !important;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--accent) !important;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #2d4a4d 100%);
+            color: var(--primary-color);
+            padding: 40px 0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .stat-card h3 {
+            color: var(--secondary-color);
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .stat-card p {
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .booking-card {
+            background: var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--accent);
+        }
+
+        .booking-card .guide-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-approved {
+            background-color: var(--approved);
+            color: white;
+        }
+
+        .status-pending {
+            background-color: var(--pending-for-approval);
+            color: white;
+        }
+
+        .status-in-progress {
+            background-color: var(--in-progress);
+            color: white;
+        }
+
+        .guide-card {
+            background: var(--primary-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .guide-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .guide-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .guide-card-body {
+            padding: 15px;
+        }
+
+        .rating {
+            color: var(--accent);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #d89435;
+            border-color: #d89435;
+        }
+
+        .btn-outline-primary {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: var(--secondary-color);
+        }
+
+        .section-title {
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--accent);
+            display: inline-block;
+        }
+
+        .search-bar {
+            background: var(--primary-color);
+            border-radius: 50px;
+            padding: 10px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--cancelled);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body>
-    <?php require_once "includes/header.php";  ?>
- 
+    <?php include_once 'includes/header.php'; 
+    ?>
 
-<!-- Mobile Filter Toggle -->
-<button class="filter-toggle btn btn-warning d-md-none position-fixed bottom-0 start-0 m-3 shadow-lg rounded-circle p-0 d-flex align-items-center justify-content-center"
-        id="filterToggle" style="width: 3rem; height: 3rem; z-index: 1050;">
-    <i class="bi bi-funnel-fill fs-4"></i>
-</button>
-<div class="filter-overlay d-md-none"></div>
-
-<aside id="filterSidebar" class="aside-tourist p-3 bg-light border rounded shadow-sm">
-    <form id="filterForm" onsubmit="return false;">
-        <h4 class="text-dark mb-3 border-bottom pb-2"><i class="bi bi-funnel-fill"></i> Filters</h4>
-
-        <!-- Categories -->
-        <div class="mb-4">
-            <h6 class="fw-bold mb-2">Categories</h6>
-            <?php foreach ($packageCategory as $p):
-                if (empty($p['spots_category'])) continue;
-                $category = htmlspecialchars($p['spots_category']);
-                $id = 'cat_' . preg_replace('/[^a-z0-9]+/', '_', strtolower($category));
-            ?>
-                <div class="form-check">
-                    <input class="form-check-input category-checkbox" type="checkbox" id="<?= $id ?>" name="categories[]" value="<?= $category ?>">
-                    <label class="form-check-label" for="<?= $id ?>"><?= $category ?></label>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Price: Dual Slider -->
-        <div class="mb-4">
-            <h6 class="fw-bold mb-2">Price (per adult)</h6>
-            <div class="row g-2 mb-2">
-                <div class="col">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">₱</span>
-                        <input type="number" name="price_min" id="priceMinValue" class="form-control" min="500" max="10000" step="500" value="500">
+    <div class="container mt-4">
+        <div class="hero-section">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1>Welcome back, <?= $tourist['name_first'] ?> 👋</h1>
+                    <p class="lead">Ready for your next adventure? Let's find the perfect guide for you.</p>
+                    <div class="search-bar mt-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search destinations, guides, or experiences...">
+                            <button class="btn btn-primary" type="button">Search</button>
+                        </div>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">₱</span>
-                        <input type="number" name="price_max" id="priceMaxValue" class="form-control" min="500" max="10000" step="500" value="10000">
+                <div class="col-md-4 text-center d-none d-md-block">
+                    <i class="fas fa-globe-americas" style="font-size: 8rem; color: var(--secondary-accent); opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-calendar-check"></i>
+                    <h3><?= $upcomingTours ?></h3>
+                    <p>Upcoming Tours</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3><?= $tourspotexplored ?></h3>
+                    <p>Cities Explored</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-award"></i>
+                    <h3>8</h3>
+                    <p>Badges Earned</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-star"></i>
+                    <h3>4.9</h3>
+                    <p>Avg. Experience</p>
+                </div>
+            </div>
+        </div>
+
+        'Tourist to Guide', 'Tourist To Tour Spots', 'Tourist to Tour Packages','Guide to Tourist'
+
+        <!-- Upcoming Bookings -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h2 class="section-title">Upcoming Bookings</h2>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="booking-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex">
+                            <img src="https://i.pravatar.cc/150?img=33" alt="Guide" class="guide-img me-3">
+                            <div>
+                                <h5 class="mb-1">Historic Rome Walking Tour</h5>
+                                <p class="text-muted mb-1"><i class="fas fa-user"></i> Guide: Marco Rossi</p>
+                                <p class="text-muted mb-1"><i class="fas fa-calendar"></i> Dec 15, 2025 at 9:00 AM</p>
+                                <p class="text-muted mb-0"><i class="fas fa-map-marker-alt"></i> Rome, Italy</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-approved">Approved</span>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-comment"></i> Message</button>
+                        <button class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-map"></i> View Details</button>
+                        <button class="btn btn-outline-primary btn-sm"><i class="fas fa-directions"></i> Directions</button>
                     </div>
                 </div>
             </div>
 
-            <div class="range-slider">
-                <input type="range" class="range-thumb range-thumb--lower" id="priceMinRange" min="500" max="10000" step="500" value="500">
-                <input type="range" class="range-thumb range-thumb--higher" id="priceMaxRange" min="500" max="10000" step="500" value="10000">
-                <div class="range-slider__track"></div>
-                <div class="range-slider__fill"></div>
-            </div>
-
-            <div class="d-flex justify-content-between mt-1 small text-muted">
-                <span id="priceMinLabel">₱500</span>
-                <span id="priceMaxLabel">₱10,000</span>
-            </div>
-        </div>
-
-        <!-- PAX -->
-        <div class="mb-4">
-            <h6 class="fw-bold mb-2">PAX</h6>
-            <div class="row g-2">
-                <div class="col">
-                    <label class="form-label small text-muted">Min</label>
-                    <input type="number" class="form-control" id="minPax" name="minPax" min="1" placeholder="1">
-                </div>
-                <div class="col">
-                    <label class="form-label small text-muted">Max</label>
-                    <input type="number" class="form-control" id="maxPax" name="maxPax" min="1" placeholder="50">
+            <div class="col-md-6">
+                <div class="booking-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex">
+                            <img src="https://i.pravatar.cc/150?img=45" alt="Guide" class="guide-img me-3">
+                            <div>
+                                <h5 class="mb-1">Street Food Adventure</h5>
+                                <p class="text-muted mb-1"><i class="fas fa-user"></i> Guide: Maria Garcia</p>
+                                <p class="text-muted mb-1"><i class="fas fa-calendar"></i> Dec 18, 2025 at 6:00 PM</p>
+                                <p class="text-muted mb-0"><i class="fas fa-map-marker-alt"></i> Barcelona, Spain</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-pending">Pending</span>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-comment"></i> Message</button>
+                        <button class="btn btn-outline-primary btn-sm me-2"><i class="fas fa-times"></i> Cancel</button>
+                        <button class="btn btn-outline-primary btn-sm"><i class="fas fa-edit"></i> Modify</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </form>
-</aside>
 
-<main id="packagesContainer" class="main-contents ">
-    <?php foreach ($packages as $package): ?>
-        <?php
-        $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
-        $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
-        $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
-        
-        // Handle rating errors gracefully
-        try {
-            $rating = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
-            $avg    = $rating['avg'] ?? 0;
-            $count  = $rating['count'] ?? 0;
-        } catch (Exception $e) {
-            $avg   = 0;
-            $count = 0;
-        }
-        ?>
-        <?php include 'card-template.php'; ?>
-    <?php endforeach; ?>
-</main>
+        <!-- Recommended Guides -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h2 class="section-title">Recommended Guides for You</h2>
+            </div>
 
+            <div class="col-md-3">
+                <div class="guide-card">
+                    <img src="https://i.pravatar.cc/300?img=12" alt="Guide">
+                    <div class="guide-card-body">
+                        <h5>Elena Petrova</h5>
+                        <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> Paris, France</p>
+                        <div class="rating mb-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <span class="text-muted">(127)</span>
+                        </div>
+                        <p class="mb-2"><small><i class="fas fa-language"></i> English, French, Russian</small></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="color: var(--accent);">$45/hr</span>
+                            <button class="btn btn-primary btn-sm">View Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<script>
-    // === Dual Price Slider ===
-    const priceMinValue = document.getElementById('priceMinValue');
-    const priceMaxValue = document.getElementById('priceMaxValue');
-    const priceMinRange = document.getElementById('priceMinRange');
-    const priceMaxRange = document.getElementById('priceMaxRange');
-    const priceMinLabel = document.getElementById('priceMinLabel');
-    const priceMaxLabel = document.getElementById('priceMaxLabel');
-    const fill = document.querySelector('.range-slider__fill');
+            <div class="col-md-3">
+                <div class="guide-card">
+                    <img src="https://i.pravatar.cc/300?img=68" alt="Guide">
+                    <div class="guide-card-body">
+                        <h5>Kenji Tanaka</h5>
+                        <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> Tokyo, Japan</p>
+                        <div class="rating mb-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span class="text-muted">(89)</span>
+                        </div>
+                        <p class="mb-2"><small><i class="fas fa-language"></i> English, Japanese</small></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="color: var(--accent);">$50/hr</span>
+                            <button class="btn btn-primary btn-sm">View Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    function updateSlider() {
-        let min = parseInt(priceMinRange.value);
-        let max = parseInt(priceMaxRange.value);
+            <div class="col-md-3">
+                <div class="guide-card">
+                    <img src="https://i.pravatar.cc/300?img=31" alt="Guide">
+                    <div class="guide-card-body">
+                        <h5>Ahmed Hassan</h5>
+                        <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt</p>
+                        <div class="rating mb-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <span class="text-muted">(156)</span>
+                        </div>
+                        <p class="mb-2"><small><i class="fas fa-language"></i> English, Arabic</small></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="color: var(--accent);">$35/hr</span>
+                            <button class="btn btn-primary btn-sm">View Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        if (min > max) {
-            [min, max] = [max, min];
-            priceMinRange.value = min;
-            priceMaxRange.value = max;
-        }
+            <div class="col-md-3">
+                <div class="guide-card">
+                    <img src="https://i.pravatar.cc/300?img=47" alt="Guide">
+                    <div class="guide-card-body">
+                        <h5>Sofia Martinez</h5>
+                        <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> Mexico City</p>
+                        <div class="rating mb-2">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span class="text-muted">(93)</span>
+                        </div>
+                        <p class="mb-2"><small><i class="fas fa-language"></i> English, Spanish</small></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="color: var(--accent);">$40/hr</span>
+                            <button class="btn btn-primary btn-sm">View Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        priceMinValue.value = min;
-        priceMaxValue.value = max;
-        priceMinLabel.textContent = `₱${min.toLocaleString()}`;
-        priceMaxLabel.textContent = `₱${max.toLocaleString()}`;
-
-        const percentMin = ((min - 500) / 9500) * 100;
-        const percentMax = ((max - 500) / 9500) * 100;
-        fill.style.left = `${percentMin}%`;
-        fill.style.right = `${100 - percentMax}%`;
-    }
-    updateSlider();
-
-    // === Real-time Filter ===
-    const form = document.getElementById('filterForm');
-    const container = document.getElementById('packagesContainer');
-    let debounceTimer;
-
-    function sendFilter() {
-        const formData = new FormData(form);
-        formData.append('ajax', '1');
-
-        // Debug: Log what's being sent
-        console.log('Filter data being sent:');
-        for (let [key, value] of formData.entries()) {
-            console.log(key, value);
-        }
-
-        container.innerHTML = `<div class="w-100 text-center py-5"><div class="spinner-border text-warning" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
-
-        fetch(location.href, { method: 'POST', body: formData })
-            .then(r => r.text())
-            .then(html => {
-                container.innerHTML = html;
-                console.log('Filter applied successfully');
-            })
-            .catch(err => {
-                console.error('Filter error:', err);
-                container.innerHTML = '<div class="text-danger">Error loading packages.</div>';
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Animate stats on load
+            $('.stat-card h3').each(function() {
+                const $this = $(this);
+                const countTo = parseInt($this.text());
+                $({ countNum: 0 }).animate({
+                    countNum: countTo
+                }, {
+                    duration: 1000,
+                    easing: 'swing',
+                    step: function() {
+                        $this.text(Math.floor(this.countNum));
+                    },
+                    complete: function() {
+                        $this.text(this.countNum);
+                    }
+                });
             });
-    }
 
-    // Trigger on checkbox change
-    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
-    categoryCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-            console.log('Category changed:', checkbox.value, checkbox.checked);
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(sendFilter, 300);
+            // View Profile button
+            $('.guide-card .btn-primary').on('click', function() {
+                alert('Navigating to guide profile...');
+            });
+
+            // Booking action buttons
+            $('.booking-card button').on('click', function() {
+                const action = $(this).text().trim();
+                console.log('Action clicked:', action);
+            });
         });
-    });
-
-    // Trigger on other form changes
-    form.addEventListener('change', (e) => {
-        // Only trigger if it's not a category checkbox (already handled above)
-        if (!e.target.classList.contains('category-checkbox')) {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(sendFilter, 300);
-        }
-    });
-
-    // Handle slider and number inputs
-    ['priceMinRange', 'priceMaxRange', 'priceMinValue', 'priceMaxValue', 'minPax', 'maxPax'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('input', () => {
-                updateSlider();
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(sendFilter, 300);
-            });
-        }
-    });
-
-    // Mobile Sidebar
-    document.addEventListener("DOMContentLoaded", () => {
-        const toggleBtn = document.getElementById("filterToggle");
-        const sidebar = document.getElementById("filterSidebar");
-        const overlay = document.querySelector(".filter-overlay");
-
-        if (toggleBtn && sidebar && overlay) {
-            toggleBtn.addEventListener("click", () => {
-                sidebar.classList.add("active");
-                overlay.classList.add("active");
-            });
-            overlay.addEventListener("click", () => {
-                sidebar.classList.remove("active");
-                overlay.classList.remove("active");
-            });
-        }
-    });
-</script>
-
-<script src="../../assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    </script>
 </body>
 </html>
