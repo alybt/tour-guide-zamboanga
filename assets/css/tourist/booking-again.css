@@ -1,0 +1,255 @@
+
+:root {
+    --primary-color: #ffffff;
+    --secondary-color: #213638;  
+    --accent: #E5A13E; 
+    --secondary-accent: #CFE7E5; 
+    --muted-color: gainsboro; 
+    --error-color: #dc3545; 
+    --success-color: #28a745; 
+}
+
+
+
+body{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--muted-color); /* Pale Cyan background for the whole page */
+    color: var(--secondary-color);
+    line-height: 1.6;
+    
+}
+
+/* 2. cointainer-class (Main Booking Wrapper) */
+.cointainer-class {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 25px;
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    margin-top: 5rem !important;
+}
+
+/* 3. Scoped Headings (Highly Specific) */
+.cointainer-class h1 {
+    color: var(--secondary-color);
+    border-bottom: 3px solid var(--accent); /* Gold line under the main title */
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+.cointainer-class h2 {
+    color: var(--secondary-color);
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+    border-left: 5px solid var(--accent);
+    padding-left: 10px;
+    font-weight: 600;
+}
+
+/* 4. Package Details Box */
+.cointainer-class .package-details {
+    border: 1px solid var(--muted-color);
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 6px;
+    background-color: #fcfcfc;
+}
+
+.cointainer-class .package-details h3 {
+    color: var(--accent);
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--muted-color);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.cointainer-class .package-details p strong {
+    display: inline-block;
+    min-width: 150px;
+    color: var(--secondary-color);
+}
+
+.cointainer-class .package-details ul {
+    list-style-type: none;
+    padding-left: 15px;
+    margin-top: 10px;
+}
+
+.cointainer-class .package-details ul li {
+    margin-bottom: 5px;
+    padding-left: 0;
+    position: relative;
+}
+
+.cointainer-class .package-details ul li::before {
+    content: "\f269"; 
+    font-family: "bootstrap-icons";
+    color: var(--accent);
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+/* 5. Error/Warning Messages (Scoping inline styles) */
+.cointainer-class div[style*="color:red"] {
+    background-color: rgba(220, 53, 69, 0.1); 
+    border-color: var(--error-color);
+    color: var(--error-color) !important;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border: 1px solid var(--error-color);
+}
+
+.cointainer-class div[style*="color:red"] p {
+    margin: 5px 0;
+    font-weight: 500;
+}
+
+/* Rebooking notice */
+.cointainer-class div[style*="background:#e8f7ff"] { 
+    background-color: var(--secondary-accent) !important;
+    padding: 15px !important;
+    border-left: 5px solid var(--accent) !important;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+.cointainer-class div[style*="background:#e8f7ff"] strong {
+    color: var(--secondary-color);
+}
+
+
+/* 6. Form Styling */
+.cointainer-class form {
+    padding: 20px;
+    border: 1px solid var(--muted-color);
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cointainer-class form label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--secondary-color);
+}
+
+.cointainer-class input[type="date"],
+.cointainer-class input[type="text"],
+.cointainer-class select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--muted-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    color: var(--secondary-color);
+}
+
+.cointainer-class input[type="date"]:read-only {
+    background-color: var(--secondary-accent);
+    cursor: not-allowed;
+}
+
+/* Companion Group Styling */
+.cointainer-class #inputcointainer-class > div {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid var(--secondary-accent);
+    border-radius: 4px;
+    background-color: #f7f7f7;
+}
+
+.cointainer-class #inputcointainer-class input[type="text"],
+.cointainer-class #inputcointainer-class select {
+    flex-grow: 1;
+    margin-bottom: 0; 
+}
+
+/* Radio Buttons */
+.cointainer-class input[type="radio"] {
+    margin-right: 5px;
+    accent-color: var(--accent); 
+}
+
+.cointainer-class form > label:nth-of-type(1), .cointainer-class form > label:nth-of-type(2) { 
+    display: inline-block;
+    margin-right: 15px;
+    font-weight: normal;
+}
+
+/* 7. Buttons */
+.cointainer-class button, .cointainer-class input[type="submit"] {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+.cointainer-class input[type="submit"] {
+    background-color: var(--accent);
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+.cointainer-class input[type="submit"]:hover {
+    background-color: #d89635; /* Slightly darker accent */
+}
+
+.cointainer-class button[type="button"] { /* Add Companion button */
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.cointainer-class button[type="button"]:hover {
+    background-color: #1a2c2e; 
+}
+
+.cointainer-class #inputcointainer-class button[type="button"] { /* Remove button */
+    background-color: var(--error-color);
+    color: var(--primary-color);
+    padding: 8px 12px;
+    margin-top: 0;
+    flex-shrink: 0; 
+}
+
+.cointainer-class #inputcointainer-class button[type="button"]:hover {
+    background-color: #a71d2a;
+}
+
+/* 8. Footer Link */
+.cointainer-class a[href="tour-packages-browse.php"] {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.cointainer-class a[href="tour-packages-browse.php"]:hover {
+    text-decoration: underline;
+}
+
+/* Overlap warning using the error color */
+.cointainer-class #overlapWarning {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--error-color) !important;
+    border: 1px solid var(--error-color);
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+}

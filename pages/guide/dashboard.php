@@ -1,0 +1,276 @@
+<?php
+session_start();
+$current_page = basename($_SERVER['PHP_SELF']);
+// Redirect if not logged in or not a Guide
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
+    header('Location: ../../index.php');
+    exit;
+}
+
+// Status-based redirects
+if ($_SESSION['user']['account_status'] === 'Suspended') {
+    header('Location: account-suspension.php');
+    exit;
+}
+if ($_SESSION['user']['account_status'] === 'Pending') {
+    header('Location: account-pending.php');
+    exit;
+}
+
+require_once "../../classes/guide.php";
+require_once "../../classes/booking.php";
+require_once "../../classes/tour-manager.php";
+
+
+$bookingObj = new Booking();
+$updateBookings = $bookingObj->updateBookings();
+
+$guideObj = new Guide();
+$tourManagerObj = new TourManager();
+
+$guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
+
+
+
+$bookings = $bookingObj->getBookingByGuideID($guide_ID);
+$activebookings = $bookingObj->getActiveBookingCount($guide_ID);
+$totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID);
+$totalEarnings = $guideObj->getTotalEarnings($guide_ID);
+$origRatings = $guideObj->guideRating($guide_ID);
+$origTotalRating = $origRatings['account_rating_score'] ?? '0';
+$totalRatings = round((float)$origTotalRating, 1);
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Guide Dashboard </title>
+
+     
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../../assets/css/guide/dashboard.css">
+</head>
+<body class="d-flex">
+
+    <?php 
+    require_once "includes/aside-dashboard.php"; 
+    ?>
+
+    <!-- Main Content -->
+    <main class="main-content flex-grow-1">
+        <!-- Header -->
+        <div class="header-card d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <div>
+                <h3 class="mb-1 fw-bold">Welcome back, <span class="text-accent"><?= htmlspecialchars($_SESSION['full_name'] ?? 'Guide') ?>!</span></h3>
+                <p class="text-muted mb-0">Manage your tours and connect with travelers.</p>
+            </div>
+            <div class="text-md-end">
+                <div class="d-flex align-items-center gap-3 flex-wrap justify-content-md-end">
+                    <span class="badge bg-success status-badge">
+                        <i class="bi bi-check-circle"></i> <?= ucfirst($_SESSION['user']['account_status']) ?>
+                    </span>
+                    <div class="clock" id="liveClock"></div>
+                </div>
+                <small class="text-muted d-block mt-1">Philippine Standard Time (PST)</small>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #E5A13E, #f39c12);">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted">Active Bookings</h6>
+                            <h3 class="mb-0 fw-bold text-accent"><?= $activebookings ?? ''?></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #213638, #2e8b57);">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted">Tour Packages</h6>
+                            <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);"><?= $totalofActivePackages ?? '' ?></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #E5A13E, #f1c40f);">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted">Earnings</h6>
+                            <h3 class="mb-0 fw-bold text-accent">₱ <?= number_format($totalEarnings, 2) ?></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #CFE7E5, #a8e6cf);">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted">Rating</h6>
+                            <h3 class="mb-0 fw-bold" style="color: #27ae60;"><?= number_format($totalRatings, 1) ?></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="mt-5">
+            <h5 class="fw-bold mb-3">Recent Activity</h5>
+            <div class="table">
+
+            <!-- Alerts -->
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="alert-custom alert-success p-3">
+                    <?= htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="alert-custom alert-error p-3">
+                    <?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Bookings Table -->
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Package</th>
+                                <th>Description</th>
+                                <th>Days</th>
+                                <th>Tourist</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Status</th>
+                                <th>Spots</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($bookings)): ?>
+                                <?php $no = 1; foreach ($bookings as $booking): ?>
+                                    <?php 
+                                    $status = $booking['booking_status'];
+                                    $isPending = in_array($status, ['Pending for Payment', 'Pending for Approval', 'Approved', 'In Progress']);
+                                    if (!$isPending) continue;
+                                    ?>
+                                    <tr>
+                                        <td><?= $no++ ?></td>
+                                        <td><strong><?= htmlspecialchars($booking['tourpackage_name']) ?></strong></td>
+                                        <td class="text-truncate" style="max-width: 180px;">
+                                            <?= htmlspecialchars($booking['tourpackage_desc']) ?>
+                                        </td>
+                                        <td><?= htmlspecialchars($booking['schedule_days']) ?> days</td>
+                                        <td><?= htmlspecialchars($booking['tourist_name']) ?></td>
+                                        <td><?= date('M d, Y', strtotime($booking['booking_start_date'])) ?></td>
+                                        <td><?= date('M d, Y', strtotime($booking['booking_end_date'])) ?></td>
+                                        <td>
+                                            <?php
+                                            $badgeClass = match($status) {
+                                                'Pending for Payment' => 'bg-warning text-dark',
+                                                'Pending for Approval' => 'bg-info text-white',
+                                                'Approved' => 'bg-success text-white',
+                                                default => 'bg-secondary'
+                                            };
+                                            ?>
+                                            <span class="badge <?= $badgeClass ?> status-badge">
+                                                <?= htmlspecialchars($status) ?>
+                                            </span>
+                                        </td>
+                                        <td class="text-truncate" style="max-width: 120px;">
+                                            <?= htmlspecialchars($booking['tour_spots'] ?? '—') ?>
+                                        </td>
+                                        <td>
+                                            <?php if ($status === 'Pending for Payment'|| $status === 'Approve'): ?>
+                                                <a href="booking-view.php?booking_ID=<?= $booking['booking_ID'] ?? ''; ?>&tourist_ID=<?= $booking['tourist_ID'] ?? ''; ?>" class="btn btn-sm btn-outline-primary">View</a>
+
+                                            <?php elseif ($status === 'Pending for Approval'): ?>
+                                                <a href="booking-approve.php?id=<?= $booking['booking_ID'] ?>" 
+                                                class="btn btn-sm btn-success"
+                                                onclick="return confirm('Approve this booking?')">
+                                                    Approve
+                                                </a>
+                                                <a href="booking-reject.php?id=<?= $booking['booking_ID'] ?>" 
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Reject this booking?')">
+                                                    Reject
+                                                </a>
+                                            <?php elseif ($status === 'In Progress'): ?>
+                                                
+                                                <a href="includes/ajax/booking-mark-complete.php?id=<?= $booking['booking_ID'] ?>" 
+                                                class="btn btn-sm btn-success"
+                                                onclick="return confirm('Mark as Complete?')">
+                                                    Mark as Complete
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="text-muted">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="10" class="text-center py-4 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                        You currently have no active bookings.
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    </div>
+        </div>
+    </main> 
+
+
+    <script src="../../assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+ 
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Manila',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-US', options);
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
