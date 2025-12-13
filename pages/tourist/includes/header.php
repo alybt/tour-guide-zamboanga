@@ -1,6 +1,4 @@
 <?php
-// includes/header.php
-// --- PHP Backend Logic (KEPT INTACT) ---
 if (session_status() === PHP_SESSION_NONE) session_start();
 $account_ID = $_SESSION['account_ID'] ?? null;
 
@@ -9,7 +7,6 @@ $unread_count = 0;
 $badge_display = 'd-none';
 
 if ($account_ID && is_numeric($account_ID)) {
-    // NOTE: Paths kept as per previous file.
     require_once "../../classes/booking.php";
     require_once "../../classes/activity-log.php";
 
@@ -28,20 +25,18 @@ if ($account_ID && is_numeric($account_ID)) {
     }
 }
 
-// Helper variable for active state checking
 $currentPage = basename($_SERVER['PHP_SELF']);
-// --- END PHP Backend Logic ---
 ?>
-
+<head>
+</head>
 <style>
     /* Theme Variables from the provided HTML/CSS */
     :root {
         --primary-color: #ffffff;
-        --secondary-color: #213638; /* Dark Teal/Green for Navbar Background */
-        --accent: #E5A13E; /* Orange/Gold Accent Color */
+        --secondary-color: #213638;
+        --accent: #E5A13E; 
         --secondary-accent: #CFE7E5;
-        --cancelled: #F44336; /* Used for Notification Badge Background */
-        /* ... (other variables like pending, approved etc., not strictly needed for header but good practice) */
+        --cancelled: #F44336; 
     }
 
     /* Styles for Navbar */
@@ -152,8 +147,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         </ul>
                     </li>
 
+                    <?php  $bookingPages = ['booking.php', 'booking-view.php', 'booking-history.php', 'booking-add.php', 'booking-again.php']; ?>
                     <li class="nav-item">
-                        <a class="nav-link <?= $currentPage === 'booking.php' ? 'active' : '' ?>" href="booking.php">
+                        <a class="nav-link <?= in_array($currentPage, $bookingPages) ? 'active' : '' ?>" href="booking.php">
                             <i class="fas fa-calendar-alt me-1"></i> My Booking
                         </a>
                     </li>

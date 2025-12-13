@@ -52,8 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <title>Sign In - Tourismo Zamboanga</title>
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
-    
-    
+    <link rel="stylesheet" href="assets/css/public-pages/login.css">
 </head>
 <body>
     <div class="login-container">
