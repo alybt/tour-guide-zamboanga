@@ -149,9 +149,6 @@ CREATE TABLE Role (
 -- ===============================
 -- ACCOUNT INFO
 -- ===============================
--- ===============================
--- ACCOUNT INFO (with Profile Fields)
--- ===============================
 CREATE TABLE Account_Info (
     account_ID           INT AUTO_INCREMENT PRIMARY KEY,
     user_ID              INT,
