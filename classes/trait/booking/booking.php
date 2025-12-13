@@ -410,7 +410,6 @@ trait BookingDetails{
         }
     }
 
-
     public function getGuideDetailsByAccountID(int $account_ID): ?array {
         $sql = "SELECT ai.*,
                 g.guide_ID,
@@ -478,5 +477,47 @@ trait BookingDetails{
             return null;
         }
     }
+
+    public function startingDateAndTime(int $booking_ID): ?string {
+        $sql = "SELECT  b.booking_ID,
+                CONCAT(
+                    DATE_FORMAT(DATE_ADD(b.booking_start_date, INTERVAL (tps.packagespot_day - 1) DAY), '%b %d %Y'),
+                    ' at ',
+                    TIME_FORMAT(tps.packagespot_starttime, '%l:%i %p')
+                ) AS first_itinerary_start,
+                tps.packagespot_activityname AS activity_name,
+                ts.spots_name AS spot_name
+            FROM 
+                Booking b
+            JOIN 
+                Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            JOIN 
+                Tour_Package_Spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
+            LEFT JOIN 
+                Tour_Spots ts ON tps.spots_ID = ts.spots_ID
+            WHERE 
+                b.booking_ID = :booking_ID
+            ORDER BY 
+                ADDTIME(
+                    CAST(DATE_ADD(b.booking_start_date, INTERVAL (tps.packagespot_day - 1) DAY) AS DATETIME), 
+                    tps.packagespot_starttime
+                ) ASC
+            LIMIT 1";
+
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ? $result['first_itinerary_start'] : null;
+
+        } catch (PDOException $e) {
+            error_log("Error in startingDateAndTime: " . $e->getMessage());
+            return null;
+        }
+    }
+
 }
 ?>

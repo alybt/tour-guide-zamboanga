@@ -88,6 +88,7 @@
     $guide = $bookingObj->getGuideDetailsByAccountID($guideAccount_ID);
     $bookingDetails = $bookingObj->getBookingDetailsByBookingID($booking['booking_ID']);
     $tourpackages = $bookingObj->getTourPackageDetailsByBookingID($booking['booking_ID']);
+    $bookingdateattime = $bookingObj->startingDateAndTime($booking['booking_ID']);
     $active_statuses = [ 'Pending for Payment','Pending for Approval','Approved','In Progress','Completed'];
     if (in_array($booking['booking_status'], $active_statuses)) {
 ?>
@@ -99,7 +100,7 @@
                 <div>
                     <h5 class="mb-1"><?= $tourpackages['tourpackage_name'] ?? '';?></h5>
                     <p class="text-muted mb-1"><i class="fas fa-user"></i><?= $guide['guide_fullname'] ?? '';?></p>
-                    <p class="text-muted mb-1"><i class="fas fa-calendar"></i> Dec 15, 2025 at 9:00 AM</p>
+                    <p class="text-muted mb-1"><i class="fas fa-calendar"></i> <?= $bookingdateattime ?></p>
                     <p class="text-muted mb-0"><i class="fas fa-map-marker-alt"></i> Rome, Italy</p>
                 </div>
             </div>
