@@ -144,18 +144,33 @@ body {
 }
 
 /* Two-column layout fixes */
+.booking-grid {
+    display: grid;
+    grid-template-columns: 7fr 5fr; /* match previous col-lg-7 / col-lg-5 */
+    gap: 1.5rem; /* bootstrap g-4 approximation */
+    align-items: stretch;
+}
+
+@media (max-width: 992px) {
+    .booking-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .calendar-container {
     background: white;
     border-radius: 12px;
     padding: 1.5rem;
     border: 1px solid #e9ecef;
-    height: 80vh !important;     /* Full height on desktop */
-    min-height: 600px;
+    /* Let the container size itself based on calendar content */
+    height: auto !important; /* fills track via height:100% below */
+    min-height: 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 #calendar {
-    height: 100% !important;
+    /* Allow FullCalendar to control height via JS (height: 'auto') */
+    height: auto !important;
 }
 
 /* Make right sidebar scrollable independently */
@@ -166,7 +181,7 @@ body {
 /* Mobile: Stack calendar on top, bookings below */
 @media (max-width: 992px) {
     .calendar-container {
-        height: 500px !important;
+        height: auto !important;
         margin-bottom: 2rem;
     }
     
@@ -177,8 +192,8 @@ body {
 }
 
 #calendar {
-    flex: 1;
-    overflow: auto;
+    /* Avoid forcing flex/overflow that can create scrollbars */
+    overflow: visible;
 }
 
 .fc {
@@ -636,8 +651,26 @@ main {
     cursor: pointer;
 }
 
-.calendar-container {
-    height: 61.5rem !important;
+/* Remove hard-coded tall height to prevent overflow */
+/* .calendar-container height intentionally left auto */
+
+/* Right column: match calendar height and allow internal scrolling */
+.active-bookings {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#booking-list-container {
+    flex: 1 1 auto;
+    min-height: 0; /* enable flex child scrolling */
+    overflow-y: auto;
+}
+
+/* Ensure both columns stretch equally to the tallest content */
+.booking-grid > * > .calendar-container,
+.booking-grid > .active-bookings {
+    height: 100%;
 }
 
 /* Booking Status Badge Colors */
