@@ -39,10 +39,12 @@ trait MessageTrait{
         $sql = "SELECT conversation_ID
                 FROM Conversation
                 WHERE (user1_account_ID = :u1 AND user2_account_ID = :u2)
-                OR (user1_account_ID = :u2 AND user2_account_ID = :u1)";
+                OR (user1_account_ID = :u2a AND user2_account_ID = :u1a)";
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':u1', $user1_ID);
         $stmt->bindParam(':u2', $user2_ID);
+        $stmt->bindParam(':u2a', $user2_ID);
+        $stmt->bindParam(':u1a', $user1_ID);
         $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);

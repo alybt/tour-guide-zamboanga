@@ -1,4 +1,13 @@
 <?php 
+// Handle AJAX call
+if (!isset($messages) && isset($_GET['conversation_ID'])) {
+    session_start();
+    require_once '../../../../classes/conversation.php';
+    $conversationObj = new Conversation();
+    $messages = $conversationObj->fetchMessages($_GET['conversation_ID']);
+    $currentUserID = $_SESSION['account_ID'] ?? $_SESSION['user']['account_ID'] ?? 0;
+}
+
 if (empty($messages)): ?>
     <div class="empty-chat">
         <i class="fas fa-comment-dots"></i>

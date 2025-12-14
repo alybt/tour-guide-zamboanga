@@ -44,9 +44,8 @@ $conversationList = $conversationObj->fetchConversations($tourist_ID);
 
 // Get guide details for the chat header
 $guidedetails = $guideObj->getGuideByID($guide_ID);
-
-// Assuming $guidedetails has keys like 'profile_picture', 'first_name', 'last_name'. Adjust if needed.
-$guide_name = $guidedetails['first_name'] . ' ' . $guidedetails['last_name'];
+ 
+$guide_name = $guidedetails['name_last'] . ' ' . $guidedetails['name_last'];
 $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?img=' . $guide_ID;
 ?>
 <!DOCTYPE html>
@@ -57,7 +56,7 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
     <title>Messages - Tourismo Zamboanga</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+<style>
         :root {
             --primary-color: #ffffff;
             --secondary-color: #213638;
@@ -72,6 +71,7 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
             padding: 0;
             height: 100vh;
             overflow: hidden;
+            margin-top: 4rem;
         }
 
         
@@ -567,7 +567,7 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
                 transform: translateY(-10px);
             }
         }
-    </style>
+</style>
 </head>
 <body>
     <?php include 'includes/header.php'?>
@@ -632,6 +632,10 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        const selectedGuideID = <?= json_encode($guide_ID) ?>;
+        const selectedConversationID = <?= json_encode($selected_conversation_ID) ?>;
+        const currentUserID = <?= json_encode($tourist_ID) ?>;
+
         $(document).ready(function() {
             function scrollToBottom() {
                 const chatMessages = $('#chatMessages');
@@ -644,72 +648,83 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
                 const input = $('#messageInput');
                 const message = input.val().trim();
                 
-                if (message) {
-                    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                    
-                    const messageHtml = `
-                        <div class="message sent">
-                            <div class="message-content">
-                                <div class="message-bubble">
-                                    ${message}
-                                </div>
-                                <div class="message-time">${time}</div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    $('#typingIndicator').before(messageHtml);
-                    input.val('');
-                    scrollToBottom();
-                    
-                    // Simulate typing and response (replace with real AJAX for production)
-                    setTimeout(() => {
-                        $('#typingIndicator').show();
+                if (!message) return;
+
+                // Disable button while sending
+                const sendBtn = $('#sendButton');
+                sendBtn.prop('disabled', true);
+                
+                $.ajax({
+                    type: 'POST',
+                    url: 'includes/ajax/send-message.php',
+                    data: {
+                        message: message,
+                        conversation_ID: selectedConversationID,
+                        guide_id: selectedGuideID
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // Clear input
+                            input.val('');
+                            
+                            // Reload messages
+                            reloadMessages();
+                        } else {
+                            console.error('Failed to send message:', response.error);
+                            alert('Failed to send message. Please try again.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error:', error);
+                        alert('Error sending message. Please check your connection.');
+                    },
+                    complete: function() {
+                        sendBtn.prop('disabled', false);
+                        input.focus();
+                    }
+                });
+            }
+
+            function reloadMessages() {
+                $.ajax({
+                    type: 'GET',
+                    url: 'includes/components/messages.php',
+                    data: {
+                        conversation_ID: selectedConversationID
+                    },
+                    dataType: 'html',
+                    success: function(data) {
+                        $('#chatMessages').html(data);
                         scrollToBottom();
-                        
-                        setTimeout(() => {
-                            $('#typingIndicator').hide();
-                            const responseTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                            
-                            const responseHtml = `
-                                <div class="message">
-                                    <img src="<?= htmlspecialchars($guide_avatar) ?>" class="message-avatar" alt="<?= htmlspecialchars($guide_name) ?>">
-                                    <div class="message-content">
-                                        <div class="message-bubble">
-                                            Thanks for your message! I'll get back to you shortly.
-                                        </div>
-                                        <div class="message-time">${responseTime}</div>
-                                    </div>
-                                </div>
-                            `;
-                            
-                            $('#typingIndicator').before(responseHtml);
-                            scrollToBottom();
-                        }, 2000);
-                    }, 500);
-                }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading messages:', error);
+                    }
+                });
             }
 
             $('#sendButton').on('click', sendMessage);
 
             $('#messageInput').on('keypress', function(e) {
                 if (e.which === 13) {
+                    e.preventDefault();
                     sendMessage();
                 }
             });
 
             $('.conversation-item').on('click', function() {
+                const conversationID = $(this).data('chat');
+                const otherUserID = $(this).data('user-id') || $(this).find('.conversation-avatar img').attr('src').split('img=')[1];
+                
+                // Update active state
                 $('.conversation-item').removeClass('active');
                 $(this).addClass('active');
                 $(this).removeClass('unread');
                 $(this).find('.unread-badge').remove();
                 
-                $('.chat-area').addClass('show-mobile');
-                
-                // For full functionality, add AJAX here to load messages for the selected conversation_ID
-                // Example: $.get('get-messages.php', {conversation_id: $(this).data('chat')}, function(data) {
-                //     $('#chatMessages').html(data);
-                // });
+                // Load conversation
+                window.location.href = 'inbox.php?guide_id=' + otherUserID;
             });
 
             $('#searchConversations').on('keyup', function() {
@@ -728,21 +743,24 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
             });
 
             $('.attachment-btn').on('click', function() {
-                alert('File attachment feature - allows users to upload images or documents');
+                alert('File attachment feature - coming soon');
             });
 
             $('.chat-header-actions button').on('click', function() {
                 const icon = $(this).find('i').attr('class');
                 if (icon.includes('video')) {
-                    alert('Video call feature');
+                    alert('Video call feature - coming soon');
                 } else if (icon.includes('phone')) {
-                    alert('Voice call feature');
+                    alert('Voice call feature - coming soon');
                 } else if (icon.includes('info')) {
                     alert('View booking details');
                 } else {
                     alert('More options menu');
                 }
             });
+
+            // Auto-refresh messages every 3 seconds
+            setInterval(reloadMessages, 3000);
         });
     </script>
 </body>
