@@ -307,16 +307,15 @@ $statusColor = match($booking['booking_status']) {
                                 <i class="fas fa-star"></i>
                                 <span class="text-muted">(156 reviews)</span>
                             </div>
-                            <?php 
-$spoken = $guideObj->getguideLanguages($package['guide_ID']); ?>
+                            <?php $spoken = $guideObj->getguideLanguages($package['guide_ID']); ?>
                             <p class="mb-0 text-muted">
                                 <i class="fas fa-language me-2"></i> <?= $spoken['Spoken_Languages'] ?? 'N/A' ?>
                             </p>
                         </div>
                         <div>
-                            <button class="btn btn-primary btn-sm mb-2">
+                            <a href="inbox.php?guide_id=<?= htmlspecialchars($package['guide_ID']) ?>" class="btn btn-primary btn-sm mb-2">
                                 <i class="fas fa-comment"></i> Message
-                            </button>
+                            </a>
                             <br>
                             <button class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-phone"></i> Call
