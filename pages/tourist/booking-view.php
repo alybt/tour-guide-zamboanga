@@ -35,6 +35,7 @@ $companions = $bookingObj->getCompanionsByBooking($booking_ID);
 
 $tourdetails = $bookingObj->getTourDetails($booking_ID);
 $transactionDetails = $bookingObj->getTransactionSummary($booking_ID);
+
 $statusColor = match($booking['booking_status']) {
     'Pending for Payment' => 'bg-pending-for-payment',
     'Pending for Approval' => 'bg-pending-for-approval',
@@ -306,8 +307,10 @@ $statusColor = match($booking['booking_status']) {
                                 <i class="fas fa-star"></i>
                                 <span class="text-muted">(156 reviews)</span>
                             </div>
+                            <?php 
+$spoken = $guideObj->getguideLanguages($package['guide_ID']); ?>
                             <p class="mb-0 text-muted">
-                                <i class="fas fa-language me-2"></i>English, Italian, Spanish
+                                <i class="fas fa-language me-2"></i> <?= $spoken['Spoken_Languages'] ?? 'N/A' ?>
                             </p>
                         </div>
                         <div>

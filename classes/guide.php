@@ -559,4 +559,37 @@ class Guide extends Database {
 
     }
 
+    public function getguideLanguages($guide_ID){
+        $sql = "SELECT
+                     G.guide_ID,
+                     AI.account_nickname AS Guide_Nickname,
+                     CONCAT(NI.name_first, ' ', NI.name_last) AS Full_Name,
+                     GROUP_CONCAT(L.languages_name SEPARATOR ', ') AS Spoken_Languages
+                FROM
+                    Guide G
+                JOIN
+                    Account_Info AI ON G.account_ID = AI.account_ID
+                JOIN
+                    User_Login UL ON AI.user_ID = UL.user_ID
+                JOIN
+                    Person P ON UL.person_ID = P.person_ID
+                JOIN
+                    Name_Info NI ON P.name_ID = NI.name_ID
+                LEFT JOIN
+                    Guide_Languages GL ON G.guide_ID = GL.guide_ID
+                LEFT JOIN
+                    Languages L ON GL.languages_ID = L.languages_ID 
+                WHERE G.guide_ID = :guide_ID";
+        try {
+            $db = $this->connect();
+            $query = $db->prepare($sql);
+            $query->execute([':guide_ID' => $guide_ID]);
+            return $query->fetch(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("getguideLanguages Error: " . $e->getMessage());
+            return 0.0;
+        }
+
+    }
+
 }
