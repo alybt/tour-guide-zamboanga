@@ -552,5 +552,64 @@ trait BookingDetails{
         }
     }
 
+    public function getTourDetails($booking_ID){
+        $sql = "SELECT
+                    b.booking_start_date,
+                    b.booking_end_date,
+
+                    MIN(tps.packagespot_starttime) AS time_start,
+                    MAX(tps.packagespot_endtime)   AS time_end,
+
+                    TIMESTAMPDIFF(
+                        MINUTE,
+                        MIN(tps.packagespot_starttime),
+                        MAX(tps.packagespot_endtime)
+                    ) / 60 AS total_hours,
+
+                    GROUP_CONCAT(DISTINCT l.languages_name SEPARATOR ', ') AS guide_languages,
+
+                    mp.meeting_name,
+                    mp.meeting_address,
+                    mp.meeting_googlelink
+
+                FROM Booking b
+
+                JOIN Tour_Package tp 
+                    ON b.tourpackage_ID = tp.tourpackage_ID
+
+                LEFT JOIN Tour_Package_Spots tps
+                    ON tp.tourpackage_ID = tps.tourpackage_ID
+                AND tps.packagespot_day = 1
+
+                LEFT JOIN Guide g 
+                    ON tp.guide_ID = g.guide_ID
+
+                LEFT JOIN Guide_Languages gl 
+                    ON g.guide_ID = gl.guide_ID
+
+                LEFT JOIN Languages l 
+                    ON gl.languages_ID = l.languages_ID
+
+                LEFT JOIN Meeting_Point mp 
+                    ON b.booking_meeting_ID = mp.meeting_ID
+
+                WHERE b.booking_ID = :booking_ID
+                GROUP BY b.booking_ID";
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ?: null;
+
+        } catch (PDOException $e) {
+            error_log("Error in getGuideDetailsByAccountID: " . $e->getMessage());
+            return null;
+        }
+
+    }
+
 }
 ?>
