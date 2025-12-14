@@ -611,5 +611,46 @@ trait BookingDetails{
 
     }
 
+    public function getTransactionSummary($booking_ID){
+        $sql = "SELECT 
+                    B.booking_ID,
+                    TP.tourpackage_name,
+                    PI.paymentinfo_total_amount AS Total_Amount_Paid,
+                    TRX.transaction_status AS Payment_Status,
+                    M.method_name AS Payment_Method,
+                    MC.methodcategory_name AS Payment_Category,
+                    MC.methodcategory_processing_fee AS Processing_Fee_Rate,
+                    M.method_amount AS Total_WO_PF,
+                    TRX.transaction_reference AS Transaction_Reference,
+                    TRX.transaction_created_date AS Transaction_Date
+                FROM 
+                    Booking B
+                JOIN 
+                    Tour_Package TP ON B.tourpackage_ID = TP.tourpackage_ID
+                JOIN 
+                    Payment_Info PI ON B.booking_ID = PI.booking_ID
+                JOIN 
+                    Payment_Transaction TRX ON PI.paymentinfo_ID = TRX.paymentinfo_ID
+                JOIN 
+                    Method M ON TRX.method_ID = M.method_ID
+                JOIN 
+                    Method_Category MC ON M.methodcategory_ID = MC.methodcategory_ID
+                WHERE 
+                    B.booking_ID = :booking_ID";
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ?: null;
+
+        } catch (PDOException $e) {
+            error_log("Error in getTransactionSummary: " . $e->getMessage());
+            return null;
+        }
+
+    }
 }
 ?>

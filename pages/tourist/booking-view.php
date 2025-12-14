@@ -34,7 +34,7 @@ $spots = $tourManager->getSpotsByPackage($package['tourpackage_ID']);
 $companions = $bookingObj->getCompanionsByBooking($booking_ID);
 
 $tourdetails = $bookingObj->getTourDetails($booking_ID);
-
+$transactionDetails = $bookingObj->getTransactionSummary($booking_ID);
 $statusColor = match($booking['booking_status']) {
     'Pending for Payment' => 'bg-pending-for-payment',
     'Pending for Approval' => 'bg-pending-for-approval',
@@ -360,19 +360,15 @@ $statusColor = match($booking['booking_status']) {
                     <h5><i class="fas fa-receipt me-2"></i> Booking Summary</h5>
                     <div class="info-row">
                         <span class="info-label">Tour Price</span>
-                        <span class="info-value"></span>
+                        <span class="info-value"><?= $transactionDetails['Total_WO_PF'] ?></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Service Fee</span>
-                        <span class="info-value"></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Discount</span>
-                        <span class="info-value text-success"></span>
+                        <span class="info-label">Processing Fee</span>
+                        <span class="info-value"><?= $transactionDetails['Processing_Fee_Rate'] ?></span>
                     </div>
                     <div class="info-row" style="border-top: 2px solid var(--accent); margin-top: 15px; padding-top: 15px;">
                         <span class="info-label"><strong>Total Paid</strong></span>
-                        <span class="info-value" style="font-size: 1.3rem; color: var(--accent);"></span>
+                        <span class="info-value" style="font-size: 1.3rem; color: var(--accent);"> <?= $transactionDetails['Total_Amount_Paid'] ?></span>
                     </div>
                 </div>
 
