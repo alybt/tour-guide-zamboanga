@@ -489,7 +489,8 @@ class Guide extends Database {
                 gl.license_issued_date,
                 gl.license_expiry_date, 
                 -- Account Info
-                ai.account_rating_score, 
+                ai.*,
+                g.guide_ID, 
                 -- Languages (comma-separated)
                 GROUP_CONCAT(l.languages_name ORDER BY l.languages_name SEPARATOR ', ') AS guide_languages 
             FROM Guide g 
@@ -526,7 +527,7 @@ class Guide extends Database {
                 n.name_last,
                 n.name_first
             LIMIT 5";  
-            
+
         $db = $this->connect();
         $query = $db->prepare($sql);
 
