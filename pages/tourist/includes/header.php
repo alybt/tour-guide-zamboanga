@@ -31,7 +31,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <link rel="stylesheet" href="../../assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
 </head>
 <style>
-    /* Theme Variables from the provided HTML/CSS */
+    
     :root {
         --primary-color: #ffffff;
         --secondary-color: #213638;
@@ -40,7 +40,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         --cancelled: #F44336; 
     }
 
-    /* Styles for Navbar */
+    
     .navbar {
         background-color: var(--secondary-color) !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -52,12 +52,12 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         font-size: 1.5rem;
     }
 
-    /* Brand Icon Color */
+    
     .navbar-brand i {
         color: var(--accent);
     }
 
-    /* Nav Link Styling */
+    
     .nav-link {
         color: var(--secondary-accent) !important;
         margin: 0 10px;
@@ -68,12 +68,12 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         color: var(--accent) !important;
     }
     
-    /* Notification Badge Styling */
+    
     .notification-badge-custom {
         position: absolute;
         top: -5px;
         right: -5px;
-        background-color: var(--cancelled); /* Using the cancelled color for danger/unread */
+        background-color: var(--cancelled); 
         color: white;
         border-radius: 50%;
         width: 20px;
@@ -85,7 +85,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         z-index: 10;
     }
     
-    /* Logout/Login Button Styling (using the primary/accent color scheme) */
+    
     .btn-custom-accent-outline {
         color: var(--accent);
         border-color: var(--accent);
@@ -99,15 +99,15 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         color: var(--secondary-color) !important;
     }
 
-    /* Notification Dropdown Custom Scrollbar (kept from original) */
+    
     #notification-dropdown .dropdown-header { position: sticky; top: 0; z-index: 10; }
     #notification-list-container { scrollbar-width: thin; scrollbar-color: var(--accent) var(--primary-color); }
     #notification-list-container::-webkit-scrollbar { width: 6px; }
     #notification-list-container::-webkit-scrollbar-track { background: var(--primary-color); border-radius: 10px; }
     #notification-list-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-    #notification-list-container::-webkit-scrollbar-thumb:hover { background: #d89435; } /* slightly darker accent */
+    #notification-list-container::-webkit-scrollbar-thumb:hover { background: #d89435; } 
 
-    /* Ensure dropdown menu text is visible on dark navbar */
+    
     .dropdown-menu {
         background-color: var(--primary-color);
     }
@@ -139,7 +139,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     </li>
                     
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle <?= ($currentPage === 'find-guide.php' || $currentPage === 'find-tour-packages.php') ? 'active' : '' ?>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <?php  $travelPages = ['find-tour-packages.php', 'find-guide.php', 'tour-packages-view.php']; ?>
+                        <a class="nav-link dropdown-toggle <?= in_array($currentPage, $travelPages) ? 'active' : '' ?>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-search me-1"></i> Travel
                         </a>
                         <ul class="dropdown-menu shadow-sm">
