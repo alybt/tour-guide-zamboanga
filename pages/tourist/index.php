@@ -59,7 +59,7 @@ $topfiveguides = $guideObj->viewTop5GuideInfoByRate();
         }
 
         body {
-            background-color: #f8f9fa;
+            background-color: var(--muted-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin-top: 5rem;
         }
