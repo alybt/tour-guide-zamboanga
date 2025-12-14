@@ -282,13 +282,13 @@ $topfiveguides = $guideObj->viewTop5GuideInfoByRate();
                     <p>Cities Explored</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
+            <!-- <div class="col-md-3 col-sm-6">
                 <div class="stat-card">
                     <i class="fas fa-award"></i>
                     <h3>8</h3>
                     <p>Badges Earned</p>
                 </div>
-            </div>
+            </div> -->
             <div class="col-md-3 col-sm-6">
                 <div class="stat-card">
                     <i class="fas fa-star"></i>
@@ -320,8 +320,8 @@ $topfiveguides = $guideObj->viewTop5GuideInfoByRate();
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/node_modules/jquery/dist/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
             // Animate stats on load

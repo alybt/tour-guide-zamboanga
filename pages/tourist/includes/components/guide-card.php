@@ -1,6 +1,6 @@
 <?php
     foreach ($topfiveguides as $guide){
-        $rating = $guideObj->guideRatingAndCount($guide['account_ID']);
+        $rating = $guideObj->guideRatingAndCount($guide['account_ID'] ?? '');
         $average_rating = $rating['average_rating'] ?? 0;
         $rating_count = $rating['rating_count'] ?? 0;
         $display_rating = round($average_rating * 2) / 2;
@@ -26,9 +26,9 @@
                 ?>
                 <span class="text-muted">(<?= $rating_count ?>)</span>
             </div>
-            <p class="mb-2"><small><i class="fas fa-language"></i> English, French, Russian</small></p>
+            <p class="mb-2"><small><i class="fas fa-language"></i> <?= $guide['guide_languages'] ?></small></p>
             <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bold" style="color: var(--accent);">$45/hr</span>
+                <!-- <span class="fw-bold" style="color: var(--accent);">$45/hr</span> -->
                 <button class="btn btn-primary btn-sm">View Profile</button>
             </div>
         </div>
