@@ -170,6 +170,7 @@ function getTimeRemaining($date_string) {
 
             <div class="col-lg-5">
                 <h4 class="mb-4"><i class="fas fa-list-ul me-2"></i>Active Bookings List</h4>
+                <a href="booking-history.php" class="btn btn-outline-primary mb-3"><i class="fas fa-history me-2"></i>Booking History</a>
                 <div id="booking-list-container" style="max-height: 800px; overflow-y: auto;">
                     <?php 
                         include 'includes\components\booking-card-for-bookings.php';
