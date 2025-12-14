@@ -544,8 +544,28 @@ CREATE TABLE Review_Image (
     review_created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (rating_ID) REFERENCES Rating(rating_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ 
+CREATE TABLE Conversation (
+    conversation_ID INT AUTO_INCREMENT PRIMARY KEY, 
+    user1_account_ID INT NOT NULL, 
+    user2_account_ID INT NOT NULL,
+    last_message_ID INT NULL, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user1_account_ID) REFERENCES Account_Info(account_ID),
+    FOREIGN KEY (user2_account_ID) REFERENCES Account_Info(account_ID)
+); 
 
-
+CREATE TABLE Message (
+    message_ID INT AUTO_INCREMENT PRIMARY KEY,
+    conversation_ID INT NOT NULL,
+    sender_account_ID INT NOT NULL,
+    message_content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_ID) REFERENCES Conversation(conversation_ID),
+    FOREIGN KEY (sender_account_ID) REFERENCES Account_Info(account_ID)
+);
 
 
 
