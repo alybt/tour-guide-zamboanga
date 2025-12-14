@@ -204,7 +204,33 @@ class TourManager extends Database {
         return $result ? (int)$result['upcoming_count'] : 0;
     }
 
+    public function updateAllRatingScore() {
+        $sql = "UPDATE Account_Info AI
+                LEFT JOIN ( 
+                    SELECT
+                        rating_account_ID AS account_id,
+                        AVG(rating_value) AS new_avg_rating
+                    FROM
+                        Rating 
+                    WHERE
+                        rating_account_ID IS NOT NULL
+                    GROUP BY
+                        rating_account_ID
+                ) AS AvgRatings ON AI.account_ID = AvgRatings.account_id
+                SET 
+                    AI.account_rating_score = COALESCE(AvgRatings.new_avg_rating, 0.00)";
 
-
+        $db = $this->connect();
+        
+        try {
+            $stmt = $db->prepare($sql);
+            $stmt->execute(); 
+            return $stmt->rowCount(); 
+            
+        } catch (PDOException $e) { 
+            error_log("Database error updating all ratings: " . $e->getMessage());
+            return false;  
+        }
+    }
 
 }

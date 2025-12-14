@@ -521,7 +521,7 @@ CREATE TABLE Refund (
 CREATE TABLE Rating (
     rating_ID             INT AUTO_INCREMENT PRIMARY KEY,
     rater_account_ID      INT,
-    rating_type           ENUM('Tourist','Guide','Tour Spots','Tour Package') NOT NULL,
+    rating_type           ENUM('Tourist to Guide', 'Tourist To Tour Spots', 'Tourist to Tour Packages', 'Guide to Tourist') NOT NULL,
     rating_account_ID     INT,
     rating_tourpackage_ID INT,
     rating_tourspots_ID   INT,

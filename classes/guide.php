@@ -54,7 +54,8 @@ class Guide extends Database {
                         IF(n.name_suffix IS NOT NULL, CONCAT(' ', n.name_suffix), '')
                     ) AS guide_name,
                     ci.contactinfo_email AS guide_email,
-                    gl.license_number AS guide_license
+                    gl.license_number AS guide_license,
+                    ai.*
                 FROM Guide g
                 JOIN guide_license gl ON g.license_ID = gl.license_ID
                 JOIN Account_Info ai ON g.account_ID = ai.account_ID
@@ -468,6 +469,63 @@ class Guide extends Database {
             error_log("getGuideByID Error: " . $e->getMessage());
             return null;
         }
+    }
+
+    public function viewTop5GuideInfoByRate(){
+        $sql = "SELECT 
+                    g.guide_ID,
+                    CONCAT(
+                        n.name_first, 
+                        IF(n.name_middle IS NOT NULL, CONCAT(' ', n.name_middle), ''),
+                        ' ', 
+                        n.name_last,
+                        IF(n.name_suffix IS NOT NULL, CONCAT(' ', n.name_suffix), '')
+                    ) AS guide_name,
+                    ci.contactinfo_email AS guide_email,
+                    gl.license_number AS guide_license,
+                    ai.account_rating_score,
+                    ai.*
+                FROM Guide g
+                JOIN guide_license gl ON g.license_ID = gl.license_ID
+                JOIN Account_Info ai ON g.account_ID = ai.account_ID
+                JOIN User_Login ul ON ai.user_ID = ul.user_ID
+                JOIN Person p ON ul.person_ID = p.person_ID
+                JOIN Contact_Info ci ON ci.contactinfo_ID = p.contactinfo_ID
+                JOIN Name_Info n ON p.name_ID = n.name_ID 
+                ORDER BY 
+                    ai.account_rating_score DESC,
+                    n.name_last, 
+                    n.name_first 
+                LIMIT 5";  
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+
+        if ($query->execute()){
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } else { 
+            error_log("SQL Error in viewTop5GuideInfoByRate: " . implode(" ", $query->errorInfo()));
+            return false;
+        }
+    }
+
+    public function guideRatingAndCount($account_ID){
+        $sql = "SELECT 
+                AVG(r.rating_value) AS average_rating,
+                COUNT(r.rating_ID) AS rating_count
+            FROM 
+                Rating r
+            WHERE 
+                r.rating_account_ID = :account_ID";
+        try {
+            $db = $this->connect();
+            $query = $db->prepare($sql);
+            $query->execute([':account_ID' => $account_ID]);
+            return $query->fetchAll();
+        } catch (Exception $e) {
+            error_log("guideRatingAndCount Error: " . $e->getMessage());
+            return 0.0;
+        }
+
     }
 
 }

@@ -13,16 +13,27 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 require_once "../../classes/tourist.php";
 require_once "../../classes/tour-manager.php";
 require_once "../../classes/booking.php";
+require_once "../../classes/guide.php";
 
+
+$guideObj = new Guide();
 $bookingObj = new Booking();
-$tourist_ID = $_SESSION['account_ID'];
-$touristObj = new Tourist();
-$tourist = $touristObj->getTouristByAccountID($tourist_ID);
 $tourmanagerObj = new TourManager();
+$touristObj = new Tourist();
+
+
+$tourist_ID = $_SESSION['account_ID'];
+$tourist = $touristObj->getTouristByAccountID($tourist_ID);
 $upcomingTours = $tourmanagerObj->upcomingToursCountForTourist($tourist_ID);
 $tourspotexplored = $touristObj->tourSpotsExplored($tourist_ID);
 $touristAveRating = $touristObj->touristAveRating($tourist_ID);
 $bookings = $touristObj->getBookingHistory($tourist_ID);
+$guides = $guideObj->viewAllGuideInfo();
+
+// lets update first the rating Accout for that guide
+$updateRating = $tourmanagerObj->updateAllRatingScore();
+$topfiveguides = $guideObj->viewTop5GuideInfoByRate();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -84,6 +95,11 @@ $bookings = $touristObj->getBookingHistory($tourist_ID);
             padding: 40px 0;
             border-radius: 10px;
             margin-bottom: 30px;
+        }
+
+        .hero-row {
+            margin: 2rem;
+
         }
 
         .stat-card {
@@ -232,7 +248,7 @@ $bookings = $touristObj->getBookingHistory($tourist_ID);
 
     <div class="container mt-4">
         <div class="hero-section">
-            <div class="row align-items-center">
+            <div class="hero-row row align-items-center ">
                 <div class="col-md-8">
                     <h1>Welcome back, <?= $tourist['name_first'] ?> 👋</h1>
                     <p class="lead">Ready for your next adventure? Let's find the perfect guide for you.</p>
@@ -296,57 +312,11 @@ $bookings = $touristObj->getBookingHistory($tourist_ID);
         <div class="row mt-5">
             <div class="col-12">
                 <h2 class="section-title">Recommended Guides for You</h2>
+                <?php 
+                    include_once 'includes/components/guide-card.php';
+                ?>
             </div>
 
-            <div class="col-md-3">
-                <div class="guide-card">
-                    <img src="https://i.pravatar.cc/300?img=12" alt="Guide">
-                    <div class="guide-card-body">
-                        <h5>Elena Petrova</h5>
-                        <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> Paris, France</p>
-                        <div class="rating mb-2">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <span class="text-muted">(127)</span>
-                        </div>
-                        <p class="mb-2"><small><i class="fas fa-language"></i> English, French, Russian</small></p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-bold" style="color: var(--accent);">$45/hr</span>
-                            <button class="btn btn-primary btn-sm">View Profile</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <?php
-                include_once 'includes/components/booking-card.php';
-            ?>
-
-            <div class="col-md-3">
-                <div class="guide-card">
-                    <img src="https://i.pravatar.cc/300?img=47" alt="Guide">
-                    <div class="guide-card-body">
-                        <h5>Sofia Martinez</h5>
-                        <p class="text-muted mb-1"><i class="fas fa-map-marker-alt"></i> Mexico City</p>
-                        <div class="rating mb-2">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                            <span class="text-muted">(93)</span>
-                        </div>
-                        <p class="mb-2"><small><i class="fas fa-language"></i> English, Spanish</small></p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-bold" style="color: var(--accent);">$40/hr</span>
-                            <button class="btn btn-primary btn-sm">View Profile</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
