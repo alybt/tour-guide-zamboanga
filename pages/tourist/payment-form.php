@@ -166,7 +166,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- <link rel="stylesheet" href="../../assets/css/tourist/index.css"> -->
     <link rel="stylesheet" href="../../assets/css/tourist/header.css">
     <link rel="stylesheet" href="../../assets/css/tourist/header.css">
-    <style>
+<style> 
+    :root {
+        --primary-color: #ffffff;
+        --secondary-color: #213638;
+        --accent: #E5A13E;
+        --secondary-accent: #CFE7E5;
+        --muted-color: gainsboro;
+
+        /*Booking Status Color*/
+        --pending-for-payment: #F9A825 ;
+        --pending-for-approval: #EF6C00 ;
+        --approved: #3A8E5C;
+        --in-progress: #009688;
+        --completed: #1A6338;
+        --cancelled: #F44336;
+        --cancelled-no-refund: #BC2E2A;
+        --refunded: #42325D;    
+        --failed: #820000;
+        --rejected-by-guide: #B71C1C;
+        --booking-expired-payment-not-completed: #695985;
+        --booking-expired-guide-did-not-confirm-in-time: #695985;
+    }
+    body{
+        margin-top: 5rem;
+        background: var(--muted-color);
+    }
     .payment-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -190,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         color: #1a5d1a;
         margin-bottom: 20px;
         padding-bottom: 10px;
-        border-bottom: 3px solid #e0f2e0;
+        border-bottom: 3px solid var(--accent);
     }
 
     .booking-info-grid {
@@ -222,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     #feeBreakdown td {
         padding: 10px 12px;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--accent);
     }
 
     #feeBreakdown .total-row {
@@ -274,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .form-group select {
         width: 100%;
         padding: 12px;
-        border: 1px solid #ddd;
+        border: 1px solid var(--accent);
         border-radius: 8px;
         font-size: 1rem;
     }
@@ -384,14 +409,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <tbody id="feeBreakdownBody"></tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="2"><strong>Grand Total (After Discount)</strong></td>
+                    <td colspan="2"><strong>Package Total Price (After Discount)</strong></td>
                     <td style="text-align: right; font-size: 1.2rem; color: #1a5d1a;" id="grandTotal">₱0.00</td>
                 </tr>
             </tfoot>
         </table>
 
         <div class="highlight-box">
-            <strong>Total Amount to Pay:</strong> 
+            <strong>Total Price:</strong> 
             <span id="finalPayable" style="font-size: 1.4rem; color: #1a5d1a;">₱0.00</span>
         </div>
     </div>
@@ -457,15 +482,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <fieldset class="address-section">
-                <legend>Billing Address</legend>
+            <!-- Billing Address Section (Consistent UI) -->
+            <h3 class="section-title" style="margin-top: 30px; font-size: 1.3rem;">Billing Address</h3>
+            <div class="form-group">
+                <label>Street Address</label>
                 <input type="text" name="method_line1" placeholder="Street Address" required>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>City</label>
                     <input type="text" name="method_city" placeholder="City" required>
+                </div>
+                <div class="form-group">
+                    <label>Postal Code</label>
                     <input type="text" name="method_postalcode" placeholder="Postal Code" required>
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Country</label>
                 <input type="text" name="method_country" value="Philippines" readonly>
-            </fieldset>
+            </div>
 
             <!-- Card Section -->
             <div id="cardSection" style="display:none; margin-top: 20px;">
