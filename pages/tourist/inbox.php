@@ -14,14 +14,26 @@ require_once "../../classes/conversation.php";
 $guideObj = new Guide();
 $conversationObj = new Conversation();
 
+// Get all conversations first
+$db = $conversationObj->connect();
+$tourist_ID = $_SESSION['account_ID']; 
+$conversationList = $conversationObj->fetchConversations($tourist_ID);
+
+// If no guide_ID, use the first conversation
 if (!isset($_GET['guide_id']) || empty($_GET['guide_id'])) {
-    $_SESSION['error'] = "Invalid guide ID.";
-    header("Location: index.php");
-    exit();
+    if (!empty($conversationList)) {
+        $guide_ID = $conversationList[0]['other_user_ID'];
+        // Redirect to this guide's conversation
+        header("Location: inbox.php?guide_id=" . $guide_ID);
+        exit();
+    } else {
+        $_SESSION['error'] = "No conversations yet.";
+        header("Location: index.php");
+        exit();
+    }
 }
 
-$guide_ID = intval($_GET['guide_id']);
-$tourist_ID = $_SESSION['account_ID']; // Assuming this is set in session as account_ID
+$guide_ID = intval($_GET['guide_id']);// Assuming this is set in session as account_ID
 
 // Get or create conversation with this specific guide
 $db = $conversationObj->connect();
@@ -38,9 +50,6 @@ $messages = $conversationObj->fetchMessages($selected_conversation_ID);
 
 // Mark messages as read for this conversation
 $conversationObj->markAsRead($selected_conversation_ID, $tourist_ID);
-
-// Fetch all conversations for the sidebar
-$conversationList = $conversationObj->fetchConversations($tourist_ID);
 
 // Get guide details for the chat header
 $guidedetails = $guideObj->getGuideByID($guide_ID);

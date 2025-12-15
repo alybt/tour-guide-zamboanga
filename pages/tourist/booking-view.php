@@ -77,6 +77,7 @@ $statusColor = match($booking['booking_status']) {
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin-top: 3rem;
         }
 
         .navbar {
@@ -377,42 +378,26 @@ $statusColor = match($booking['booking_status']) {
                 <!-- Actions -->
                 <div class="detail-card">
                     <h5><i class="fas fa-tools me-2"></i> Actions</h5>
-                    <button class="btn btn-primary w-100 mb-2">
+                    <!-- <button class="btn btn-primary w-100 mb-2">
                         <i class="fas fa-download me-2"></i> Download Ticket
-                    </button>
-                    <button class="btn btn-outline-primary w-100 mb-2">
-                        <i class="fas fa-calendar me-2"></i> Add to Calendar
-                    </button>
-                    <button class="btn btn-outline-primary w-100 mb-2">
-                        <i class="fas fa-edit me-2"></i> Modify Booking
-                    </button>
-                    <button class="btn btn-outline-danger w-100">
-                        <i class="fas fa-times me-2"></i> Cancel Booking
-                    </button>
-                    <?php if ($booking['booking_status'] === 'Pending'): ?>
-                        <a href="payment-form.php?id=<?= $booking_ID ?>" class="btn btn-success btn-lg w-100 mb-2">
+                    </button> -->
+                    <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-danger w-100 mb-2 cancel-booking" data-name="<?= htmlspecialchars($booking['tourpackage_name']) ?>">
+                            <i class="fas fa-times me-2"></i> Cancel Booking
+                        </a>
+                    <?php if ($booking['booking_status'] === 'Pending for Payment'): ?>
+                        <a href="payment-form.php?id=<?= $booking_ID ?>" class="btn btn-success w-100 mb-2">
                             <i class="bi bi-credit-card"></i> Pay Now
                         </a>
-                    <?php elseif ($booking['booking_status'] === 'Paid'): ?>
-                        <button class="btn btn-primary btn-lg w-100 mb-2" disabled>
-                            <i class="bi bi-check-circle"></i> Paid - Awaiting Confirmation
-                        </button>
-                    <?php elseif ($booking['booking_status'] === 'Confirmed'): ?>
-                        <button class="btn btn-success btn-lg w-100 mb-2" disabled>
-                            <i class="bi bi-trophy"></i> Confirmed! Get Ready!
-                        </button>
+                        
+                    <?php elseif (in_array($booking['booking_status'], ['Completed', 'Cancelled', 'Refunded','Failed', 'Rejected by the Guide', 'Booking Expired — Payment Not Completed', 'Booking Expired — Guide Did Not Confirm in Time'], true)): ?>
+                        <a href="booking-again.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-success w-100">
+                            <i class="fas fa-redo me-2"></i> Book Again
+                        </a> 
                     <?php endif; ?>
 
                     <a href="booking.php" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-arrow-left"></i> Back to My Bookings
                     </a>
-
-                    <?php if ($booking['booking_status'] == 'Pending for Payment'){ ?>
-                    <a href="payment-form.php?id=<?= $booking['booking_ID'] ?>" class="btn btn btn-outline-secondary btn-sm w-100"> Pay </a> 
-                    <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-danger btn-sm cancel-booking w-100" data-name="<?= htmlspecialchars($booking['tourpackage_name']) ?>"> Cancel </a>
-                    <?php } else if (in_array($booking['booking_status'], [ 'Completed', 'Cancelled', 'Refunded','Failed', 'Rejected by the Guide', 'Booking Expired — Payment Not Completed', 'Booking Expired — Guide Did Not Confirm in Time' ], true)){ ?>
-                    <a href="booking-again.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-success btn-sm w-100"> Book Again </a>
-                    <?php } ?>
                 </div>
 
                 <!-- Important Info -->
@@ -432,12 +417,12 @@ $statusColor = match($booking['booking_status']) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function() {
-            $('.btn-primary, .btn-outline-primary, .btn-outline-danger').on('click', function() {
-                const action = $(this).text().trim();
-                alert('Action: ' + action);
-            });
-        });
+        // $(document).ready(function() {
+        //     $('.btn-primary, .btn-outline-primary, .btn-outline-danger').on('click', function() {
+        //         const action = $(this).text().trim();
+        //         alert('Action: ' + action);
+        //     });
+        // });
     </script>
 </body>
 </html>
