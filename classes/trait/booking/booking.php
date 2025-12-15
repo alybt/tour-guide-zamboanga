@@ -383,8 +383,7 @@ trait BookingDetails{
         return $this->executeQuery($this->getBaseSql(), $guide_ID, $extraWhere);
     }
 
-    public function getGuideAccountIDByBookingID(int $booking_ID): ?int
-    {
+    public function getGuideAccountIDByBookingID(int $booking_ID): ?int {
         $sql = "
             SELECT g.account_ID
             FROM Booking b
@@ -652,5 +651,72 @@ trait BookingDetails{
         }
 
     }
+ 
+    public function getPendingBookingsByGuide(int $guide_ID): array {
+        try {
+            $sql = "SELECT 
+                b.*,
+                tp.tourpackage_name,
+                b.tourist_ID AS tourist_account_ID
+            FROM Booking b
+            LEFT JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            LEFT JOIN Account_Info acc ON b.tourist_ID = acc.account_ID
+            WHERE tp.guide_ID = 1
+            AND b.booking_status IN ('Pending for Payment','Pending for Approval','Approved')
+            ORDER BY b.booking_created_at DESC";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$guide_ID]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            $this->setLastError('Error fetching pending bookings: ' . $e->getMessage());
+            return [];
+        }
+    }
+ 
+    public function getTodayBookingsByGuide(int $guide_ID): array {
+        try {
+            $today = date('Y-m-d');
+            
+            $sql = "SELECT 
+                b.*,
+                tp.tourPackage_name,
+                CONCAT(ni.name_first, ' ', ni.name_last) as tourist_name
+            FROM Booking b
+            LEFT JOIN TourPackage tp ON b.tourPackage_ID = tp.tourPackage_ID
+            LEFT JOIN Account_Info acc ON b.tourist_ID = acc.account_ID
+            LEFT JOIN User_Login ul ON acc.user_ID = ul.user_ID
+            LEFT JOIN Person p ON ul.person_ID = p.person_ID
+            LEFT JOIN Name_Info ni ON p.name_ID = ni.name_ID
+            WHERE b.guide_ID = ? 
+            AND DATE(b.booking_startDate) = ?
+            AND b.booking_status IN ('Confirmed', 'In Progress')
+            ORDER BY b.booking_startDate ASC";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$guide_ID, $today]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            $this->setLastError('Error fetching today bookings: ' . $e->getMessage());
+            return [];
+        }
+    }
+ 
+    public function getCompletedBookingsCount(int $guide_ID): int {
+        try {
+            $sql = "SELECT COUNT(*) as count 
+                    FROM Booking 
+                    WHERE guide_ID = ? AND booking_status = 'Completed'";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$guide_ID]);
+            $result = $stmt->fetch();
+            return (int)($result['count'] ?? 0);
+        } catch (PDOException $e) {
+            $this->setLastError('Error counting completed bookings: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
 }
 ?>

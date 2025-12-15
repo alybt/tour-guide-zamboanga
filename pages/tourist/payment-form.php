@@ -57,7 +57,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
     $methodcategory_ID = $_POST['methodcategory_ID'] ?? null;
-    $method_amount = $_POST['method_amount'] ?? 0;
+    $paymentinfo_total_amount = $_POST['paymentinfo_total_amount'] ?? 0;
     $method_currency = 'PHP';
     $method_cardnumber = $_POST['method_cardnumber'] ?? null;
     $method_expmonth = $_POST['method_expmonth'] ?? null;
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $method_status = $_POST['method_status'] ?? 'Pending';
  
     $methodcategory_processing_fee = (float)($_POST['methodcategory_processing_fee'] ?? 0);
-    $paymentinfo_total_amount = (float)$method_amount + $methodcategory_processing_fee;
+    $method_amount = (float)$paymentinfo_total_amount + $methodcategory_processing_fee;
  
     $method_ID = null;
  
@@ -451,8 +451,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label><strong>Total Amount to Pay</strong></label>
-                <input type="text" id="method_amount" readonly style="font-size: 1.4rem; font-weight: bold; color: #1a5d1a;">
-                <input type="hidden" name="method_amount" value="0">
+                <input type="text" id="paymentinfo_total_amount" readonly style="font-size: 1.4rem; font-weight: bold; color: #1a5d1a;">
+                <input type="hidden" name="paymentinfo_total_amount" value="0">
             </div>
 
             <div class="form-group">
@@ -673,7 +673,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const grandTotal = parseFloat(document.getElementById('grandTotal').textContent.replace(/[₱,]/g, '')) || 0;
 
             document.getElementById('methodcategory_processing_fee').value = fee.toFixed(2);
-            document.getElementById('method_amount').value = (grandTotal + fee).toFixed(2); 
+            document.getElementById('paymentinfo_total_amount').value = (grandTotal + fee).toFixed(2); 
             document.querySelectorAll('.payment-type-section').forEach(section => {
                 section.style.display = 'none';
             });
@@ -727,8 +727,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const fee = parseFloat(document.querySelector('[name="methodcategory_processing_fee"]').value) || 0;
     const total = baseAmount + fee;
 
-    document.getElementById('method_amount').value = total.toFixed(2);
-    document.querySelector('[name="method_amount"]').value = total.toFixed(2);
+    document.getElementById('paymentinfo_total_amount').value = total.toFixed(2);
+    document.querySelector('[name="paymentinfo_total_amount"]').value = total.toFixed(2);
     document.getElementById('finalPayable').textContent = '₱' + total.toLocaleString('en-US', {minimumFractionDigits: 2});
     document.getElementById('payButtonAmount').textContent = '₱' + total.toLocaleString('en-US', {minimumFractionDigits: 2});
     document.querySelector('[name="methodcategory_processing_fee"]').value = fee;

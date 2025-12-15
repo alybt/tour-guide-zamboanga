@@ -233,7 +233,8 @@ CREATE TABLE Languages (
 CREATE TABLE Guide (
     guide_ID   INT AUTO_INCREMENT PRIMARY KEY,
     account_ID INT,
-    license_ID INT,
+    license_ID INT, 
+    guide_money DECIMAL(10,2) DEFAULT 0.00,
     FOREIGN KEY (account_ID) REFERENCES Account_Info(account_ID),
     FOREIGN KEY (license_ID) REFERENCES Guide_License(license_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -249,27 +250,18 @@ CREATE TABLE Guide_Languages (
     FOREIGN KEY (languages_ID) REFERENCES Languages(languages_ID) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
- CREATE TABLE Guide_Earnings (
-        earning_ID        INT AUTO_INCREMENT PRIMARY KEY,
-        guide_ID          INT NOT NULL,
-        booking_ID        INT NOT NULL,
-        paymentinfo_ID    INT NOT NULL,
+CREATE TABLE Guide_Earnings (
+    earning_ID        INT AUTO_INCREMENT PRIMARY KEY,
+    paymenttransaction_ID    INT NOT NULL,
+    platform_fee      DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    earning_amount    DECIMAL(10,2) NOT NULL,
+    earning_status    ENUM('Pending','On Hold','Released','Cancelled','Refunded') DEFAULT 'Pending',
+    released_at       DATETIME NULL,
+    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-        gross_amount      DECIMAL(10,2) NOT NULL,
-        platform_fee      DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-        refund_amount     DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-        net_earning       DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (paymenttransaction_ID) REFERENCES Payment_Transaction(paymenttransaction_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-        earning_status    ENUM('Pending','On Hold','Released','Cancelled','Refunded') DEFAULT 'Pending',
-        released_at       DATETIME NULL,
-        created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-        FOREIGN KEY (guide_ID) REFERENCES Guide(guide_ID) ON DELETE CASCADE,
-        FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID) ON DELETE CASCADE,
-        FOREIGN KEY (paymentinfo_ID) REFERENCES Payment_Info(paymentinfo_ID),
-
-        UNIQUE KEY unique_guide_booking (guide_ID, booking_ID)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ===============================
 -- PRICING
