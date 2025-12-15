@@ -657,4 +657,15 @@ class Guide extends Database {
         }
     }
 
+    public function getGuideAccountID($guide_ID){
+        $sql = "SELECT account_ID FROM Guide
+        WHERE guide_ID = :guide_ID";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':guide_ID', $guide_ID); 
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+
 }

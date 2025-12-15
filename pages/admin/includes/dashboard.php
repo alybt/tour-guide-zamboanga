@@ -20,13 +20,6 @@ function isActiveMultiple($pages) {
 <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css">
 
 <style>
-    :root {
-        --primary-color: #ffffff;
-        --secondary-color: #213638;
-        --accent: #E5A13E;
-        --secondary-accent: #CFE7E5;
-    }
-
     .sidebar {
         position: fixed;
         left: 0;
@@ -139,14 +132,6 @@ function isActiveMultiple($pages) {
         background: var(--accent);
     }
 
-    /* Main content adjustment */
-    .main-content {
-        margin-left: 250px;
-        padding: 80px 30px 30px;
-        width: calc(100% - 250px);
-        transition: all 0.3s ease;
-    }
-
     /* Responsive */
     @media (max-width: 768px) {
         .sidebar {
@@ -221,10 +206,10 @@ function isActiveMultiple($pages) {
         
         <hr class="bg-white opacity-25 my-3">
         
-        <a class="nav-link text-warning" href="includes/ajax/account-change.php">
+        <!-- <a class="nav-link text-warning" href="includes/ajax/account-change.php">
             <i class="bi bi-person-walking"></i>
             <span class="nav-text">Switch to Tourist</span>
-        </a>
+        </a> -->
         
         <a class="nav-link text-danger" href="logout.php" 
            onclick="return confirm('Logout now? Your last activity will be recorded.');">

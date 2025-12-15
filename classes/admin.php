@@ -2,7 +2,7 @@
 
 require_once __DIR__ . "/../config/database.php";
 require_once "trait/account/account-login.php";
-require_once "trait/booking/booking_bundle.php";
+require_once "trait/booking/booking-bundle.php";
 require_once "trait/booking/companion.php";
 require_once "trait/tour/tour-packages.php";
 require_once "trait/tour/tour-spots.php";

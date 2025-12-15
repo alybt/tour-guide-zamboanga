@@ -58,6 +58,17 @@ trait PaymentTransaction{
         }
     }
 
+    public function viewAllTransaction(){
+        $sql = "SELECT pt.*, b.booking_ID, b.booking_status 
+        FROM payment_transaction pt 
+        LEFT JOIN booking b ON b.booking_ID = pt.booking_ID 
+        WHERE b.booking_status = 'Completed'";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql); 
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
 }

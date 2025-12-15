@@ -262,6 +262,23 @@ CREATE TABLE Guide_Earnings (
     FOREIGN KEY (transaction_ID) REFERENCES Payment_Transaction(transaction_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE Guide_Money_History (
+    history_ID     INT AUTO_INCREMENT PRIMARY KEY,
+
+    guide_ID       INT NOT NULL,
+
+    balance_before DECIMAL(10,2) NOT NULL,
+    amount         DECIMAL(10,2) NOT NULL, -- positive = earn, negative = payout/refund
+    balance_after  DECIMAL(10,2) NOT NULL,
+
+    reference_ID   INT NULL,
+    reference_name ENUM('Earning','Refund','Payout','Adjustment') NOT NULL,
+
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (guide_ID) REFERENCES Guide(guide_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 -- ===============================
 -- PRICING

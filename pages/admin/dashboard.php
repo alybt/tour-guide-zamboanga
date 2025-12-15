@@ -229,40 +229,7 @@ $updateBookings = $bookingObj->updateBookings();
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo px-3">
-            <span>Tourismo Zamboanga</span>
-        </div>
-        <nav class="nav flex-column px-2">
-            <a class="nav-link active" href="dashboard.php">
-                <i class="bi bi-speedometer2"></i>
-                <span class="nav-text">Dashboard</span>
-            </a>
-            <a class="nav-link" href="tour-spots.php">
-                <i class="bi bi-geo-alt"></i>
-                <span class="nav-text">Manage Spots</span>
-            </a>
-            <a class="nav-link" href="manage-users.php">
-                <i class="bi bi-people"></i>
-                <span class="nav-text">Manage Users</span>
-            </a>
-            <a class="nav-link" href="reports.php">
-                <i class="bi bi-graph-up"></i>
-                <span class="nav-text">Reports</span>
-            </a>
-            <a class="nav-link" href="settings.php">
-                <i class="bi bi-gear"></i>
-                <span class="nav-text">Settings</span>
-            </a>
-            <hr class="bg-white opacity-25 my-3">
-            <a class="nav-link text-danger" href="logout.php"
-               onclick="return confirm('Logout now? Your last activity will be recorded.');">
-                <i class="bi bi-box-arrow-right"></i>
-                <span class="nav-text">Logout</span>
-            </a>
-        </nav>
-    </aside>
+    <?php include 'includes/dashboard.php';?>
 
     <!-- Main Content -->
     <main class="main-content">

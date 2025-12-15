@@ -8,12 +8,13 @@ require_once "trait/payment-info/payment-info.php";
 require_once "trait/payment-info/payment-transaction.php";
 require_once "trait/payment-info/refund.php";
 require_once "trait/payment-info/paymongo.php";
+require_once "trait/payment-info/payout.php";
 require_once "trait/person/trait-phone.php";
 require_once __DIR__ . '/../assets/vendor/autoload.php';
  use Paymongo\Paymongo;
 
 class PaymentManager extends Database{
-    use MethodTrait, TransactionReferenceTrait, PaymentInfo, PaymentTransaction, PhoneTrait, Refund, PayMongoTrait;
+    use MethodTrait, TransactionReferenceTrait, PaymentInfo, PaymentTransaction, PhoneTrait, Refund, PayMongoTrait,PayoutTrait;
    
     
  // Use Sandbox Secret Key
