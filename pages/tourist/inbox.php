@@ -567,7 +567,39 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
                 transform: translateY(-10px);
             }
         }
-</style>
+        .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(229, 161, 62, 0.3);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }</style>
 </head>
 <body>
     <?php include 'includes/header.php'?>
@@ -682,6 +714,8 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
             }
 
             function reloadMessages() {
+                $('#chatMessages').html('<div class="loading-spinner"><div class="spinner"></div></div>');
+                
                 $.ajax({
                     type: 'GET',
                     url: './includes/ajax/get-messages.php',
@@ -690,11 +724,12 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
                     },
                     dataType: 'html',
                     success: function(data) {
-                        $('#chatMessages').html(data);
+                        $('#chatMessages').html(data).addClass('fade-in');
                         scrollToBottom();
                     },
                     error: function(xhr, status, error) {
                         console.error('Error loading messages:', error);
+                        $('#chatMessages').html('<div class="empty-chat"><p>Error loading messages</p></div>');
                     }
                 });
             }
