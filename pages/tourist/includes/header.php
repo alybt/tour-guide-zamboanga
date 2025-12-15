@@ -186,7 +186,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     
                     <?php if ($account_ID): ?>
                         <li class="nav-item">
-                            <a class="nav-link <?= $currentPage === 'profile.php' ? 'active' : '' ?>" href="profile.php">
+                            <a class="nav-link <?= $currentPage === 'profile.php' ? 'active' : '' ?>" href="dashboard-profile.php">
                                 <i class="fas fa-user-circle me-1"></i> Profile
                             </a>
                         </li>
