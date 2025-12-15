@@ -15,24 +15,16 @@ $bookingObj = new Booking();
 $guideObj = new Guide();
 $accountObj = new Account();
 
-// Handle POST actions
-$successMessage = '';
-$errorMessage = '';
+// Handle session messages from payout-approve.php
+$successMessage = $_SESSION['success'] ?? '';
+$errorMessage = $_SESSION['error'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? null;
-    $transaction_id = intval($_POST['transaction_id'] ?? 0);
-    
-    if ($action === 'approve' && $transaction_id > 0) {
-        if ($paymentManagerObj->transactionApproved($transaction_id)) {
-            $successMessage = "Transaction #$transaction_id approved successfully!";
-        } else {
-            $errorMessage = "Failed to approve transaction #$transaction_id.";
-        }
-    } elseif ($action === 'refund' && $transaction_id > 0) {
-        // Handle refund logic here if needed
-        $errorMessage = "Refund functionality coming soon.";
-    }
+// Clear session messages after displaying them
+if (!empty($successMessage)) {
+    unset($_SESSION['success']);
+}
+if (!empty($errorMessage)) {
+    unset($_SESSION['error']);
 }
 
 $transactions = $paymentManagerObj->viewAllTransaction();
@@ -45,15 +37,15 @@ $completedTransactions = 0;
 
 foreach ($transactions as $t) {
     $totalRevenue += (float)$t['transaction_total_amount'];
-    if ($t['transaction_status'] === 'succeeded' || $t['transaction_status'] === 'paid') {
+    if ($t['transaction_status'] != 'Pending') {
         $completedTransactions++;
     }
 }
 
 // Filter handling
-$statusFilter = $_GET['status'] ?? 'all';
-$dateFilter = $_GET['date'] ?? 'all';
-$searchQuery = $_GET['search'] ?? '';
+// $statusFilter = $_GET['status'] ?? 'all';
+// $dateFilter = $_GET['date'] ?? 'all';
+// $searchQuery = $_GET['search'] ?? '';
 
 ?>
 
@@ -391,49 +383,15 @@ $searchQuery = $_GET['search'] ?? '';
             </div>
         </div>
 
-        <!-- Filters -->
-        <div class="filter-card">
-            <form method="GET" class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Status</label>
-                    <select name="status" class="form-select search-box">
-                        <option value="all" <?= $statusFilter === 'all' ? 'selected' : '' ?>>All Status</option>
-                        <option value="succeeded" <?= $statusFilter === 'succeeded' ? 'selected' : '' ?>>Succeeded</option>
-                        <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending</option>
-                        <option value="failed" <?= $statusFilter === 'failed' ? 'selected' : '' ?>>Failed</option>
-                        <option value="refunded" <?= $statusFilter === 'refunded' ? 'selected' : '' ?>>Refunded</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Date Range</label>
-                    <select name="date" class="form-select search-box">
-                        <option value="all" <?= $dateFilter === 'all' ? 'selected' : '' ?>>All Time</option>
-                        <option value="today" <?= $dateFilter === 'today' ? 'selected' : '' ?>>Today</option>
-                        <option value="week" <?= $dateFilter === 'week' ? 'selected' : '' ?>>This Week</option>
-                        <option value="month" <?= $dateFilter === 'month' ? 'selected' : '' ?>>This Month</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Search</label>
-                    <input type="text" name="search" class="form-control search-box" 
-                           placeholder="Transaction ID, Booking ID..." 
-                           value="<?= htmlspecialchars($searchQuery) ?>">
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-search"></i> Filter
-                    </button>
-                </div>
-            </form>
-        </div>
+        
 
         <!-- Transactions Table -->
         <div class="table-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0 fw-bold">All Transactions</h5>
-                <button class="btn btn-outline-success btn-sm">
+                <a href="export-transactions.php" class="btn btn-outline-success btn-sm">
                     <i class="bi bi-file-earmark-excel"></i> Export to Excel
-                </button>
+                </a>
             </div>
 
             <div class="table-responsive">
@@ -518,14 +476,11 @@ $searchQuery = $_GET['search'] ?? '';
                                                 <i class="bi bi-receipt"></i>
                                             </a>
                                             <?php if ($status === 'pending'): ?>
-                                                <form method="POST" style="display: inline;" 
-                                                      onsubmit="return confirm('Are you sure you want to approve this transaction?');">
-                                                    <input type="hidden" name="action" value="approve">
-                                                    <input type="hidden" name="transaction_id" value="<?= $t['transaction_ID'] ?>">
-                                                    <button type="submit" class="btn btn-outline-success btn-action btn-sm">
-                                                        <i class="bi bi-check-circle"></i>
-                                                    </button>
-                                                </form>
+                                                <a href="payout-approve.php?id=<?= $t['transaction_ID'] ?>" 
+                                                   class="btn btn-outline-success btn-action btn-sm"
+                                                   onclick="return confirm('Are you sure you want to approve this transaction?');">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </a>
                                                 <form method="POST" style="display: inline;" 
                                                       onsubmit="return confirm('Are you sure you want to cancel/reject this transaction?');">
                                                     <input type="hidden" name="action" value="refund">

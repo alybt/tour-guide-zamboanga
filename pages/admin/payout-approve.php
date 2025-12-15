@@ -18,13 +18,23 @@ $response = ['success' => false];
 if (isset($_GET['id'])) {
     $transaction_ID = intval($_GET['id']);
     
-    $update = $paymentManagerObj->transactionApproved($transaction_ID);
+    // Get transaction details to get the amount
+    $sql = "SELECT transaction_total_amount FROM Payment_Transaction WHERE transaction_ID = :transaction_id";
+    $db = $paymentManagerObj->connect();
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(':transaction_id', $transaction_ID, PDO::PARAM_INT);
+    $stmt->execute();
+    $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if ($update) {
-        $response['success'] = true;
-        $response['message'] = "Transaction approved successfully.";
+    if ($transaction) {
+        if ($paymentManagerObj->transactionApproved($transaction_ID, $transaction['transaction_total_amount'])) {
+            $response['success'] = true;
+            $response['message'] = "Transaction #$transaction_ID succeeded successfully.";
+        } else {
+            $response['error'] = "Failed to approve transaction #$transaction_ID.";
+        }
     } else {
-        $response['error'] = "Failed to approve transaction.";
+        $response['error'] = "Transaction #$transaction_ID not found.";
     }
 } else {
     $response['error'] = "Invalid transaction ID.";
