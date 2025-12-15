@@ -601,16 +601,13 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
                     </div>
                 </div>
                 <div class="chat-header-actions">
-                    <button title="Video Call"><i class="fas fa-video"></i></button>
-                    <button title="Phone Call"><i class="fas fa-phone"></i></button>
-                    <button title="Booking Details"><i class="fas fa-info-circle"></i></button>
-                    <button title="More Options"><i class="fas fa-ellipsis-v"></i></button>
+                     
                 </div>
             </div>
 
             <div class="chat-messages" id="chatMessages">
                 <?php 
-                $currentUserID = $tourist_ID; // For messages.php to determine sent/received
+                $currentUserID = $tourist_ID; 
                 include 'includes/components/messages.php';
                 ?>
             </div>
@@ -650,13 +647,12 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
                 
                 if (!message) return;
 
-                // Disable button while sending
                 const sendBtn = $('#sendButton');
                 sendBtn.prop('disabled', true);
                 
                 $.ajax({
                     type: 'POST',
-                    url: 'includes/ajax/send-message.php',
+                    url: './includes/ajax/send-message.php',
                     data: {
                         message: message,
                         conversation_ID: selectedConversationID,
@@ -664,11 +660,9 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
                     },
                     dataType: 'json',
                     success: function(response) {
-                        if (response.success) {
-                            // Clear input
+                        if (response.success) { 
                             input.val('');
-                            
-                            // Reload messages
+                             
                             reloadMessages();
                         } else {
                             console.error('Failed to send message:', response.error);
@@ -677,6 +671,7 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
                     },
                     error: function(xhr, status, error) {
                         console.error('AJAX error:', error);
+                        console.log('Response:', xhr.responseText);
                         alert('Error sending message. Please check your connection.');
                     },
                     complete: function() {
@@ -689,7 +684,7 @@ $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?i
             function reloadMessages() {
                 $.ajax({
                     type: 'GET',
-                    url: 'includes/components/messages.php',
+                    url: './includes/ajax/get-messages.php',
                     data: {
                         conversation_ID: selectedConversationID
                     },
