@@ -63,14 +63,16 @@ $ratingCount = $rating['count'] ?? 0;
     <style>
         
         :root {
-            --accent: #E5A13E; 
-            --secondary-color: #213638; 
-            --secondary-accent: #CFE7E5; 
+            --primary-color: #ffffff;
+            --secondary-color: #213638;
+            --accent: #E5A13E;
+            --secondary-accent: #CFE7E5;
+            --muted-color: gainsboro;
         }
         
         body {
             margin-top: 3rem;
-            background: #f8f9fa;
+            background: var(--muted-color);
             font-family: 'Poppins', sans-serif;
             color: var(--secondary-color);
         }
@@ -151,6 +153,7 @@ $ratingCount = $rating['count'] ?? 0;
             transition: all 0.3s;
             padding: 1.5rem;
             margin-bottom: 1rem;
+            background-color: white;
         }
         .package-card:hover {
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
@@ -340,9 +343,10 @@ $ratingCount = $rating['count'] ?? 0;
                         <a href="index.php" class="btn btn-outline-secondary w-100 mb-2">
                             <i class="bi bi-arrow-left"></i> Back to Guides
                         </a>
-                        <a href="booking-add.php?guide_id=<?= $guide_ID ?>" class="btn w-100" style="background: var(--accent); color: var(--secondary-color);">
+                        <!-- <a href="booking-add.php?guide_id=
+                         <?php // $guide_ID ?>" class="btn w-100" style="background: var(--accent); color: var(--secondary-color);">
                             <i class="bi bi-calendar-check"></i> Book Now
-                        </a>
+                        </a> -->
                     </div>
                 </div>
                 
