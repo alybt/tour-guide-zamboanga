@@ -158,8 +158,7 @@ CREATE TABLE Account_Info (
     account_created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     account_profilepic   VARCHAR(500) DEFAULT NULL, 
     account_aboutme      TEXT DEFAULT NULL, 
-    account_bio          VARCHAR(255) DEFAULT NULL,
-    account_nickname     VARCHAR(100) DEFAULT NULL,
+    account_bio          VARCHAR(255) DEFAULT NULL, 
     FOREIGN KEY (user_ID) REFERENCES User_Login(user_ID) ON DELETE CASCADE,
     FOREIGN KEY (role_ID) REFERENCES Role(role_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
