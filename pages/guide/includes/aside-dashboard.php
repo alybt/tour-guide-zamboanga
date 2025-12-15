@@ -13,9 +13,12 @@ function isActiveMultiple($pages) {
     global $current_page;
     return in_array($current_page, $pages) ? 'active' : '';
 }?>
+
+    <link href="../../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
 <aside class="sidebar">
     <div class="logo px-3">
-        <span>Tourismo Zamboanga</span>
+        <i class="fas fa-map-marked-alt"></i> <span> Tourismo Zamboanga</span>
     </div>
     <nav class="nav flex-column px-2">
         <a class="nav-link <?= isActive('dashboard.php') ?>" href="dashboard.php">
