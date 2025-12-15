@@ -387,10 +387,7 @@ class Guide extends Database {
         $sql = " SELECT 
                 -- Guide & Account
                 g.guide_ID,
-                ai.account_ID,
-                ai.account_status,
-                ai.account_rating_score,
-                ai.account_created_at,
+                ai.*,
                 
                 -- Login
                 ul.user_username,

@@ -36,21 +36,22 @@ $companions = $bookingObj->getCompanionsByBooking($booking_ID);
 $tourdetails = $bookingObj->getTourDetails($booking_ID);
 $transactionDetails = $bookingObj->getTransactionSummary($booking_ID);
 
-$statusColor = match($booking['booking_status']) {
-    'Pending for Payment' => 'bg-pending-for-payment',
-    'Pending for Approval' => 'bg-pending-for-approval',
-    'Approved' => 'bg-approved',
-    'In Progress' => 'bg-in-progress',
-    'Completed' => 'bg-completed',
-    'Cancelled' => 'bg-cancelled',
-    'Cancelled - No Refund' => 'bg-cancelled-no-refund',
-    'Refunded' => 'bg-refunded',
-    'Failed' => 'bg-failed',
-    'Rejected by the Guide' => 'bg-rejected-by-guide',
-    'Booking Expired — Payment Not Completed' => 'bg-booking-expired-payment-not-completed',
-    'Booking Expired — Guide Did Not Confirm in Time' => 'bg-booking-expired-guide-did-not-confirm-in-time',
-    default => 'bg-secondary'
+$statusColor = match ($booking['booking_status']) {
+    'Pending for Payment' => 'status-pending-for-payment',
+    'Pending for Approval' => 'status-pending-for-approval',
+    'Approved' => 'status-approved',
+    'In Progress' => 'status-in-progress',
+    'Completed' => 'status-completed',
+    'Cancelled' => 'status-cancelled',
+    'Cancelled - No Refund' => 'status-cancelled-no-refund',
+    'Refunded' => 'status-refunded',
+    'Failed' => 'status-failed',
+    'Rejected by the Guide' => 'status-rejected-by-guide',
+    'Booking Expired — Payment Not Completed' => 'status-booking-expired-payment-not-completed',
+    'Booking Expired — Guide Did Not Confirm in Time' => 'status-booking-expired-guide-did-not-confirm-in-time',
+    default => 'status-secondary'
 };
+
 
 ?>
 
@@ -70,8 +71,21 @@ $statusColor = match($booking['booking_status']) {
             --secondary-color: #213638;
             --accent: #E5A13E;
             --secondary-accent: #CFE7E5;
+            --muted-color: gainsboro;
+
+            /*Booking Status Color*/
+            --pending-for-payment: #F9A825 ;
+            --pending-for-approval: #EF6C00 ;
             --approved: #3A8E5C;
             --in-progress: #009688;
+            --completed: #1A6338;
+            --cancelled: #F44336;
+            --cancelled-no-refund: #BC2E2A;
+            --refunded: #42325D;    
+            --failed: #820000;
+            --rejected-by-guide: #B71C1C;
+            --booking-expired-payment-not-completed: #695985;
+            --booking-expired-guide-did-not-confirm-in-time: #695985;
         }
 
         body {
@@ -104,6 +118,66 @@ $statusColor = match($booking['booking_status']) {
 
         .status-approved {
             background-color: var(--approved);
+            color: white;
+        }
+        
+        .status-pending-for-payment {
+            background-color: var(--pending-for-payment);
+            color: white;
+        }
+
+        .status-pending-for-approval {
+            background-color: var(--pending-for-approval);
+            color: white;
+        }
+
+        .status-approved {
+            background-color: var(--approved);
+            color: white;
+        }
+
+        .status-in-progress {
+            background-color: var(--in-progress);
+            color: white;
+        }
+
+        .status-completed {
+            background-color: var(--completed);
+            color: white;
+        }
+
+        .status-cancelled {
+            background-color: var(--cancelled);
+            color: var(--secondary-color);
+        }
+
+        .status-cancelled-no-refund {
+            background-color: var(--cancelled-no-refund);
+            color: white;
+        }
+
+        .status-refunded {
+            background-color: var(--refunded);
+            color: white;
+        }
+
+        .status-failed {
+            background-color: var(--failed);
+            color: white;
+        }
+
+        .status-rejected-by-guide {
+            background-color: var(--rejected-by-guide);
+            color: white;
+        }
+
+        .status-booking-expired-payment-not-completed {
+            background-color: var(--booking-expired-payment-not-completed);
+            color: white;
+        }
+
+        .status-booking-expired-guide-did-not-confirm-in-time {
+            background-color: var(--booking-expired-guide-did-not-confirm-in-time);
             color: white;
         }
 
@@ -223,16 +297,16 @@ $statusColor = match($booking['booking_status']) {
 <body>
     <?php require_once "includes/header.php"; ?>
     <?php include_once "includes/header.php"; ?>
-
+    
     <div class="booking-header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="mb-2">Booking #<?= str_pad($booking_ID, 5, '0', STR_PAD_LEFT) ?></h6>
+                    <h6 class="mb-2">Booking #<?= str_pad($booking['booking_ID'], 5, '0', STR_PAD_LEFT) ?></h6>
                     <h1><?= htmlspecialchars($package['tourpackage_name']) ?></h1>
                 </div>
-                <span class="status-badge status-approved <?= $statusColor ?>">
-                    <i class="fas fa-check-circle me-2"></i> <?= htmlspecialchars($booking['booking_status']) ?>
+                <span class="status-badge <?= $statusColor ?>"> 
+                    <?= htmlspecialchars($booking['booking_status']) ?>
                 </span>
             </div>
         </div>
@@ -296,17 +370,27 @@ $statusColor = match($booking['booking_status']) {
                 <!-- Guide Information -->
                 <div class="detail-card">
                     <h5><i class="fas fa-user-tie me-2"></i> Your Guide</h5>
+                    <?php $rating = $guideObj->guideRatingAndCount($guide['account_ID'] ?? '');
+                    $average_rating = $rating['average_rating'] ?? 0;
+                    $rating_count = $rating['rating_count'] ?? 0;
+                    $display_rating = round($average_rating * 2) / 2; ?>
                     <div class="guide-info">
                         <img src="https://i.pravatar.cc/150?img=33" alt="Guide" class="guide-img">
                         <div class="flex-grow-1">
                             <h5 class="mb-1"><?= htmlspecialchars($guide['guide_name'] ?? 'Not Assigned') ?></h5>
                             <div class="text-warning mb-2">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <span class="text-muted">(156 reviews)</span>
+                                <?php 
+                                for ($i = 1; $i <= 5; $i++) {
+                                    if ($i <= $display_rating) { 
+                                        echo '<i class="fas fa-star text-warning"></i>';
+                                    } elseif ($i - 0.5 == $display_rating) { 
+                                        echo '<i class="fas fa-star-half-alt text-warning"></i>';
+                                    } else { 
+                                        echo '<i class="far fa-star text-muted"></i>';  
+                                    }
+                                }
+                                ?>
+                                <span class="text-muted">(<?= $rating_count ?>)</span>
                             </div>
                             <?php $spoken = $guideObj->getguideLanguages($package['guide_ID']); ?>
                             <p class="mb-0 text-muted">
@@ -343,6 +427,7 @@ $statusColor = match($booking['booking_status']) {
                 </div>
 
                 <!-- Map -->
+                <?php if (in_array($booking['booking_status'],['Pending for Payment','Pending for Approval','Approved'])) {?>
                 <div class="detail-card">
                     <h5><i class="fas fa-map-marked-alt me-2"></i> Meeting Location</h5>
                     <div class="map-container">
@@ -355,25 +440,28 @@ $statusColor = match($booking['booking_status']) {
                         </div>
                     </div>
                 </div>
+                <?php }?>
             </div>
 
             <div class="col-md-4">
                 <!-- Booking Summary -->
-                <div class="detail-card">
-                    <h5><i class="fas fa-receipt me-2"></i> Booking Summary</h5>
-                    <div class="info-row">
-                        <span class="info-label">Tour Price</span>
-                        <span class="info-value"><?= $transactionDetails['Total_WO_PF'] ?></span>
+                <?php if($transactionDetails != null){ ?>
+                    <div class="detail-card">
+                        <h5><i class="fas fa-receipt me-2"></i> Booking Summary</h5>
+                        <div class="info-row">
+                            <span class="info-label">Tour Price</span>
+                            <span class="info-value"><?= $transactionDetails['Total_WO_PF'] ?? '' ?></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Processing Fee</span>
+                            <span class="info-value"><?= $transactionDetails['Processing_Fee_Rate'] ?? '' ?></span>
+                        </div>
+                        <div class="info-row" style="border-top: 2px solid var(--accent); margin-top: 15px; padding-top: 15px;">
+                            <span class="info-label"><strong>Total Paid</strong></span>
+                            <span class="info-value" style="font-size: 1.3rem; color: var(--accent);"> <?= $transactionDetails['Total_Amount_Paid'] ?? '' ?></span>
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Processing Fee</span>
-                        <span class="info-value"><?= $transactionDetails['Processing_Fee_Rate'] ?></span>
-                    </div>
-                    <div class="info-row" style="border-top: 2px solid var(--accent); margin-top: 15px; padding-top: 15px;">
-                        <span class="info-label"><strong>Total Paid</strong></span>
-                        <span class="info-value" style="font-size: 1.3rem; color: var(--accent);"> <?= $transactionDetails['Total_Amount_Paid'] ?></span>
-                    </div>
-                </div>
+                <?php }?>
 
                 <!-- Actions -->
                 <div class="detail-card">
@@ -381,35 +469,38 @@ $statusColor = match($booking['booking_status']) {
                     <!-- <button class="btn btn-primary w-100 mb-2">
                         <i class="fas fa-download me-2"></i> Download Ticket
                     </button> -->
-                    <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-danger w-100 mb-2 cancel-booking" data-name="<?= htmlspecialchars($booking['tourpackage_name']) ?>">
-                            <i class="fas fa-times me-2"></i> Cancel Booking
+                   
+                    <?php if (in_array($booking['booking_status'],['Pending for Payment','Pending for Approval'])){?>
+                        <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-danger w-100 mb-2 cancel-booking" data-name="<?= htmlspecialchars($booking['tourpackage_name']) ?>">
+                                <i class="fas fa-times me-2"></i> Cancel Booking
                         </a>
-                    <?php if ($booking['booking_status'] === 'Pending for Payment'): ?>
+                    <?php } if (in_array($booking['booking_status'],['Pending for Payment'])) {?>
                         <a href="payment-form.php?id=<?= $booking_ID ?>" class="btn btn-success w-100 mb-2">
                             <i class="bi bi-credit-card"></i> Pay Now
                         </a>
-                        
-                    <?php elseif (in_array($booking['booking_status'], ['Completed', 'Cancelled', 'Refunded','Failed', 'Rejected by the Guide', 'Booking Expired — Payment Not Completed', 'Booking Expired — Guide Did Not Confirm in Time'], true)): ?>
-                        <a href="booking-again.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-success w-100">
+                    <?php } if (in_array($booking['booking_status'],['Completed','Cancelled','Cancelled - No Refund','Refunded','Failed','Rejected by the Guide','Booking Expired — Payment Not Completed','Booking Expired — Guide Did Not Confirm in Time'])) {?>
+                        <a href="booking-again.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-success w-100 mb-2">
                             <i class="fas fa-redo me-2"></i> Book Again
-                        </a> 
-                    <?php endif; ?>
-
+                        </a>
+                    <?php } ?>   
                     <a href="booking.php" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-arrow-left"></i> Back to My Bookings
                     </a>
                 </div>
 
                 <!-- Important Info -->
-                <div class="detail-card" style="background: #fff3cd; border-left: 4px solid #ffc107;">
-                    <h6 style="color: #856404;"><i class="fas fa-exclamation-triangle me-2"></i> Important</h6>
-                    <ul class="mb-0" style="color: #856404; font-size: 0.9rem;">
-                        <li>Please arrive 10 minutes early</li>
-                        <li>Bring comfortable walking shoes</li>
-                        <li>Water and snacks recommended</li>
-                        <li>Valid ID required for Colosseum entry</li>
-                    </ul>
-                </div>
+                 <?php if (in_array($booking['booking_status'],['Pending for Payment','Pending for Approval', 'Approved', 'In Progress'])){ ?>
+                    <div class="detail-card" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+                        <h6 style="color: #856404;"><i class="fas fa-exclamation-triangle me-2"></i> Important</h6>
+                        <ul class="mb-0" style="color: #856404; font-size: 0.9rem;">
+                            <li>Please arrive 10 minutes early</li>
+                            <li>Bring comfortable walking shoes</li>
+                            <li>Water and snacks recommended</li>
+                            <li>Valid ID required for Colosseum entry</li>
+                        </ul>
+                    </div>
+                <?php }?>
+                
             </div>
         </div>
     </div>
