@@ -37,7 +37,7 @@ $guideObj = new Guide();
 
         body {
             background-color: var(--muted-color);
-            margin-top: 3rem;
+            margin-top: 5rem;
         } 
 
         .navbar {
@@ -375,8 +375,8 @@ $guideObj = new Guide();
 </head>
 <body>
     <?php include 'includes/header.php'?>
-
-    <!-- Search Hero -->
+<!-- 
+    Search Hero
     <div class="search-hero">
         <div class="container">
             <h1 class="text-center mb-4">Find Your Perfect Local Guide</h1>
@@ -391,7 +391,7 @@ $guideObj = new Guide();
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div class="container">
         <div class="row">

@@ -35,7 +35,10 @@
                 <span class="language-badge"><?= $lang ?></span>
                 <?php } ?>
             </div>
-            <button class="btn btn-view-profile">View Profile</button>
+            <a href="guide-profile.php?guide_id=<?= $guide['guide_ID'] ?>">
+                    <button class="btn btn-view-profile">View Profile</button>
+                </a>
+            
         </div>
     </div>
 </div>
