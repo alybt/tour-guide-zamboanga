@@ -106,7 +106,6 @@ class Guide extends Database {
         $query->execute();
         return $query->fetch(PDO::FETCH_ASSOC);
     }
-    
 
     public function getPricingByID($pricingID) {
         $db = $this->connect();
@@ -587,6 +586,74 @@ class Guide extends Database {
             return 0.0;
         }
 
+    }
+
+    public function viewAllGuideForSearch(){
+        $sql = "SELECT g.guide_ID, 
+                -- Guide Full Name
+                CONCAT(
+                    n.name_first, 
+                    IF(n.name_middle IS NOT NULL AND n.name_middle != '', CONCAT(' ', n.name_middle), ''),
+                    ' ',
+                    n.name_last,
+                    IF(n.name_suffix IS NOT NULL AND n.name_suffix != '', CONCAT(' ', n.name_suffix), '')
+                ) AS guide_name, 
+                -- Contact
+                ci.contactinfo_email AS guide_email, 
+                -- License Info
+                gl.license_number,
+                gl.license_verification_status,
+                gl.license_issued_date,
+                gl.license_expiry_date, 
+                -- Account Info
+                ai.*,
+                g.guide_ID, 
+                -- Languages (comma-separated)
+                GROUP_CONCAT(l.languages_name ORDER BY l.languages_name SEPARATOR ', ') AS guide_languages 
+            FROM Guide g 
+            -- License
+            JOIN Guide_License gl 
+                ON g.license_ID = gl.license_ID 
+            -- Account
+            JOIN Account_Info ai 
+                ON g.account_ID = ai.account_ID 
+            JOIN User_Login ul 
+                ON ai.user_ID = ul.user_ID 
+            JOIN Person p 
+                ON ul.person_ID = p.person_ID 
+            JOIN Contact_Info ci 
+                ON p.contactinfo_ID = ci.contactinfo_ID 
+            JOIN Name_Info n 
+                ON p.name_ID = n.name_ID 
+            -- Languages
+            LEFT JOIN Guide_Languages glang 
+                ON g.guide_ID = glang.guide_ID 
+            LEFT JOIN Languages l 
+                ON glang.languages_ID = l.languages_ID 
+            GROUP BY 
+                g.guide_ID,
+                gl.license_ID,
+                ai.account_ID,
+                ci.contactinfo_email,
+                n.name_first,
+                n.name_middle,
+                n.name_last,
+                n.name_suffix 
+            ORDER BY 
+                ai.account_rating_score DESC,
+                n.name_last,
+                n.name_first
+            LIMIT 5";  
+
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+
+        if ($query->execute()){
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } else { 
+            error_log("SQL Error in viewAllGuideForSearch: " . implode(" ", $query->errorInfo()));
+            return false;
+        }
     }
 
 }
