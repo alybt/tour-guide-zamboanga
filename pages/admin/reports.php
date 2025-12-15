@@ -32,7 +32,7 @@ $total_tourists   = $pdo->query("SELECT COUNT(*) FROM account_info WHERE role_ID
 $total_packages   = $tourPackageObj->countPackages();
 $total_bookings   = $pdo->query("SELECT COUNT(*) FROM booking")->fetchColumn();
 $pending_bookings = $bookingObj->countBookings();
-$revenue_this_month = $pdo->query("SELECT COALESCE(SUM(paymentinfo_total_amount), 0) FROM payment_info WHERE MONTH(paymentinfo_date) = MONTH(CURRENT_DATE()) AND YEAR(paymentinfo_date) = YEAR(CURRENT_DATE())")->fetchColumn();
+$revenue_this_month = $pdo->query("SELECT COALESCE(SUM(transaction_total_amount), 0) FROM Payment_Transaction WHERE MONTH(transaction_created_date) = MONTH(CURRENT_DATE()) AND YEAR(transaction_created_date) = YEAR(CURRENT_DATE()) AND transaction_status = 'Paid'")->fetchColumn();
 
 
 $countPackage = $tourPackageObj->countPackages();

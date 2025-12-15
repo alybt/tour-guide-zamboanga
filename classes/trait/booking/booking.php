@@ -94,13 +94,9 @@ trait BookingDetails{
         gci.contactinfo_email AS guide_email,
         gpn.phone_number AS guide_phone,
         
-        -- Payment Info
-        pi.paymentinfo_ID,
-        pi.paymentinfo_total_amount,
-        pi.paymentinfo_date,
-        
         -- Transaction Info
         pt.transaction_ID,
+        pt.transaction_total_amount,
         pt.transaction_status,
         pt.transaction_reference,
         pt.transaction_created_date
@@ -129,9 +125,8 @@ trait BookingDetails{
         LEFT JOIN Contact_Info gci ON gp.contactinfo_ID = gci.contactinfo_ID
         LEFT JOIN Phone_Number gpn ON gci.phone_ID = gpn.phone_ID
         
-        -- Payment Info
-        LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
-        LEFT JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
+        -- Transaction Info
+        LEFT JOIN Payment_Transaction pt ON b.booking_ID = pt.booking_ID
         
         WHERE b.booking_ID = :booking_ID";
         
@@ -160,15 +155,14 @@ trait BookingDetails{
 
     public function getPaymentInfoByBookingID(int $bookingID): ?array {
         $sql = " SELECT 
-        pi.paymentinfo_ID,
-        pi.booking_ID,
-        pi.paymentinfo_total_amount AS total_amount,
-        pi.paymentinfo_date         AS payment_date,
+        pt.transaction_ID,
+        pt.booking_ID,
+        pt.transaction_total_amount AS total_amount,
+        pt.transaction_created_date AS payment_date,
         pt.transaction_status    AS transaction_status
-                    FROM Payment_Info pi
-                    JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
-                    WHERE booking_ID = :booking_id
-                    ORDER BY paymentinfo_date DESC
+                    FROM Payment_Transaction pt
+                    WHERE pt.booking_ID = :booking_id
+                    ORDER BY pt.transaction_created_date DESC
                     LIMIT 1
                 ";
 
@@ -222,7 +216,7 @@ trait BookingDetails{
             -- CORRECT TOTAL PAX using your booking_isselfIncluded flag
             ( COUNT(c.companion_ID) +  IF(b.booking_isselfIncluded = 1 OR b.booking_isselfIncluded IS NULL, 1, 0) ) AS total_pax, 
             -- Money
-            pi.paymentinfo_total_amount AS total_amount,
+            pt.transaction_total_amount AS total_amount,
             pt.transaction_status AS payment_status, 
             -- Contact
             CONCAT(COALESCE(coun.country_codenumber, ''), pn.phone_number) AS phone_number
@@ -239,8 +233,7 @@ trait BookingDetails{
             LEFT JOIN country coun    ON coun.country_ID = pn.country_ID
             LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
             LEFT JOIN companion c ON c.companion_ID = bb.companion_ID
-            LEFT JOIN payment_info pi ON pi.booking_ID = b.booking_ID
-            LEFT JOIN payment_transaction pt        ON pt.paymentinfo_ID = pi.paymentinfo_ID 
+            LEFT JOIN payment_transaction pt ON pt.booking_ID = b.booking_ID 
             
             WHERE tp.guide_ID = :guide_ID  AND b.booking_status IN (
             'Completed','Cancelled','Refunded','Failed','Rejected by the Guide',
@@ -299,8 +292,7 @@ trait BookingDetails{
                 LEFT JOIN country coun ON coun.country_ID = pn.country_ID
                 LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
                 LEFT JOIN companion c ON c.companion_ID = bb.companion_ID
-                LEFT JOIN payment_info pi ON pi.booking_ID = b.booking_ID
-                LEFT JOIN payment_transaction pt ON pt.paymentinfo_ID = pi.paymentinfo_ID 
+                LEFT JOIN payment_transaction pt ON pt.booking_ID = b.booking_ID
                 
             WHERE tp.guide_ID = :guide_ID 
             AND b.booking_status IN (
@@ -313,7 +305,7 @@ trait BookingDetails{
             GROUP BY 
                 b.booking_ID, tp.tourpackage_name, ni.name_first, ni.name_middle, ni.name_last,
                 b.booking_isselfIncluded, b.booking_created_at, b.booking_start_date, b.booking_status,
-                pi.paymentinfo_total_amount, pt.transaction_status,
+                pt.transaction_total_amount, pt.transaction_status,
                 coun.country_codenumber, pn.phone_number
 
             ORDER BY
@@ -627,9 +619,7 @@ trait BookingDetails{
                 JOIN 
                     Tour_Package TP ON B.tourpackage_ID = TP.tourpackage_ID
                 JOIN 
-                    Payment_Info PI ON B.booking_ID = PI.booking_ID
-                JOIN 
-                    Payment_Transaction TRX ON PI.paymentinfo_ID = TRX.paymentinfo_ID
+                    Payment_Transaction TRX ON B.booking_ID = TRX.booking_ID
                 JOIN 
                     Method M ON TRX.method_ID = M.method_ID
                 JOIN 

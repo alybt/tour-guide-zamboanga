@@ -56,14 +56,13 @@ trait MethodTrait{
 
     }
 
-    public function getMethodByPayment($paymentinfo_ID){
-        $sql = "SELECT * FROM payment_info pi
-                JOIN payment_transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID
+    public function getMethodByPayment($transaction_ID){
+        $sql = "SELECT * FROM Payment_Transaction pt
                 JOIN method m ON m.method_ID = pt.method_ID 
-                WHERE pi.paymentinfo_ID = :paymentinfo_ID";
+                WHERE pt.transaction_ID = :transaction_ID";
         $db = $this->connect();
         $query = $db->prepare($sql);
-        $query->bindParam(':paymentinfo_ID', $paymentinfo_ID);
+        $query->bindParam(':transaction_ID', $transaction_ID);
         $query->execute();
         return $query->fetch(PDO::FETCH_ASSOC);
     }

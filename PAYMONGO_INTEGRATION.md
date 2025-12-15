@@ -81,15 +81,19 @@ PAYMENT_FAILED_URL=https://yourdomain.com/pages/tourist/payment-failed.php
 
 The following tables are used:
 
-- **Payment_Info**: Stores payment information
 - **Payment_Transaction**: Stores transaction details and Paymongo intent IDs
 - **Method**: Stores payment method details
 - **Booking**: Stores booking information with status
 
 Key columns in Payment_Transaction:
-- `paymongo_intent_id`: PayMongo Payment Intent ID
+- `transaction_ID`: Primary Key
+- `booking_ID`: Reference to Booking table
+- `transaction_total_amount`: Payment amount in decimal format
 - `transaction_status`: Status (Pending, Paid, Failed, Refunded)
-- `transaction_reference`: Reference ID from Paymongo
+- `transaction_created_date`: Timestamp of transaction creation
+- `transaction_updated_date`: Timestamp of last update
+- `paymongo_intent_id`: PayMongo Payment Intent ID
+- `paymongo_refund_id`: PayMongo Refund ID for refund tracking
 
 ## API Integration
 

@@ -46,9 +46,8 @@ try {
             $stmt->execute([':intent_id' => $paymentIntentId]);
             
             // Get booking ID from payment transaction
-            $getSql = "SELECT pi.booking_ID, pt.transaction_ID 
+            $getSql = "SELECT pt.booking_ID, pt.transaction_ID 
                        FROM Payment_Transaction pt
-                       JOIN Payment_Info pi ON pt.paymentinfo_ID = pi.paymentinfo_ID
                        WHERE pt.paymongo_intent_id = :intent_id";
             
             $getStmt = $db->prepare($getSql);

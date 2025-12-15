@@ -355,9 +355,8 @@ class Booking extends Database{
             }
 
             $sql = "UPDATE Payment_Transaction pt
-                    JOIN Payment_Info pi ON pt.paymentinfo_ID = pi.paymentinfo_ID
                     SET pt.transaction_status = 'No Refund'
-                    WHERE pi.booking_ID = :booking_ID;";
+                    WHERE pt.booking_ID = :booking_ID";
             $query = $db->prepare($sql);
             $query->bindParam(':booking_ID', $booking_ID);
 

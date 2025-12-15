@@ -350,12 +350,13 @@ class Guide extends Database {
     }
 
     public function getTotalEarnings($guide_ID) {
-        $sql = "SELECT COALESCE(SUM(pi.paymentinfo_total_amount), 0) AS total_earnings
+        $sql = "SELECT COALESCE(SUM(pt.transaction_total_amount), 0) AS total_earnings
             FROM booking b
-            JOIN payment_info pi ON pi.booking_ID = b.booking_ID
+            JOIN Payment_Transaction pt ON pt.booking_ID = b.booking_ID
             JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
             WHERE tp.guide_ID = :guide_ID
-            AND b.booking_status IN ('Completed')";
+            AND b.booking_status IN ('Completed')
+            AND pt.transaction_status = 'Paid'";
 
         try {
             $db = $this->connect();

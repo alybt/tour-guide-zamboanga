@@ -267,13 +267,6 @@ Table Booking_Bundle {
   companion_ID int
 }
 
-Table Payment_Info {
-  paymentinfo_ID int [pk, increment]
-  booking_ID int
-  paymentinfo_total_amount decimal(10,2) [not null]
-  paymentinfo_date timestamp 
-}
-
 Table Method_Category {
   methodcategory_ID int [pk, increment]
   methodcategory_name varchar(100) [not null, unique]
@@ -304,12 +297,15 @@ Table Method {
 
 Table Payment_Transaction {
   transaction_ID int [pk, increment]
-  paymentinfo_ID int
+  booking_ID int [not null]
   method_ID int
-  transaction_status varchar(50) [not null]
-  transaction_reference varchar(100) [not null, unique]
+  transaction_total_amount decimal(10,2) [not null]
+  transaction_status varchar(50)
+  transaction_reference varchar(100) [unique]
   transaction_created_date timestamp 
   transaction_updated_date timestamp 
+  paymongo_intent_id varchar(100)
+  paymongo_refund_id varchar(100)
 }
 
 Table CategoryRefund_Name {
@@ -398,10 +394,9 @@ Ref: Tour_Package.tourpackage_ID < Booking.tourpackage_ID
 Ref: Companion_Category.companion_category_ID < Companion.companion_category_ID
 Ref: Booking.booking_ID <> Booking_Bundle.booking_ID
 Ref: Companion.companion_ID <> Booking_Bundle.companion_ID
-Ref: Booking.booking_ID - Payment_Info.booking_ID
 Ref: Method_Category.methodcategory_ID < Method.methodcategory_ID
 Ref: Phone_Number.phone_ID < Method.phone_ID
-Ref: Payment_Info.paymentinfo_ID - Payment_Transaction.paymentinfo_ID
+Ref: Booking.booking_ID - Payment_Transaction.booking_ID
 Ref: Method.method_ID - Payment_Transaction.method_ID
 
 

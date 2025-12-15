@@ -310,7 +310,7 @@ class Tourist extends Database {
                     b.booking_end_date,
                     tp.tourpackage_name,
                     CONCAT(gn.name_first, ' ', gn.name_last) AS guide_name,
-                    pi.paymentinfo_total_amount,
+                    pt.transaction_total_amount,
                     pr.pricing_currency
                     
                 FROM Booking b
@@ -320,7 +320,7 @@ class Tourist extends Database {
                 LEFT JOIN User_Login gul ON gai.user_ID = gul.user_ID
                 LEFT JOIN Person gp ON gul.person_ID = gp.person_ID
                 LEFT JOIN Name_Info gn ON gp.name_ID = gn.name_ID
-                LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
+                LEFT JOIN Payment_Transaction pt ON b.booking_ID = pt.booking_ID
                 LEFT JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
                 LEFT JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
                 LEFT JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
@@ -338,10 +338,10 @@ class Tourist extends Database {
                     COUNT(b.booking_ID) AS total_bookings,
                     COUNT(CASE WHEN b.booking_status = 'Completed' THEN 1 END) AS completed_bookings,
                     COUNT(CASE WHEN b.booking_status = 'Cancelled' THEN 1 END) AS cancelled_bookings,
-                    IFNULL(SUM(pi.paymentinfo_total_amount), 0) AS total_spent
+                    IFNULL(SUM(pt.transaction_total_amount), 0) AS total_spent
                     
                 FROM Booking b
-                LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
+                LEFT JOIN Payment_Transaction pt ON b.booking_ID = pt.booking_ID
                 
                 WHERE b.tourist_ID = :tourist_ID";
         
@@ -429,13 +429,13 @@ class Tourist extends Database {
                     b.booking_start_date,
                     b.booking_end_date,
                     tp.tourpackage_name,
-                    pi.paymentinfo_total_amount,
+                    pt.transaction_total_amount,
                     pr.pricing_currency
                     
                     
                 FROM Booking b
                 JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
-                LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
+                LEFT JOIN Payment_Transaction pt ON b.booking_ID = pt.booking_ID
                 LEFT JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
                 LEFT JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
                 LEFT JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID

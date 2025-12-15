@@ -252,14 +252,14 @@ CREATE TABLE Guide_Languages (
 
 CREATE TABLE Guide_Earnings (
     earning_ID        INT AUTO_INCREMENT PRIMARY KEY,
-    paymenttransaction_ID    INT NOT NULL,
+    transaction_ID    INT NOT NULL,
     platform_fee      DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     earning_amount    DECIMAL(10,2) NOT NULL,
     earning_status    ENUM('Pending','On Hold','Released','Cancelled','Refunded') DEFAULT 'Pending',
     released_at       DATETIME NULL,
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (paymenttransaction_ID) REFERENCES Payment_Transaction(paymenttransaction_ID)
+    FOREIGN KEY (transaction_ID) REFERENCES Payment_Transaction(transaction_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
@@ -427,17 +427,6 @@ CREATE TABLE Booking_Bundle (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ===============================
--- PAYMENT INFO
--- ===============================
-CREATE TABLE Payment_Info (
-    paymentinfo_ID       INT AUTO_INCREMENT PRIMARY KEY,
-    booking_ID           INT,
-    paymentinfo_total_amount DECIMAL(10,2) NOT NULL,
-    paymentinfo_date     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- ===============================
 -- METHOD CATEGORY
 -- ===============================
 CREATE TABLE Method_Category (
@@ -477,18 +466,19 @@ CREATE TABLE Method (
 -- PAYMENT TRANSACTION
 -- ===============================
 CREATE TABLE Payment_Transaction (
-    transaction_ID           INT AUTO_INCREMENT PRIMARY KEY,
-    paymongo_intent_id       VARCHAR(100),
-    paymentinfo_ID           INT,
-    method_ID                INT,
-    transaction_status       VARCHAR(50),
-    transaction_reference    VARCHAR(100) UNIQUE,
-    transaction_created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    transaction_updated_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    paymongo_refund_id       VARCHAR(100),
-    FOREIGN KEY (paymentinfo_ID) REFERENCES Payment_Info(paymentinfo_ID),
+    transaction_ID INT AUTO_INCREMENT PRIMARY KEY,
+    booking_ID INT NOT NULL,
+    method_ID INT,
+    transaction_total_amount DECIMAL(10,2) NOT NULL,
+    transaction_status VARCHAR(50),
+    transaction_reference VARCHAR(100) UNIQUE,
+    transaction_created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    transaction_updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    paymongo_intent_id VARCHAR(100),
+    paymongo_refund_id VARCHAR(100),
+    FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID),
     FOREIGN KEY (method_ID) REFERENCES Method(method_ID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+);
 
 -- ===============================
 -- CATEGORY REFUND NAME
