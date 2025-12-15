@@ -81,6 +81,16 @@ trait PaymentTransaction{
         return $query->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getTransactionDetailsByID($transaction_ID){
+        $sql = "SELECT pt.* FROM payment_transaction pt
+        WHERE pt.transaction_ID = :transaction_ID";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':transaction_ID', $transaction_ID); 
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 }
 

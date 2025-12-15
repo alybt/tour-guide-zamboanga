@@ -466,11 +466,11 @@ foreach ($transactions as $t) {
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-outline-primary btn-action btn-sm" 
+                                            <!-- <button type="button" class="btn btn-outline-primary btn-action btn-sm" 
                                                     data-bs-toggle="modal" 
-                                                    data-bs-target="#viewModal<?= $t['transaction_ID'] ?>">
+                                                    data-bs-target="#viewModal<?php // $t['transaction_ID'] ?>">
                                                 <i class="bi bi-eye"></i>
-                                            </button>
+                                            </button> -->
                                             <a href="transaction-details.php?id=<?= $t['transaction_ID'] ?>" 
                                                class="btn btn-outline-secondary btn-action btn-sm">
                                                 <i class="bi bi-receipt"></i>

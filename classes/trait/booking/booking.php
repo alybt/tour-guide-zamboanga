@@ -438,14 +438,7 @@ trait BookingDetails{
     public function getBookingDetailsByBookingID(int $booking_ID): ?array {
         $sql = "SELECT 
                 b.*,
-                tp.tourpackage_name,
-                tp.tourpackage_desc,
-                s.schedule_days,
-                nop.numberofpeople_maximum,
-                nop.numberofpeople_based,
-                p.pricing_currency,
-                p.pricing_foradult,
-                p.pricing_discount
+                tp.tourpackage_name
             FROM booking b
             INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
             INNER JOIN schedule s ON s.schedule_ID = tp.schedule_ID

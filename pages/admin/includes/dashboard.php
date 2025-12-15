@@ -164,7 +164,7 @@ function isActiveMultiple($pages) {
         <span>Tourismo Zamboanga</span>
     </div>
     <nav class="nav flex-column px-2">
-        <a class="nav-link <?= isActive('dashboard.php') ?>" href="index.php">
+        <a class="nav-link <?= isActive('dashboard.php') ?>" href="dashboard.php">
             <i class="bi bi-house-door"></i>
             <span class="nav-text">Dashboard</span>
         </a>
