@@ -41,7 +41,7 @@
             </p>
 
             <a href="tour-packages-view.php?id=<?= $package['tourpackage_ID'] ?>"
-               class="btn btn-warning mt-auto w-100 fw-semibold">View Details</a>
+               class="btn btn-warning mt-auto w-100 fw-semibold" style = "background-color: var(--accent); color: var(--secondary-color);">View Details</a>
         </div>
     </div>
 </div>

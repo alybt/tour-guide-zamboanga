@@ -145,7 +145,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         </a>
                         <ul class="dropdown-menu shadow-sm">
                             <li><a class="dropdown-item" href="search-guide.php">Find Guide</a></li>
-                            <li><a class="dropdown-item" href="find-tour-packages.php">Find Tour Packages</a></li>
+                            <li><a class="dropdown-item" href="search-tour-packages.php">Find Tour Packages</a></li>
                         </ul>
                     </li>
 

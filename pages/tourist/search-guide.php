@@ -375,127 +375,10 @@ $guideObj = new Guide();
 </head>
 <body>
     <?php include 'includes/header.php'?>
-<!-- 
-    Search Hero
-    <div class="search-hero">
-        <div class="container">
-            <h1 class="text-center mb-4">Find Your Perfect Local Guide</h1>
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="search-box">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Where do you want to explore?" id="searchInput">
-                            <button class="btn" type="button" id="searchBtn"><i class="fas fa-search"></i> Search</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> -->
 
     <div class="container">
         <div class="row">
-            <aside class="col-md-3">
-                <div class="filter-sidebar">
-                    <h5 class="filter-title"><i class="fas fa-filter"></i> Filters</h5>
-
-                    <!-- Location -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-map-marker-alt"></i> Location</h6>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="rome" checked>
-                            <label class="form-check-label" for="rome">Rome, Italy</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="paris">
-                            <label class="form-check-label" for="paris">Paris, France</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="tokyo">
-                            <label class="form-check-label" for="tokyo">Tokyo, Japan</label>
-                        </div>
-                    </div>
-
-                    <!-- Price Range -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-dollar-sign"></i> Price Range</h6>
-                        <input type="range" class="form-range" min="0" max="200" step="10" value="100" id="priceRange">
-                        <div class="price-range d-flex justify-content-between">
-                            <span>$0</span>
-                            <span id="priceValue">$100</span>
-                            <span>$200+</span>
-                        </div>
-                    </div>
-
-                    <!-- Rating -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-star"></i> Minimum Rating</h6>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="rating" id="rating5">
-                            <label class="form-check-label" for="rating5">
-                                <i class="fas fa-star text-warning"></i>
-                                <i class="fas fa-star text-warning"></i>
-                                <i class="fas fa-star text-warning"></i>
-                                <i class="fas fa-star text-warning"></i>
-                                <i class="fas fa-star text-warning"></i>
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="rating" id="rating4" checked>
-                            <label class="form-check-label" for="rating4">
-                                <i class="fas fa-star text-warning"></i>
-                                <i class="fas fa-star text-warning"></i>
-                                <i class="fas fa-star text-warning"></i>
-                                <i class="fas fa-star text-warning"></i> & up
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Languages -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-language"></i> Languages</h6>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="english" checked>
-                            <label class="form-check-label" for="english">English</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="spanish">
-                            <label class="form-check-label" for="spanish">Spanish</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="french">
-                            <label class="form-check-label" for="french">French</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="italian">
-                            <label class="form-check-label" for="italian">Italian</label>
-                        </div>
-                    </div>
-
-                    <!-- Specialties -->
-                    <div class="filter-section">
-                        <h6><i class="fas fa-briefcase"></i> Specialties</h6>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="history">
-                            <label class="form-check-label" for="history">History & Culture</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="food">
-                            <label class="form-check-label" for="food">Food & Wine</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="adventure">
-                            <label class="form-check-label" for="adventure">Adventure</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="photography">
-                            <label class="form-check-label" for="photography">Photography</label>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-view-profile mt-3" id="clearFilters">Clear All Filters</button>
-                </div>
-            </aside>
+            
     
             <!-- Main Content -->
             <main class="col-md-9">
@@ -532,3 +415,4 @@ $guideObj = new Guide();
         </div>
     </div>
 </body>
+</html>
