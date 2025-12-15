@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Edit Tour Package | TourGuide PH</title>
+    <title>Edit Tour Package | Tourismo Zamboanga</title>
 
     <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css"> 

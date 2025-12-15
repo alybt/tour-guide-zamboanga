@@ -86,7 +86,7 @@ if (!empty($bookings)) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Bookings | TourGuide PH</title>
+    <title>Bookings | Tourismo Zamboanga</title>
 
     <!-- Bootstrap 5 CSS -->
     <link rel="stylesheet" href="../../assets/vendor/bootstrap/css/bootstrap.min.css">

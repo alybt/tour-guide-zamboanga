@@ -30,13 +30,13 @@ function isActiveMultiple($pages) {
             <i class="bi bi-box-seam"></i>
             <span class="nav-text">Tour Packages</span>
         </a>
-        <a class="nav-link <?= isActive('schedules.php') ?>" href="schedules.php">
+        <!-- <a class="nav-link <?= isActive('schedules.php') ?>" href="schedules.php">
             <i class="bi bi-clock-history"></i>
             <span class="nav-text">Schedules</span>
-        </a>
+        </a> -->
         <a class="nav-link <?= isActive('payments.php') ?>" href="payments.php">
             <i class="bi bi-credit-card"></i>
-            <span class="nav-text">Payments</span>
+            <span class="nav-text">Payout</span>
         </a>
         <hr class="bg-white opacity-25 my-3">
         <a class="nav-link text-warning" href="includes/ajax/account-change.php">
