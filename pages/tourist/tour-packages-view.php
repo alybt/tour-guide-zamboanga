@@ -67,7 +67,6 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10 col-xl-9">
-                <!-- Success/Error Messages -->
                 <?php if (isset($_SESSION['error'])): ?>
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <?= htmlspecialchars($_SESSION['error']) ?>
@@ -165,7 +164,6 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
                         <?php endif; ?>
 
                         <div class="d-flex flex-wrap gap-3 mt-5">
-                            <!-- Book Now Button -->
                             <a href="booking-add.php?id=<?= $package['tourpackage_ID']; ?>" 
                                class="btn btn-success btn-book text-white">
                                 <i class="fas fa-ticket-alt me-2"></i> Book Now

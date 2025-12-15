@@ -1,7 +1,31 @@
 
+
+:root {
+    --primary-color: #ffffff;
+    --secondary-color: #213638;
+    --accent: #E5A13E;
+    --secondary-accent: #CFE7E5;
+    --muted-color: gainsboro;
+
+    /*Booking Status Color*/
+    --pending-for-payment: #F9A825 ;
+    --pending-for-approval: #EF6C00 ;
+    --approved: #3A8E5C;
+    --in-progress: #009688;
+    --completed: #1A6338;
+    --cancelled: #F44336;
+    --cancelled-no-refund: #BC2E2A;
+    --refunded: #42325D;    
+    --failed: #820000;
+    --rejected-by-guide: #B71C1C;
+    --booking-expired-payment-not-completed: #695985;
+    --booking-expired-guide-did-not-confirm-in-time: #695985;
+}
+
 body {
-    background-color: #f5f7fa;
+    background-color: var(--muted-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-top: 2rem;
 }
 .package-card {
     border: none;
@@ -14,8 +38,7 @@ body {
     transform: translateY(-5px);
 }
 .card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--secondary-color);
     border-bottom: none;
     padding: 1.5rem;
 }
@@ -29,22 +52,25 @@ body {
 }
 .spot-item {
     background-color: #f8f9fa;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid var(--completed);
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 12px;
 }
 .btn-book {
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: var(--secondary-color);
     border: none;
     padding: 12px 30px;
     font-weight: 600;
     border-radius: 50px;
     transition: all 0.3s ease;
+    color: var(--secondary-accent)  !important;
 }
 .btn-book:hover {
     transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    box-shadow: 0 5px 15px rgba(2, 46, 24, 0.4);
+    background-color: var(--secondary-color) !important;
+    color:white !important; 
 }
 .btn-back {
     border-radius: 50px;

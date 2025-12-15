@@ -27,7 +27,7 @@
                                         </h6>
                                         <a href="tour-packages-view.php?id=<?= $package['tourpackage_ID'] ?>" 
                                            class="btn btn-warning btn-sm" style="background: var(--accent); color: white; border: none;">
-                                            View & Book
+                                            Book
                                         </a>
                                     </div>
                                 </div>
