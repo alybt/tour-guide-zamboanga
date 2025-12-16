@@ -238,12 +238,7 @@ foreach ($guides as $guide) {
             </div>
         <?php endif; ?>
 
-        <!-- Add New Package Button -->
-        <div class="mb-4 text-end">
-            <a href="tour-packages-add.php" class="btn btn-primary btn-lg">
-                <i class="bi bi-plus-circle me-2"></i>Add New Package
-            </a>
-        </div>
+        
 
         <!-- Packages Table -->
         <div class="table-card">

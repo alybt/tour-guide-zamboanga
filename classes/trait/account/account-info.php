@@ -49,13 +49,13 @@ trait AccountInfoTrait {
             }
 
             $stmt = $this->conn->prepare("
-                UPDATE Name_Info 
+                UPDATE User_Login 
                 SET name_first = ?, 
                     name_second = ?, 
                     name_middle = ?, 
                     name_last = ?, 
                     name_suffix = ?
-                WHERE name_ID = ?
+                WHERE user_ID = ?
             ");
             $stmt->execute([
                 $data['name_first'],

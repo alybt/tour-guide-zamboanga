@@ -205,7 +205,7 @@ function isActiveMultiple($pages) {
             <span class="nav-text">Reviews</span>
         </a>
         
-        <a class="nav-link <?= isActive('messages.php') ?>" href="messages.php">
+        <a class="nav-link <?= isActive('inbox.php') ?>" href="inbox.php">
             <i class="bi bi-chat-dots"></i>
             <span class="nav-text">Messages</span>
         </a>
