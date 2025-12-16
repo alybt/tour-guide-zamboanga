@@ -2,7 +2,8 @@
 
 
 require_once __DIR__ . "/../config/database.php";
-require_once "trait/payment-info/method.php";
+require_once "trait/payment-info/method.php"; 
+require_once "trait/payment-info/guide-earning.php";
 require_once "trait/payment-info/transaction-reference.php";
 require_once "trait/payment-info/payment-info.php";
 require_once "trait/payment-info/payment-transaction.php";
@@ -14,7 +15,7 @@ require_once __DIR__ . '/../assets/vendor/autoload.php';
  use Paymongo\Paymongo;
 
 class PaymentManager extends Database{
-    use MethodTrait, TransactionReferenceTrait, PaymentInfo, PaymentTransaction, PhoneTrait, Refund, PayMongoTrait,PayoutTrait;
+    use MethodTrait, TransactionReferenceTrait, PaymentInfo, PaymentTransaction, PhoneTrait, Refund, PayMongoTrait,PayoutTrait, GuideEarningTrait;
    
     
  // Use Sandbox Secret Key
@@ -131,7 +132,7 @@ class PaymentManager extends Database{
         $db->rollBack();
         error_log("[addAllPaymentInfo] " . $e->getMessage());
         return false;
-    }
+        }
     }
 
     public function requestRefund( int $booking_ID, int $tourist_ID,  int $categoryrefund_ID,  string $refund_reason, ?float $custom_refund_amount = null ): array {

@@ -3,7 +3,7 @@
 if (!isset($current_page)) {
     $current_page = basename($_SERVER['PHP_SELF']);
 }
-
+$current_page = basename($_SERVER['PHP_SELF']);
 function isActive($page) {
     global $current_page;
     return ($current_page === $page) ? 'active' : '';

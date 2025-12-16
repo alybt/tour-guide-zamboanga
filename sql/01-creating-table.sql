@@ -234,7 +234,7 @@ CREATE TABLE Guide (
     guide_ID   INT AUTO_INCREMENT PRIMARY KEY,
     account_ID INT,
     license_ID INT, 
-    guide_money DECIMAL(10,2) DEFAULT 0.00,
+    guide_balance DECIMAL(10,2) DEFAULT 0.00,
     FOREIGN KEY (account_ID) REFERENCES Account_Info(account_ID),
     FOREIGN KEY (license_ID) REFERENCES Guide_License(license_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

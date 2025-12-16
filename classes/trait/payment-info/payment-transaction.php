@@ -92,6 +92,41 @@ trait PaymentTransaction{
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function viewAllTransactionbyGuide($guide_ID){
+        $sql = "SELECT ge.*, b.booking_ID FROM `guide_earnings` ge 
+        JOIN payment_transaction pt ON pt.transaction_ID=ge.transaction_ID
+        LEFT JOIN booking b ON pt.booking_ID = b.booking_ID
+        JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
+        WHERE tp.guide_ID = :guide_ID";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':guide_ID',$guide_ID); 
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function viewSumofPendingbyGuide($guide_ID){
+        $sql = "SELECT 
+                COALESCE(SUM(ge.earning_amount), 0.00) AS total_earning_amount 
+            FROM guide_earnings ge
+            JOIN payment_transaction pt 
+                ON pt.transaction_ID = ge.transaction_ID
+            LEFT JOIN booking b 
+                ON pt.booking_ID = b.booking_ID
+            JOIN tour_package tp 
+                ON b.tourpackage_ID = tp.tourpackage_ID
+            WHERE tp.guide_ID = :guide_ID AND ge.earning_status = 'Pending'";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':guide_ID',$guide_ID); 
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+    } 
+
+    
+
 }
 
 ?>

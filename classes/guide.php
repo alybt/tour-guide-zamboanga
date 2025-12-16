@@ -668,4 +668,41 @@ class Guide extends Database {
         return $query->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getGuideDetails($guide_ID){
+        $sql = "SELECT g.* FROM Guide g
+        WHERE g.guide_ID = :guide_ID";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':guide_ID', $guide_ID); 
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getGuideBalanace($guide_ID){
+        $sql = "SELECT guide_balance FROM Guide 
+        WHERE guide_ID = :guide_ID";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':guide_ID', $guide_ID); 
+        $query->execute();
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getAllPayoutofGuide($guide_ID){
+        $sql = "SELECT 
+            COALESCE(SUM(amount), 0.00) AS total_payout 
+            FROM guide_money_history  
+        WHERE guide_ID = :guide_ID";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':guide_ID', $guide_ID); 
+        $query->execute();
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        return $result;
+    }
+
 }
