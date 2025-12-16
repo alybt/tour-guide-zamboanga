@@ -68,7 +68,7 @@ $spots = $tourMgrObj->getSpotsByPackage($tourpackage_ID);
 
 // Handle confirmation
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
-    $result = $tourMgrObj->deleteTourPackage($spots, $tourpackage_ID);
+    $result = $tourMgrObj->deleteTourPackage($tourpackage_ID);
     
     if ($result) {
         $_SESSION['success'] = "Tour package deleted successfully!";
