@@ -1,11 +1,12 @@
 <?php 
 
 foreach ($conversationList as $list): 
-    $is_active = ($list['other_user_ID'] == $guide_ID) ? 'active' : '';
+    $is_active = ($list['other_user_ID'] == $tourist_ID) ? 'active' : '';
     $is_unread = $list['has_unread'] ? 'unread' : '';
 ?>
 <div class="conversation-item <?= $is_unread ?> <?= $is_active ?>"
-     data-chat="<?= $list['conversation_ID'] ?>">
+     data-chat="<?= $list['conversation_ID'] ?>"
+     data-user-id="<?= $list['other_user_ID'] ?>">
 
     <div class="conversation-avatar">
         <img src="https://i.pravatar.cc/100?img=<?= $list['other_user_ID'] ?>" alt="User">

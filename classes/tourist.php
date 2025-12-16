@@ -16,8 +16,7 @@ class Tourist extends Database {
     public function getTouristBirthdateByTouristID($tourist_ID) {
         $sql  = "SELECT ul.person_DateOfBirth
                  FROM Account_Info ai
-                 JOIN User_Login ul ON ul.user_ID = ai.user_ID
-                 ts.
+                 JOIN User_Login ul ON ul.user_ID = ai.user_ID 
                  WHERE ai.account_ID = :tourist_ID";
         $db   = $this->connect();
         $stmt = $db->prepare($sql);
@@ -30,8 +29,7 @@ class Tourist extends Database {
         $db   = $this->connect();
         $sql  = "SELECT ul.person_isPWD
                  FROM Account_Info ai
-                 JOIN User_Login ul ON ul.user_ID = ai.user_ID
-                 ts.
+                 JOIN User_Login ul ON ul.user_ID = ai.user_ID 
                  WHERE ai.account_ID = :id";
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':id', $tourist_ID, PDO::PARAM_INT);
@@ -99,8 +97,7 @@ class Tourist extends Database {
     public function getEmailByID(int $tourist_ID): ?string {
         $sql = " SELECT ci.contactinfo_email 
             FROM Account_Info ai
-            INNER JOIN User_Login ul ON ai.user_ID = ul.user_ID
-            INNER ts.
+            INNER JOIN User_Login ul ON ai.user_ID = ul.user_ID 
             INNER JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
             WHERE ai.account_ID = :tourist_ID
             LIMIT 1 ";
@@ -120,8 +117,7 @@ class Tourist extends Database {
     public function getFullNameByID(int $tourist_ID): ?string  {
         $sql = " SELECT CONCAT(ul.name_first, ' ', ul.name_last) AS fullname
             FROM Account_Info ai
-            INNER JOIN User_Login ul ON ai.user_ID = ul.user_ID
-            INNER ts.
+            INNER JOIN User_Login ul ON ai.user_ID = ul.user_ID 
             INNER JOIN Name_Info ni ON ul.name_ID = ul.name_ID
             WHERE ai.account_ID = :tourist_ID
             LIMIT 1 ";
@@ -240,8 +236,7 @@ class Tourist extends Database {
                     pn.phone_number
                     
                 FROM Account_Info ai
-                JOIN User_Login ul ON ai.user_ID = ul.user_ID
-                ts.
+                JOIN User_Login ul ON ai.user_ID = ul.user_ID 
                 LEFT JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
                 
                 LEFT JOIN Phone_Number pn ON ci.phone_ID = pn.phone_ID
@@ -266,8 +261,7 @@ class Tourist extends Database {
                     ) AS full_address
                     
                 FROM Account_Info ai
-                JOIN User_Login ul ON ai.user_ID = ul.user_ID
-                ts.
+                JOIN User_Login ul ON ai.user_ID = ul.user_ID 
                 JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
                 LEFT JOIN Address_Info addr ON ci.address_ID = ci.address_ID
                 LEFT JOIN Barangay b ON ci.barangay_ID = b.barangay_ID
@@ -302,8 +296,7 @@ class Tourist extends Database {
                 JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
                 LEFT JOIN Guide g ON tp.guide_ID = g.guide_ID
                 LEFT JOIN Account_Info gai ON g.account_ID = gai.account_ID
-                LEFT JOIN User_Login ul ON gai.user_ID = ul.user_ID
-                LEFT ts.
+                LEFT JOIN User_Login ul ON gai.user_ID = ul.user_ID 
                 
                 LEFT JOIN Payment_Transaction pt ON b.booking_ID = pt.booking_ID
                 

@@ -22,105 +22,118 @@ $errors = [];
 $success = "";
 $dbError = "";
 $activityObj = new ActivityLogs();
+$touristObj = null;
 
-// Function to test registration with sample data
-function testRegistration($touristObj) {
-    error_log("=== STARTING TEST REGISTRATION ===");
-    
-    // Sample test data
-    $testData = [
-        'name_first' => 'Test',
-        'name_last' => 'User',
-        'name_middle' => 'Middle',
-        'name_second' => '',
-        'name_suffix' => '',
-        'address_houseno' => '123',
-        'address_street' => 'Test Street',
-        'address_country_ID' => '161', // Philippines
-        'region_ID' => '1',
-        'province_ID' => '1',
-        'city_ID' => '1',
-        'barangay_ID' => '1',
-        'country_ID' => '161',
-        'phone_number' => '09123456789',
-        'emergency_name' => 'Emergency Contact',
-        'emergency_country_ID' => '161',
-        'emergency_phonenumber' => '09123456780',
-        'emergency_relationship' => 'Friend',
-        'contactinfo_email' => 'test' . time() . '@example.com', // Unique email
-        'person_nationality' => 'Filipino',
-        'person_gender' => 'Male',
-        'person_dateofbirth' => '1990-01-01',
-        'username' => 'testuser' . time(), // Unique username
-        'password' => 'Test@1234'
-    ];
-    
-    // Log test data
-    error_log("Test Data: " . print_r($testData, true));
-    
-    
-    // Call addTourist directly
-    try {
-        error_log("Calling addTourist with test data");
-        $result = $touristObj->addTourist(
-            $testData['name_first'],
-            $testData['name_second'],
-            $testData['name_middle'],
-            $testData['name_last'],
-            $testData['name_suffix'],
-            $testData['address_houseno'],
-            $testData['address_street'],
-            $testData['barangay_ID'],
-            $testData['country_ID'],
-            $testData['phone_number'],
-            $testData['emergency_name'],
-            $testData['emergency_country_ID'],
-            $testData['emergency_phonenumber'],
-            $testData['emergency_relationship'],
-            $testData['contactinfo_email'],
-            $testData['person_nationality'],
-            $testData['person_gender'],
-            $testData['person_dateofbirth'],
-            $testData['username'],
-            $testData['password']
-        );
-        
-        if ($result) {
-            error_log("Test registration SUCCESSFUL!");
-            return "Test registration successful! Check error log for details.";
-        } else {
-            $error = $touristObj->getLastError();
-            error_log("Test registration FAILED: " . $error);
-            return "Test registration failed: " . $error;
-        }
-    } catch (Exception $e) {
-        $error = $e->getMessage();
-        error_log("Test registration EXCEPTION: " . $error);
-        return "Test registration exception: " . $error;
-    }
-}
-
-// Check if test registration was requested
-if (isset($_GET['test_register'])) {
-    $touristObj = new Registration();
-    $testResult = testRegistration($touristObj);
-    die($testResult);
-}
-
-// Initialize Tourist object
 try {
     $touristObj = new Registration();
-    
-    // Test database connection
     $db = $touristObj->connect();
     if (!$db) {
         $dbError = "Database connection failed. Please try again later.";
-        error_log("Database connection error: " . $touristObj->getLastError());
+        error_log("Database connection error: " . ($touristObj->getLastError() ?? 'Unknown'));
     }
 } catch (Exception $e) {
     $dbError = "System error. Please try again later.";
     error_log("Tourist object initialization error: " . $e->getMessage());
 }
+
+// Function to test registration with sample data
+// function testRegistration($touristObj) {
+//     error_log("=== STARTING TEST REGISTRATION ===");
+    
+//     // Sample test data
+//     $testData = [
+//         'name_first' => 'Test',
+//         'name_last' => 'User',
+//         'name_middle' => 'Middle',
+//         'name_second' => '',
+//         'name_suffix' => '',
+//         'address_houseno' => '123',
+//         'address_street' => 'Test Street',
+//         'address_country_ID' => '161', // Philippines
+//         'region_ID' => '1',
+//         'province_ID' => '1',
+//         'city_ID' => '1',
+//         'barangay_ID' => '1',
+//         'country_ID' => '161',
+//         'phone_number' => '09123456789',
+//         'emergency_name' => 'Emergency Contact',
+//         'emergency_country_ID' => '161',
+//         'emergency_phonenumber' => '09123456780',
+//         'emergency_relationship' => 'Friend',
+//         'contactinfo_email' => 'test' . time() . '@example.com', // Unique email
+//         'person_nationality' => 'Filipino',
+//         'person_gender' => 'Male',
+//         'person_dateofbirth' => '1990-01-01',
+//         'username' => 'testuser' . time(), // Unique username
+//         'password' => 'Test@1234'
+//     ];
+    
+//     // Log test data
+//     error_log("Test Data: " . print_r($testData, true));
+    
+    
+//     // Call addTourist directly
+//     try {
+//         error_log("Calling addTourist with test data");
+//         $result = $touristObj->addTourist(
+//             $testData['name_first'],
+//             $testData['name_second'],
+//             $testData['name_middle'],
+//             $testData['name_last'],
+//             $testData['name_suffix'],
+//             $testData['address_houseno'],
+//             $testData['address_street'],
+//             $testData['barangay_ID'],
+//             $testData['country_ID'],
+//             $testData['phone_number'],
+//             $testData['emergency_name'],
+//             $testData['emergency_country_ID'],
+//             $testData['emergency_phonenumber'],
+//             $testData['emergency_relationship'],
+//             $testData['contactinfo_email'],
+//             $testData['person_nationality'],
+//             $testData['person_gender'],
+//             $testData['person_dateofbirth'],
+//             $testData['username'],
+//             $testData['password']
+//         );
+        
+//         if ($result) {
+//             error_log("Test registration SUCCESSFUL!");
+//             return "Test registration successful! Check error log for details.";
+//         } else {
+//             $error = $touristObj->getLastError();
+//             error_log("Test registration FAILED: " . $error);
+//             return "Test registration failed: " . $error;
+//         }
+//     } catch (Exception $e) {
+//         $error = $e->getMessage();
+//         error_log("Test registration EXCEPTION: " . $error);
+//         return "Test registration exception: " . $error;
+//     }
+// }
+
+// // Check if test registration was requested
+// if (isset($_GET['test_register'])) {
+//     $touristObj = new Registration();
+//     $testResult = testRegistration($touristObj);
+//     die($testResult);
+// }
+
+// // Initialize Tourist object
+// try {
+//     $touristObj = new Registration();
+    
+//     // Test database connection
+//     $db = $touristObj->connect();
+//     if (!$db) {
+//         $dbError = "Database connection failed. Please try again later.";
+//         error_log("Database connection error: " . $touristObj->getLastError());
+//     }
+// } catch (Exception $e) {
+//     $dbError = "System error. Please try again later.";
+//     error_log("Tourist object initialization error: " . $e->getMessage());
+// }
 //addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,
                                     // $houseno, $street, $barangay,
                                     // $country_ID, $phone_number,

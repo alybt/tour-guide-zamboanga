@@ -60,7 +60,7 @@ trait CompanionTrait{
             JOIN booking b ON bb.booking_ID = b.booking_ID
             JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID 
             WHERE bb.booking_ID = :booking_ID
-            GROUP BY c.companion_category, tp.pricing_ID
+            GROUP BY c.companion_category
             HAVING qty > 0
             ORDER BY FIELD(c.companion_category, 'Infant', 'Child', 'Young Adult', 'Adult', 'Senior', 'PWD')
         ";
@@ -100,6 +100,16 @@ trait CompanionTrait{
         }
 
         return $breakdown;
+    }
+
+    public function getAllCompanionCategories() {
+        $sql = "SELECT DISTINCT companion_category 
+                FROM companion 
+                ORDER BY companion_category";
+        $db = $this->connect();
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
 }

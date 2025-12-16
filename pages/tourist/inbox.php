@@ -16,7 +16,7 @@ $conversationObj = new Conversation();
 
 // Get all conversations first
 $db = $conversationObj->connect();
-$tourist_ID = $_SESSION['account_ID']; 
+$tourist_ID = $_SESSION['user']['account_ID']; 
 $conversationList = $conversationObj->fetchConversations($tourist_ID);
 
 // If no guide_ID, use the first conversation
@@ -58,7 +58,7 @@ $guidedetails = $guide_ID ? $guideObj->getGuideByID($guide_ID) : null;
 
 
 $guide_name = $guidedetails['guide_name'] ?? '';
-$guide_avatar = $guidedetails['profile_picture'] ?? ('https://i.pravatar.cc/100?img=' . $guide_account_ID);
+$guide_avatar = $guidedetails['profile_pic'] ?? ('https://i.pravatar.cc/100?img=' . $guide_account_ID);
 
 if ($guide_name === '') {
     $stmt = $db->prepare("
@@ -693,7 +693,7 @@ if ($guide_name === '') {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        const selectedGuideID = <?= json_encode($guide_ID) ?>;
+        const selectedGuideID = <?= json_encode($guide_account_ID) ?>;
         const selectedConversationID = <?= json_encode($selected_conversation_ID) ?>;
         const currentUserID = <?= json_encode($tourist_ID) ?>;
 

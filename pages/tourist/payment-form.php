@@ -390,7 +390,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li style="margin: 8px 0;">
                     <?= htmlspecialchars($c['companion_name']) ?> 
                     <small style="color: #666;">
-                        (<?= $c['companion_age'] ?> yrs • <?= $c['companion_category_name'] ?>)
+                        (<?= $c['companion_age'] ?> yrs • <?= $c['companion_category'] ?>)
                     </small>
                 </li>
             <?php endforeach; ?>

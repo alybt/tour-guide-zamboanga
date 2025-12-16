@@ -155,6 +155,11 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                             <i class="fas fa-calendar-alt me-1"></i> My Booking
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $currentPage === 'inbox.php' ? 'active' : '' ?>" href="inbox.php">
+                            <i class="fas fa-message me-1"></i> Message
+                        </a>
+                    </li>
 
                     <li class="nav-item dropdown position-relative">
                         <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" 

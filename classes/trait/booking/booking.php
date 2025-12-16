@@ -80,9 +80,9 @@ trait BookingDetails{
         tp.tourpackage_desc,
         
         -- Pricing Info
-        pr.pricing_currency,
-        pr.pricing_foradult,
-        pr.pricing_discount,
+        tp.pricing_currency,
+        tp.pricing_foradult,
+        tp.pricing_discount,
         
         -- Guide Info
         g.guide_ID,
@@ -102,7 +102,7 @@ trait BookingDetails{
         -- Tourist Info
         JOIN Account_Info ai ON b.tourist_ID = ai.account_ID
         JOIN User_Login ul ON ai.user_ID = ul.user_ID 
-        LEFT JOIN Contact_Info ci ON tp.contactinfo_ID = ci.contactinfo_ID
+        LEFT JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
         
         -- Tour Package Info
         JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID 
@@ -216,7 +216,7 @@ trait BookingDetails{
             JOIN person p ON tp.person_ID = ul.person_ID
             JOIN name_info ni ON ul.name_ID = tp.name_ID
 
-            LEFT JOIN contact_info ci ON ci.contactinfo_ID = tp.contactinfo_ID
+            LEFT JOIN contact_info ci ON ci.contactinfo_ID = ul.contactinfo_ID
             LEFT JOIN phone_number pn ON pn.phone_ID = ci.phone_ID
             LEFT JOIN country coun    ON coun.country_ID = pn.country_ID
             LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
@@ -275,7 +275,7 @@ trait BookingDetails{
                 JOIN user_login ul ON ul.user_ID = ai.user_ID
                 JOIN person p ON tp.person_ID = ul.person_ID
                 JOIN name_info ni ON ul.name_ID = tp.name_ID
-                LEFT JOIN contact_info ci ON ci.contactinfo_ID = tp.contactinfo_ID
+                LEFT JOIN contact_info ci ON ci.contactinfo_ID = ul.contactinfo_ID
                 LEFT JOIN phone_number pn ON pn.phone_ID = ci.phone_ID
                 LEFT JOIN country coun ON coun.country_ID = pn.country_ID
                 LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
@@ -402,7 +402,7 @@ trait BookingDetails{
             JOIN user_login ul ON ai.user_ID = ul.user_ID
             JOIN person p ON ul.person_ID = tp.person_ID
             JOIN name_info ni ON tp.name_ID = ul.name_ID
-            LEFT JOIN contact_info ci ON tp.contactinfo_ID = ci.contactinfo_ID
+            LEFT JOIN contact_info ci ON ul.contactinfo_ID = ci.contactinfo_ID
             LEFT JOIN phone_number pn ON ci.phone_ID = pn.phone_ID
             WHERE g.account_ID = :account_ID
             LIMIT 1";

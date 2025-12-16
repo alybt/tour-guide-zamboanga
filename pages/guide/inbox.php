@@ -27,8 +27,8 @@ $conversationObj = new Conversation();
 
 // Get all conversations first
 $db = $conversationObj->connect();
-$guide_ID = $_SESSION['account_ID']; 
-$conversationList = $conversationObj->fetchConversations($guide_ID);
+$account_ID = $_SESSION['account_ID']; 
+$conversationList = $conversationObj->fetchConversations($account_ID);
 
 // If no tourist_ID, use the first conversation
 if (!isset($_GET['tourist_id']) || empty($_GET['tourist_id'])) {
@@ -48,7 +48,7 @@ $tourist_ID = intval($_GET['tourist_id']);
 
 // Get or create conversation with this specific tourist
 $db = $conversationObj->connect();
-$selected_conversation_ID = $conversationObj->addgetUsers($guide_ID, $tourist_ID, $db);
+$selected_conversation_ID = $conversationObj->addgetUsers($account_ID, $tourist_ID, $db);
 
 if (!$selected_conversation_ID) {
     $_SESSION['error'] = "Unable to load conversation.";
@@ -60,7 +60,7 @@ if (!$selected_conversation_ID) {
 $messages = $conversationObj->fetchMessages($selected_conversation_ID);
 
 // Mark messages as read for this conversation
-$conversationObj->markAsRead($selected_conversation_ID, $guide_ID);
+$conversationObj->markAsRead($selected_conversation_ID, $account_ID);
 
 // Get tourist details for the chat header
 $touristDetails = $touristObj->getTouristByID($tourist_ID);
@@ -635,7 +635,7 @@ $tourist_avatar = $touristDetails['profile_picture'] ?? 'https://i.pravatar.cc/1
 
             <div class="chat-messages" id="chatMessages">
                 <?php 
-                $currentUserID = $guide_ID; 
+                $currentUserID = $account_ID; 
                 include 'includes/components/messages.php';
                 ?>
             </div>
@@ -659,7 +659,7 @@ $tourist_avatar = $touristDetails['profile_picture'] ?? 'https://i.pravatar.cc/1
     <script>
         const selectedTouristID = <?= json_encode($tourist_ID) ?>;
         const selectedConversationID = <?= json_encode($selected_conversation_ID) ?>;
-        const currentUserID = <?= json_encode($guide_ID) ?>;
+        const currentUserID = <?= json_encode($account_ID) ?>;
 
         $(document).ready(function() {
             function scrollToBottom() {
@@ -741,7 +741,19 @@ $tourist_avatar = $touristDetails['profile_picture'] ?? 'https://i.pravatar.cc/1
 
             $('.conversation-item').on('click', function() {
                 const conversationID = $(this).data('chat');
-                const otherUserID = $(this).data('user-id') || $(this).find('.conversation-avatar img').attr('src').split('img=')[1];
+                let otherUserID = $(this).data('user-id');
+                
+                // If data-user-id is not set, try to extract from image src
+                if (!otherUserID) {
+                    const imgSrc = $(this).find('.conversation-avatar img').attr('src');
+                    const match = imgSrc.match(/img=(\d+)/);
+                    otherUserID = match ? match[1] : null;
+                }
+                
+                if (!otherUserID) {
+                    console.error('Could not determine tourist ID');
+                    return;
+                }
                 
                 // Update active state
                 $('.conversation-item').removeClass('active');
@@ -790,4 +802,5 @@ $tourist_avatar = $touristDetails['profile_picture'] ?? 'https://i.pravatar.cc/1
         });
     </script>
 </body>
+</html>
 </html>

@@ -220,7 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <select name="companion_category[]" required>
                         <option value="">-- SELECT CATEGORY ---</option>
                         <?php foreach ($categories as $c) { ?>
-                            <option value="<?= $c['companion_category_ID'] ?>"> <?= htmlspecialchars($c['companion_category_name']) ?> </option>
+                            <option value="<?= $c['companion_category'] ?>"> <?= htmlspecialchars($c['companion_category']) ?> </option>
                         <?php } ?>
                     </select>
                     <button type="button" onclick="this.parentNode.remove();">Remove</button>
@@ -285,7 +285,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         let options = '<option value="">-- SELECT CATEGORY ---</option>';
         categories.forEach(c => {
             // Note: If companion_category_ID is null/empty, the value won't be set, which is okay for this context.
-            options += `<option value="${c.companion_category_ID}">${c.companion_category_name}</option>`;
+            options += `<option value="${c.companion_category_ID}">${c.companion_category}</option>`;
         });
         return `<select name="companion_category[]" required>${options}</select>`;
     }

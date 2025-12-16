@@ -21,19 +21,24 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $booking_ID = (int)$_GET['id'];
  
 
-$tourist_ID = $_SESSION['account_ID'];
+$tourist_ID = $_SESSION['user']['account_ID'];
 $bookingObj = new Booking();
 $tourManagerObj = new TourManager();
 $guideObj = new Guide();
 
 
 $booking = $bookingObj->getBookingByIDAndTourist($booking_ID, $tourist_ID);  
+if (!$booking) {
+    $_SESSION['error'] = "Booking not found or unauthorized.";
+    header("Location: booking.php");
+    exit;
+}
+
 $packages = $tourManagerObj->getTourPackageDetailsByID($booking['tourpackage_ID']); 
 $guide = $guideObj->getGuideByBooking($booking['booking_ID']);
 $guide_name = $guide['guide_name'] ?? '';
 $spots =  $tourManagerObj->getSpotsByPackage($booking['tourpackage_ID']);
 $companions = $bookingObj->getCompanionsByBooking($booking_ID);
-
 
 $tourdetails = $bookingObj->getTourDetails($booking_ID);
 $transactionDetails = $bookingObj->getTransactionSummary($booking_ID);
@@ -400,9 +405,15 @@ $statusColor = match ($booking['booking_status']) {
                             </p>
                         </div>
                         <div>
-                            <a href="inbox.php?guide_id=<?= htmlspecialchars($guide['account_ID']) ?>" class="btn btn-primary btn-sm mb-2">
-                                <i class="fas fa-comment"></i> Message
-                            </a>
+                            <?php if (!empty($guide['account_ID'])): ?>
+                                <a href="inbox.php?guide_id=<?= htmlspecialchars($guide['account_ID']) ?>" class="btn btn-primary btn-sm mb-2">
+                                    <i class="fas fa-comment"></i> Message
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-primary btn-sm mb-2" disabled>
+                                    <i class="fas fa-comment"></i> Message
+                                </button>
+                            <?php endif; ?>
                             <br>
                             <button class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-phone"></i> Call
