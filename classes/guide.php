@@ -291,7 +291,7 @@ class Guide extends Database {
         $sql = "SELECT account_ID FROM Account_Info WHERE user_ID = :user_ID AND role_ID = 3";
         $db = $this->connect();
         $query_select = $db->prepare($sql);
-        $query_select->bindParam(":user_ID", $user_ID);
+        $query_select->bindParam(':user_ID', $user_ID);
         $query_select->execute();
         $result = $query_select->fetch();
 
@@ -301,7 +301,7 @@ class Guide extends Database {
 
         $sql = "INSERT INTO Account_Info(user_ID, role_ID) VALUES (:user_ID, 3)";
         $query_insert = $db->prepare($sql);
-        $query_insert->bindParam(":user_ID", $user_ID);
+        $query_insert->bindParam(':user_ID', $user_ID);
 
         if ($query_insert->execute()) {
             return $db->lastInsertId();
@@ -313,33 +313,29 @@ class Guide extends Database {
     public function changeAccountToTourist($user_ID){
         $db = $this->connect();
         $db->beginTransaction();
-
         try {
-           $sql = "SELECT account_ID FROM Account_Info WHERE user_ID = :user_ID AND role_ID = 3";
-            $db = $this->connect();
-            $query_select = $db->prepare($sql);
-            $query_select->bindParam(":user_ID", $user_ID);
-            $query_select->execute();
-            $result = $query_select->fetch();
-
-            if($result){
-                return $result["account_ID"];
+            $sql = "SELECT account_ID FROM Account_Info WHERE user_ID = :user_ID AND role_ID = 3";
+            $qs = $db->prepare($sql);
+            $qs->bindParam(':user_ID', $user_ID);
+            $qs->execute();
+            $existing = $qs->fetch(PDO::FETCH_ASSOC);
+            if ($existing && isset($existing['account_ID'])) {
+                $db->commit();
+                return (int)$existing['account_ID'];
             }
-
-            $sql = "INSERT INTO Account_Info(user_ID, role_ID, account_status) VALUES (:user_ID, 3, Active)";
-            $query_insert = $db->prepare($sql);
-            $query_insert->bindParam(":user_ID", $user_ID);
-
-            if ($query_insert->execute()) {
-                return $db->lastInsertId();
-            } else {
+            $sql = "INSERT INTO Account_Info(user_ID, role_ID, account_status) VALUES (:user_ID, 3, 'Active')";
+            $qi = $db->prepare($sql);
+            $qi->bindParam(':user_ID', $user_ID);
+            if (!$qi->execute()) {
+                $db->rollBack();
                 return false;
             }
-           
+            $newId = (int)$db->lastInsertId();
+            $db->commit();
+            return $newId;
         } catch (PDOException $e) {
             $db->rollBack();
-            $this->setLastError($e->getMessage());
-            error_log("Change Account Error: " . $e->getMessage()); 
+            error_log("Change Account Error: " . $e->getMessage());
             return false;
         }
     }
@@ -655,6 +651,20 @@ class Guide extends Database {
             COALESCE(SUM(amount), 0.00) AS total_payout 
             FROM guide_money_history  
         WHERE guide_ID = :guide_ID AND reference_name = 'Payout'";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':guide_ID', $guide_ID); 
+        $query->execute();
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getuserIDByGuide($guide_ID){
+        $sql = "SELECT ul.user_ID FROM guide g
+            JOIN Account_Info ai ON g.account_ID = ai.account_ID
+            JOIN User_Login ul ON ai.user_ID = ul.user_ID
+            WHERE g.guide_ID = :guide_ID";
         
         $db = $this->connect();
         $query = $db->prepare($sql);

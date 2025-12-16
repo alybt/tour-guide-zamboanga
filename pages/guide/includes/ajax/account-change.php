@@ -17,20 +17,25 @@ $guideObj = new Guide();
 
 
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
+$userRow = $guideObj->getuserIDByGuide($guide_ID);
+$user_ID = $userRow['user_ID'] ?? null;
 
-if (isset($_SESSION['user']) || $_SESSION['user']['role_name'] == 'Tour Guide'){
-    $result = $guideObj->changeAccountToTourist($_SESSION['user']['user_ID']);
-    $account_ID = $result['account_ID'];
+if ($user_ID && isset($_SESSION['user']) && $_SESSION['user']['role_name'] == 'Tour Guide'){
+    $account_ID = $guideObj->changeAccountToTourist($user_ID);
 
-    if ($result){
-        $_SESSION["account_ID"] = $account_ID ; 
+    if ($account_ID){
+        $_SESSION["account_ID"] = $account_ID; 
         $_SESSION["role_ID"] = 3;
         $_SESSION['user']['role_name'] = 'Tourist';
+        $_SESSION['user']['account_status'] = 'Active';
         $activity = $activityObj->guideChangeToTourist($guide_ID, $account_ID);
-        header('Location: ../tourist/index.php');
+        header('Location: ../../../tourist/index.php');
+        exit;
+    } else {
+        $_SESSION['error'] = "Failed to change account.";
+        header('Location: ../../dashboard.php');
+        exit;
     }
-
-
 
 }
 
