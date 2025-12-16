@@ -15,13 +15,7 @@ class Booking extends Database{
         $this->activity = new ActivityLogs(); 
     }
 
-    public function getAllCompanionCategories(){
-        $sql = "SELECT * FROM `companion_category`";
-        $db = $this->connect();
-        $query = $db->prepare($sql);
-        $query->execute();
-        return $query->fetchAll(PDO::FETCH_ASSOC);
-    }
+   
 
     public function viewBookingByTourist($tourist_ID){
         $sql = "SELECT 
@@ -303,6 +297,41 @@ class Booking extends Database{
         }
     }
 
+    public function getAllBookings(){
+        $db = $this->connect();
+        $sql = "SELECT
+            tp.tourpackage_name, tp.tourpackage_desc, tp.schedule_days, 
+            CONCAT(ul.name_first, ' ', ul.name_last) AS tourist_name, 
+            b.booking_ID, b.booking_start_date, b.booking_end_date, b.booking_status, 
+            tp.schedule_days, GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots,
+            CONCAT(ul_g.name_first, ' ', ul_g.name_last) AS guide_name,
+            b.booking_created_at AS booking_date,
+            b.booking_start_date AS tour_date,
+            pt.transaction_total_amount AS total_amount,
+            pt.transaction_status AS payment_status,
+            b.booking_status
+            FROM booking b 
+            JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID 
+            JOIN account_info ai ON b.tourist_ID = ai.account_ID 
+            JOIN user_login ul ON ai.user_ID = ul.user_ID  
+            JOIN Guide g ON tp.guide_ID = g.guide_ID
+            JOIN account_info ai_g ON g.account_ID = ai_g.account_ID
+            JOIN user_login ul_g ON ai_g.user_ID = ul_g.user_ID
+            JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID 
+            JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID
+            JOIN payment_transaction pt ON b.booking_ID = pt.booking_ID 
+            GROUP BY b.booking_ID
+            ORDER BY ABS(DATEDIFF(b.booking_start_date, CURRENT_TIMESTAMP)) ASC";
+        $query = $db->prepare($sql);
+        $result = $query->execute();
+
+        if($result){
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            return false;
+        }
+    }
+
     public function existingBookingsInGuide($guide_ID){
         $db = $this->connect();
         $sql = "SELECT b.booking_start_date, b.booking_end_date
@@ -382,11 +411,10 @@ class Booking extends Database{
     public function getCompanions($booking_ID){
         $sql = "SELECT 
                 C.companion_name,
-                CC.companion_category_name
+                C.companion_category
             FROM Booking AS B
             JOIN Booking_Bundle AS BB ON B.booking_ID = BB.booking_ID
             JOIN Companion AS C ON BB.companion_ID = C.companion_ID
-            JOIN Companion_Category CC ON CC.companion_category_ID = C.companion_category_ID
             WHERE B.booking_ID = :booking_ID
             ORDER BY C.companion_ID";
         $db = $this->connect();

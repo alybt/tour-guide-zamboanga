@@ -8,20 +8,13 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Admin' || $
 require_once "../../config/database.php";
 require_once "../../classes/auth.php";
 require_once "../../classes/admin.php";
-
-// Create a new Auth class instance to manage users
-// $auth = new Auth();
-// $users = $auth->getAllUsers();
+ 
 
 $adminObj = new Admin();
 $admin = [];
 $users = [];
 
-$users = $adminObj->getAllUsersDetails();
-
-
-
-// Check for session messages
+$users = $adminObj->getAllUsersDetails(); 
 $success_message = $_SESSION['success'] ?? '';
 $error_message   = $_SESSION['error'] ?? '';
 
@@ -51,9 +44,8 @@ unset($_SESSION['success'], $_SESSION['error']);
             --text-light: #636e72;
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
+        body { 
+            background-color: gainsboro;
             color: var(--text-dark);
             min-height: 100vh;
         }
@@ -222,40 +214,8 @@ unset($_SESSION['success'], $_SESSION['error']);
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo px-3">
-            <span>Tourismo Zamboanga</span>
-        </div>
-        <nav class="nav flex-column px-2">
-            <a class="nav-link" href="dashboard.php">
-                <i class="bi bi-speedometer2"></i>
-                <span class="nav-text">Dashboard</span>
-            </a>
-            <a class="nav-link" href="tour-spots.php">
-                <i class="bi bi-geo-alt"></i>
-                <span class="nav-text">Manage Spots</span>
-            </a>
-            <a class="nav-link active" href="manage-users.php">
-                <i class="bi bi-people"></i>
-                <span class="nav-text">Manage Users</span>
-            </a>
-            <a class="nav-link" href="reports.php">
-                <i class="bi bi-graph-up"></i>
-                <span class="nav-text">Reports</span>
-            </a>
-            <a class="nav-link" href="settings.php">
-                <i class="bi bi-gear"></i>
-                <span class="nav-text">Settings</span>
-            </a>
-            <hr class="bg-white opacity-25 my-3">
-            <a class="nav-link text-danger" href="logout.php"
-               onclick="return confirm('Logout now? Your last activity will be recorded.');">
-                <i class="bi bi-box-arrow-right"></i>
-                <span class="nav-text">Logout</span>
-            </a>
-        </nav>
-    </aside>
+    
+    <?php include 'includes/dashboard.php';?>
 
     <!-- Main Content -->
     <main class="main-content">

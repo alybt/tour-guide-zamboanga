@@ -130,10 +130,9 @@ trait BookingDetails{
         c.companion_ID,
         c.companion_name,
         c.companion_age,
-        cc.companion_category_name
+        c.companion_category
         FROM Booking_Bundle bb
         JOIN Companion c ON bb.companion_ID = c.companion_ID
-        JOIN Companion_Category cc ON c.companion_category_ID = cc.companion_category_ID
         WHERE bb.booking_ID = :booking_ID
         ORDER BY c.companion_name";
   

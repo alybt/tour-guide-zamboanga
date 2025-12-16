@@ -40,5 +40,11 @@ class Database {
         return $this->lastError ?: null;
     }
 
+    public function getPDO() { 
+        if (!$this->conn) {
+            $this->connect();
+        }
+        return $this->conn;
+    }
 
 }

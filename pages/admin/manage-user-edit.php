@@ -7,8 +7,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Admin' || $
 require_once "../../classes/admin.php";
 
 $adminObj = new Admin();
-
-// Get user ID from URL
+ 
 $user_ID = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($user_ID <= 0) {
@@ -27,16 +26,22 @@ if (!$user) {
 
 // Fetch all roles + count
 $allRoles   = $adminObj->getAllRoles();
-$totalRoles = count($allRoles); // <-- For limiting "Add Role"
+$totalRoles = count($allRoles);
+ 
+$userRoles = $adminObj->getUserRoleAssignments($user_ID);
+
+// If no roles exist, create one empty slot
+if (empty($userRoles)) {
+    $userRoles = [
+        ['account_ID' => 0, 'role_ID' => 0, 'account_status' => 'Active', 'is_deleted' => null, 'role_name' => '']
+    ];
+}
 
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firstname = trim($_POST['firstname']);
     $lastname  = trim($_POST['lastname']);
     $username  = trim($_POST['username']);
-    $role_ids  = $_POST['role_ID'] ?? [];
-    $role_ids  = array_filter(array_map('intval', $role_ids));
-    $status    = trim($_POST['status']);
     $password  = trim($_POST['password']);
 
     // Validation
@@ -44,45 +49,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($firstname)) $errors[] = "First name is required.";
     if (empty($lastname)) $errors[] = "Last name is required.";
     if (empty($username)) $errors[] = "Username is required.";
-    if (empty($role_ids)) $errors[] = "At least one role is required.";
-    if (!in_array($status, ['Active', 'Inactive'])) $errors[] = "Invalid status.";
 
     if (empty($errors)) {
         try {
-            // $pdo = $adminObj->connect();
-            // $pdo->beginTransaction();
+            // Use the Admin class method to update
+            $adminObj->updateUserDetails(
+                $user_ID,
+                $firstname,
+                $lastname,
+                $username,
+                $password
+            );
 
-            // // 1. Update person
-            // $stmt = $pdo->prepare("UPDATE person SET person_firstname = ?, person_lastname = ? 
-            //                        WHERE person_ID = (SELECT person_ID FROM users WHERE user_ID = ?)");
-            // $stmt->execute([$firstname, $lastname, $user_ID]);
+            $_SESSION['success'] = "User updated successfully.";
+            header("Location: manage-users.php");
+            exit;
 
-            // // 2. Update users (username + password only)
-            // $sql = "UPDATE users SET user_username = ? WHERE user_ID = ?";
-            // $params = [$username, $user_ID];
-
-            // if (!empty($password)) {
-            //     $hashed = password_hash($password, PASSWORD_DEFAULT);
-            //     $sql = "UPDATE users SET user_username = ?, user_password = ? WHERE user_ID = ?";
-            //     $params = [$username, $hashed, $user_ID];
-            // }
-            // $pdo->prepare($sql)->execute($params);
-
-            // // 3. Replace roles in Account_Info
-            // $pdo->prepare("DELETE FROM Account_Info WHERE user_ID = ?")->execute([$user_ID]);
-            // foreach ($role_ids as $rid) {
-            //     if ($rid > 0) {
-            //         $pdo->prepare("INSERT INTO Account_Info (user_ID, role_ID, account_status) VALUES (?, ?, ?)")
-            //              ->execute([$user_ID, $rid, $status]);
-            //     }
-            // }
-
-            // $pdo->commit();
-            // $_SESSION['success'] = "User updated successfully.";
-            // header("Location: manage-users.php");
-            // exit;
         } catch (Exception $e) {
-            $pdo->rollBack();
             error_log("User update failed: " . $e->getMessage());
             $errors[] = "Update failed. Please try again.";
         }
@@ -236,11 +219,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-left: 4px solid #dc3545;
         }
 
-        /* Add Role Button Disabled Style */
-        button[onclick="addRole()"]:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        /* Role Card Styling */
+        .role-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            transition: all 0.2s;
         }
+
+        .role-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(229, 161, 62, 0.15);
+        }
+
+        .role-card.deleted {
+            background: #fff3cd;
+            border-color: #ffc107;
+            opacity: 0.85;
+        }
+
+        .role-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .role-number {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-suspended { background: #f8d7da; color: #721c24; }
+        .status-deleted { background: #e2e3e5; color: #383d41; }
 
         /* Responsive */
         @media (max-width: 992px) {
@@ -310,7 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="header-card d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
             <div>
                 <h3 class="mb-1 fw-bold">Edit User</h3>
-                <p class="text-muted mb-0">Update user information, role, and account status.</p>
+                <p class="text-muted mb-0">Update user information, roles, and individual account statuses.</p>
             </div>
             <div class="text-md-end">
                 <div class="d-flex align-items-center gap-3 flex-wrap justify-content-md-end">
@@ -346,7 +370,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Edit Form -->
         <div class="form-card">
             <form method="POST" novalidate>
-                <div class="row g-4">
+                <!-- User Basic Info -->
+                <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <label class="form-label">First Name <span class="text-danger">*</span></label>
                         <input type="text" name="firstname" class="form-control" 
@@ -369,61 +394,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current">
                         <div class="form-text">Only fill if you want to change the password.</div>
                     </div>
-
-                    <!-- ROLES SECTION -->
-                    <div class="col-md-6">
-                        <label class="form-label">Roles <span class="text-danger">*</span></label>
-
-                        <div id="roleContainer">
-                            <?php 
-                            $user_role_ids = [];
-                            if (!empty($user['role_ID'])) {
-                                $user_role_ids = array_map('intval', explode(',', $user['role_ID']));
-                            }
-                            if (empty($user_role_ids)) {
-                                $user_role_ids = [0];
-                            }
-
-                            foreach ($user_role_ids as $index => $role_id):
-                                $is_first = ($index === 0);
-                            ?>
-                            <div class="role-group mb-2 d-flex align-items-start">
-                                <select name="role_ID[]" class="form-select" required>
-                                    <option value="">-- SELECT ROLE --</option>
-                                    <?php foreach ($allRoles as $r): ?>
-                                        <option value="<?= $r['role_ID'] ?>" 
-                                            <?= ($role_id == $r['role_ID']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($r['role_name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <?php if (count($user_role_ids) > 1 || !$is_first): ?>
-                                    <button type="button" class="btn btn-danger btn-sm ms-2 mt-1" 
-                                            onclick="removeRole(this)">Remove</button>
-                                <?php endif; ?>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
-
-                        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="addRole()" id="addRoleBtn">
-                            Add Role
-                        </button>
-                        <small id="addRoleLimitMsg" class="text-danger d-block mt-1"></small>
-                    </div>
-
-                    <!-- ACCOUNT STATUS -->
-                    <div class="col-md-6">
-                        <label class="form-label">Account Status <span class="text-danger">*</span></label>
-                        <select name="status" class="form-select" required>
-                            <option value="Active" <?= ($user['account_status'] ?? '') == 'Active' ? 'selected' : '' ?>>Active</option>
-                            <option value="Inactive" <?= ($user['account_status'] ?? '') == 'Inactive' ? 'selected' : '' ?>>Inactive</option>
-                        </select>
-                    </div>
                 </div>
+
+                <hr class="my-4">
+
+                <!-- ROLES SECTION -->
+                <div class="mb-3">
+                    <h5 class="mb-3">
+                        <i class="bi bi-person-badge"></i> Role Assignments
+                        <small class="text-muted">(Each role has its own status)</small>
+                    </h5>
+                </div>
+
+                <div id="roleContainer">
+                    <?php if (empty($userRoles)): ?>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No roles assigned yet.
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Role Name</th>
+                                        <th>Status</th>
+                                        <th>Account Info ID</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="roleTableBody">
+                                    <?php foreach ($userRoles as $index => $roleData): 
+                                        $isDeleted = !empty($roleData['is_deleted']);
+                                        $currentStatus = $roleData['account_status'];
+                                        $accountInfoId = $roleData['account_ID'];
+                                        $roleName = htmlspecialchars($roleData['role_name'] ?? 'N/A');
+                                    ?>
+                                    <tr id="roleRow_<?= $accountInfoId ?>" class="<?= $isDeleted ? 'table-warning' : '' ?>">
+                                        <td>
+                                            <strong><?= $roleName ?></strong>
+                                            <?php if ($isDeleted): ?>
+                                                <span class="badge bg-secondary ms-2">Deleted</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <span class="status-indicator status-<?= strtolower($currentStatus) ?>">
+                                                <?= htmlspecialchars($currentStatus) ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <code><?= $accountInfoId ?></code>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if (!$isDeleted): ?>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-danger delete-role-btn" 
+                                                        data-account-id="<?= $accountInfoId ?>"
+                                                        data-role-name="<?= $roleName ?>"
+                                                        onclick="deleteUserRole(<?= $accountInfoId ?>, '<?= $roleName ?>')">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            <?php else: ?>
+                                                <span class="text-muted small">Already Deleted</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+
+
+                <button type="button" class="btn btn-primary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#addRoleModal" id="addRoleBtn">
+                    <i class="bi bi-plus-circle"></i> Add Another Role
+                </button>
+                <small id="addRoleLimitMsg" class="text-danger d-block mt-2"></small>
 
                 <div class="mt-4 d-flex gap-2">
                     <button type="submit" class="btn btn-success">
-                        Update User
+                        <i class="bi bi-check-circle"></i> Update User
                     </button>
                     <a href="manage-users.php" class="btn btn-secondary">
                         Cancel
@@ -433,27 +484,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </main>
 
-    <!-- Role Template -->
-    <script type="text/template" id="roleTemplate">
-        <div class="role-group mb-2 d-flex align-items-start">
-            <select name="role_ID[]" class="form-select" required>
-                <option value="">-- SELECT ROLE --</option>
-                <?php foreach ($allRoles as $r): ?>
-                    <option value="<?= $r['role_ID'] ?>">
-                        <?= htmlspecialchars($r['role_name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <button type="button" class="btn btn-danger btn-sm ms-2 mt-1" 
-                    onclick="removeRole(this)">Remove</button>
+    <!-- Add Role Modal -->
+    <div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRoleModalLabel">Add New Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addRoleForm">
+                        <input type="hidden" name="user_id" value="<?= $user_ID ?>">
+                        <div class="mb-3">
+                            <label class="form-label">Select Role <span class="text-danger">*</span></label>
+                            <select name="role_ID" class="form-select" required>
+                                <option value="">-- Select Role --</option>
+                                <?php foreach ($allRoles as $r): ?>
+                                    <option value="<?= $r['role_ID'] ?>"><?= htmlspecialchars($r['role_name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status <span class="text-danger">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="Active">Active</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitAddRole()">Add Role</button>
+                </div>
+            </div>
         </div>
-    </script>
+    </div>
+ 
 
     <script src="../../assets/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Live Clock & Role Management -->
+    <!-- Scripts -->
     <script>
         const TOTAL_ROLES = <?= $totalRoles ?>;
+        const USER_ID = <?= $user_ID ?>;
 
         // Live Clock
         function updateClock() {
@@ -470,72 +545,137 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         updateClock();
         setInterval(updateClock, 1000);
 
-        // Add Role
-        function addRole() {
-            const container = document.getElementById('roleContainer');
-            const currentCount = container.querySelectorAll('.role-group').length;
-
-            if (currentCount >= TOTAL_ROLES) {
-                showLimitMessage(true);
+        // AJAX Delete User Role
+        function deleteUserRole(accountInfoId, roleName) {
+            // Confirmation dialog
+            if (!confirm(`Are you sure you want to delete the role "${roleName}"?\n\nThis action will mark the account as deleted.`)) {
                 return;
             }
 
-            const template = document.getElementById('roleTemplate').innerHTML;
-            const div = document.createElement('div');
-            div.innerHTML = template;
-            container.appendChild(div.firstElementChild);
-            updateRemoveButtons();
-            showLimitMessage(false);
-        }
+            // Show loading state
+            const btn = document.querySelector(`button[data-account-id="${accountInfoId}"]`);
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Deleting...';
+            btn.disabled = true;
 
-        // Remove Role
-        function removeRole(button) {
-            button.parentElement.remove();
-            updateRemoveButtons();
-            showLimitMessage(false);
-        }
+            // Create FormData
+            const formData = new FormData();
+            formData.append('account_ID', accountInfoId);
+            formData.append('user_id', USER_ID);
 
-        // Update Remove Buttons
-        function updateRemoveButtons() {
-            const groups = document.querySelectorAll('#roleContainer .role-group');
-            groups.forEach((group, idx) => {
-                let btn = group.querySelector('.btn-danger');
-                if (groups.length <= 1) {
-                    if (btn) btn.remove();
-                } else {
-                    if (!btn) {
-                        btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'btn btn-danger btn-sm ms-2 mt-1';
-                        btn.textContent = 'Remove';
-                        btn.onclick = () => removeRole(btn);
-                        group.appendChild(btn);
+            // Send AJAX request
+            fetch('manage-user-delete.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showAlert('success', data.message);
+                    
+                    // Remove or update the row
+                    const row = document.getElementById(`roleRow_${accountInfoId}`);
+                    if (row) {
+                        // Add fade-out animation
+                        row.style.transition = 'opacity 0.5s';
+                        row.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            row.remove();
+                            
+                            // Check if table is empty
+                            const tbody = document.getElementById('roleTableBody');
+                            if (tbody.children.length === 0) {
+                                location.reload(); // Reload if no roles left
+                            }
+                        }, 500);
                     }
+                } else {
+                    // Show error message
+                    showAlert('error', data.message);
+                    
+                    // Restore button
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'An error occurred while deleting the role. Please try again.');
+                
+                // Restore button
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
             });
         }
 
-        // Show Limit Message
-        function showLimitMessage(show) {
-            const msg = document.getElementById('addRoleLimitMsg');
-            const btn = document.getElementById('addRoleBtn');
-            if (show) {
-                msg.textContent = `You cannot add more roles – only ${TOTAL_ROLES} role(s) exist.`;
-                btn.disabled = true;
-            } else {
-                msg.textContent = '';
+        // AJAX Add User Role
+        function submitAddRole() {
+            const form = document.getElementById('addRoleForm');
+            const btn = event.target;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+
+            fetch('manage-user-add-role.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.innerHTML = originalHtml;
                 btn.disabled = false;
-            }
+
+                if (data.success) {
+                    showAlert('success', data.message);
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addRoleModal'));
+                    modal.hide();
+                    // Reload page to show new role
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('error', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                showAlert('error', 'An error occurred while adding the role. Please try again.');
+            });
         }
 
-        // Initialize
+        // Show Alert Function
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-custom alert-${type} p-3`;
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // Insert at the top of main content
+            const mainContent = document.querySelector('.main-content');
+            const headerCard = document.querySelector('.header-card');
+            mainContent.insertBefore(alertDiv, headerCard.nextSibling);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.style.transition = 'opacity 0.5s';
+                alertDiv.style.opacity = '0';
+                setTimeout(() => alertDiv.remove(), 500);
+            }, 5000);
+        }
+
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
-            updateRemoveButtons();
-            const currentCount = document.querySelectorAll('#roleContainer .role-group').length;
-            if (currentCount >= TOTAL_ROLES) {
-                showLimitMessage(true);
-            }
-        });
+            console.log('Edit user page loaded with AJAX delete functionality');
+        }); 
     </script>
 </body>
 </html>
