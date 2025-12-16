@@ -132,26 +132,30 @@ class TourManager extends Database {
     }
 
 
-    public function deleteTourPackage($spots, $tourpackage_ID){
+    public function deleteTourPackage($tourpackage_ID) {
         $db = $this->connect();
-        $db->beginTransaction();
-
+            $db->beginTransaction();
+        
         try {
-            $count = count($spots);
-            for ($i = 0; $i < $count; $i++){
-                $tourpackage_spots = $this->deleteTourPackageSpotsByTourPackageID($tourpackage_ID, $db);
-            }
-
+ 
+            $this->deleteTourPackageSpotsByTourPackageID($tourpackage_ID, $db);  
             $sql = "DELETE FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";
-            $query = $db->prepare($sql);        
+            $query = $db->prepare($sql);
             $query->bindParam(":tourpackage_ID", $tourpackage_ID);
             $query->execute();
-
+  
             $db->commit();
             return true;
+
         } catch (Exception $e) {
-            $db->rollBack();
-            error_log("delete Tour Package error: " . $e->getMessage());
+            $db->rollBack(); 
+            try {
+                $db->exec("SET FOREIGN_KEY_CHECKS = 1");
+            } catch (Exception $re) {
+                error_log("Failed to re-enable foreign key checks: " . $re->getMessage());
+            }
+
+            error_log("deleteTourPackage error: " . $e->getMessage());
             return false;
         }
     }

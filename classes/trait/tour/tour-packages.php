@@ -156,6 +156,17 @@ trait TourPackagesTrait {
         return $results;
     }
 
+    public function getPackageById($id) {
+        $db = $this->connect();
+        $query = "SELECT tourpackage_status FROM tour_package  WHERE tourpackage_ID = :i";
+        $stmt = $db->prepare($query);
+        $stmt->bindParam(":i", $id);
+        $stmt->execute();
+        $results = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return $results;
+    }
+
     public function getTourPackagesRating($tourpackage_ID): ?array{
         // 1. Make sure table name is correct (you wrote "rating" — is it "ratings"?)
         $sql = "SELECT 
@@ -289,6 +300,17 @@ trait TourPackagesTrait {
         }
     }
 
+    public function updatePackageStatus($id, $status) {
+        $query = "UPDATE tour_package SET tourpackage_status = :s WHERE tourpackage_ID = :i";
+        $db = $this->connect();
+        $stmt = $db->prepare($query);
+        $stmt->bindParam(":s", $status);
+        $stmt->bindParam(":i", $id);
+        $stmt->execute();
+        $results = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $results;
+    }
 
     // public function getScheduleIDInTourPackageByTourPackageID($tourpackage_ID){
     //     $sql = "SELECT schedule_ID FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";

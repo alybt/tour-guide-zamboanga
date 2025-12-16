@@ -177,12 +177,7 @@ function isActiveMultiple($pages) {
         <a class="nav-link <?= isActiveMultiple(['tour-packages.php', 'tour-packages-add.php', 'tour-packages-edit.php', 'tour-packages-view.php']) ?>" href="tour-packages.php">
             <i class="bi bi-box-seam"></i>
             <span class="nav-text">Tour Packages</span>
-        </a>
-        
-        <a class="nav-link <?= isActive('calendar.php') ?>" href="calendar.php">
-            <i class="bi bi-calendar3"></i>
-            <span class="nav-text">Calendar</span>
-        </a>
+        </a> 
         
         <a class="nav-link <?= isActiveMultiple(['payout-request.php', 'payout-history.php', 'earnings.php']) ?>" href="payout-request.php">
             <i class="bi bi-wallet2"></i>
@@ -194,10 +189,7 @@ function isActiveMultiple($pages) {
             <span class="nav-text">Reviews</span>
         </a>
         
-        <a class="nav-link <?= isActive('messages.php') ?>" href="messages.php">
-            <i class="bi bi-chat-dots"></i>
-            <span class="nav-text">Messages</span>
-        </a>
+         
         
         <a class="nav-link <?= isActiveMultiple(['profile.php', 'profile-settings.php']) ?>" href="profile-settings.php">
             <i class="bi bi-person-circle"></i>

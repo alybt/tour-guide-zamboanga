@@ -13,7 +13,6 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 $spots_ID = intval($_GET['id']);
 $tourSpot = new TourManager();
 
-// Check if spot exists
 $spot = $tourSpot->getTourSpotById($spots_ID);
 
 if (!$spot) {
