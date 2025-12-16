@@ -179,7 +179,7 @@ function isActiveMultiple($pages) {
         <span>Tourismo Zamboanga</span>
     </div>
     <nav class="nav flex-column px-2">
-        <a class="nav-link <?= isActive('index.php') ?>" href="index.php">
+        <a class="nav-link <?= isActive('dashboard.php') ?>" href="dashboard.php">
             <i class="bi bi-house-door"></i>
             <span class="nav-text">Dashboard</span>
         </a>
@@ -193,11 +193,7 @@ function isActiveMultiple($pages) {
             <i class="bi bi-box-seam"></i>
             <span class="nav-text">Tour Packages</span>
         </a>
-        
-        <a class="nav-link <?= isActive('calendar.php') ?>" href="calendar.php">
-            <i class="bi bi-calendar3"></i>
-            <span class="nav-text">Calendar</span>
-        </a>
+         
         
         <a class="nav-link <?= isActiveMultiple(['payout-request.php', 'payout-history.php', 'earnings.php']) ?>" href="payout-request.php">
             <i class="bi bi-wallet2"></i>

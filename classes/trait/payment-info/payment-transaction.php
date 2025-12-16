@@ -59,15 +59,38 @@ trait PaymentTransaction{
     }
 
     public function viewAllTransaction(){
-        $sql = "SELECT pt.*, b.booking_ID, b.booking_status 
-        FROM payment_transaction pt 
-        LEFT JOIN booking b ON b.booking_ID = pt.booking_ID 
-        WHERE b.booking_status = 'Completed'";
+        $sql = "SELECT 
+                    pt.*, 
+                    b.booking_ID, 
+                    b.booking_status
+                FROM payment_transaction pt
+                LEFT JOIN booking b 
+                    ON b.booking_ID = pt.booking_ID
+                WHERE b.booking_status = 'Completed'
+                ORDER BY 
+                    CASE 
+                        WHEN pt.transaction_status = 'pending' THEN 1 
+                        ELSE 2
+                    END,
+                    pt.transaction_created_date DESC";
         
         $db = $this->connect();
         $query = $db->prepare($sql); 
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countAllTransaction(){
+        $sql = "SELECT COUNT(*) AS pending
+        FROM payment_transaction pt 
+        LEFT JOIN booking b ON b.booking_ID = pt.booking_ID 
+        WHERE b.booking_status = 'Completed' AND transaction_status = 'Pending'";
+        
+        $db = $this->connect();
+        $query = $db->prepare($sql); 
+        $query->execute();
+        $results = $query->fetch(PDO::FETCH_ASSOC);
+        return $results;
     }
 
     public function getTransactionByID($transaction_ID){

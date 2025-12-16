@@ -35,17 +35,15 @@ class Admin extends Database {
 
     public function getAllUsersDetails(){
         $sql = "SELECT u.user_ID, u.user_username AS username, '***' AS password,
-        a.account_status AS status, p.person_ID AS person_ID,
+        a.account_status AS status, 
             GROUP_CONCAT(DISTINCT r.role_name 
                         ORDER BY r.role_name SEPARATOR ', ') AS role_name,
             GROUP_CONCAT(DISTINCT a.role_ID ORDER BY a.role_ID) AS role_ID,
             GROUP_CONCAT(DISTINCT a.account_ID ORDER BY a.account_ID) AS account_ID,
-            CONCAT_WS(' ', ni.name_first, ni.name_last) AS full_name
+            CONCAT_WS(' ', u.name_first, u.name_last) AS full_name
             FROM User_Login      AS u
             LEFT JOIN Account_Info AS a ON a.user_ID = u.user_ID
-            LEFT JOIN Role         AS r ON a.role_ID = r.role_ID
-			JOIN person p ON u.person_ID = p.person_ID
-			JOIN name_info ni ON p.name_ID = ni.name_ID
+            LEFT JOIN Role         AS r ON a.role_ID = r.role_ID  
             WHERE a.role_ID != 1
             GROUP BY u.user_ID, u.user_username";
         $db = $this->connect();
@@ -69,17 +67,15 @@ class Admin extends Database {
 
     public function getUsersDetailsByID($user_ID){
         $sql = "SELECT u.user_ID, u.user_username, u.user_password,
-        a.account_status, p.person_ID AS person_ID,
+        a.account_status, 
             GROUP_CONCAT(DISTINCT r.role_name 
                         ORDER BY r.role_name SEPARATOR ', ') AS role_name,
             GROUP_CONCAT(DISTINCT a.role_ID ORDER BY a.role_ID) AS role_ID,
             GROUP_CONCAT(DISTINCT a.account_ID ORDER BY a.account_ID) AS account_ID,
-            ni.name_first, ni.name_last
+            u.name_first, u.name_last
             FROM User_Login      AS u
             LEFT JOIN Account_Info AS a ON a.user_ID = u.user_ID
-            LEFT JOIN Role         AS r ON a.role_ID = r.role_ID
-			JOIN person p ON u.person_ID = p.person_ID
-			JOIN name_info ni ON p.name_ID = ni.name_ID
+            LEFT JOIN Role         AS r ON a.role_ID = r.role_ID 
             WHERE u.user_ID = :user_ID
             GROUP BY u.user_ID, u.user_username";
         $db = $this->connect();

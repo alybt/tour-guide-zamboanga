@@ -47,7 +47,7 @@ trait GuideEarningTrait{
 
     public function earningUpdateRelease($earning_ID, $db){
         $sql = "UPDATE Guide_Earnings 
-            SET earning_status ='Released' 
+            SET earning_status ='Pending' 
             WHERE earning_ID = :earning_ID";
         $query = $db->prepare($sql);
         $query->bindParam(':earning_ID', $earning_ID);

@@ -32,20 +32,20 @@ $transactions = $paymentManagerObj->viewAllTransaction();
 // Get statistics
 $totalRevenue = 0;
 $totalPlatformFees = 0;
-$pendingPayouts = 0;
+$pendingPayouts = $paymentManagerObj->countAllTransaction();
 $completedTransactions = 0;
 
 foreach ($transactions as $t) {
     $totalRevenue += (float)$t['transaction_total_amount'];
-    if ($t['transaction_status'] != 'Pending') {
+    if ($t['transaction_status'] === 'succeeded' || $t['transaction_status'] === 'paid') {
         $completedTransactions++;
     }
 }
 
 // Filter handling
-// $statusFilter = $_GET['status'] ?? 'all';
-// $dateFilter = $_GET['date'] ?? 'all';
-// $searchQuery = $_GET['search'] ?? '';
+$statusFilter = $_GET['status'] ?? 'all';
+$dateFilter = $_GET['date'] ?? 'all';
+$searchQuery = $_GET['search'] ?? '';
 
 ?>
 
@@ -76,7 +76,7 @@ foreach ($transactions as $t) {
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
+            background-color: gainsboro !important;
             color: var(--text-dark);
             min-height: 100vh;
         }
@@ -370,7 +370,7 @@ foreach ($transactions as $t) {
             <div class="col-md-3 col-6">
                 <div class="stats-card">
                     <div class="stats-icon text-warning"><i class="bi bi-clock-history"></i></div>
-                    <div class="stats-value"><?= count($transactions) - $completedTransactions ?></div>
+                    <div class="stats-value"><?= $pendingPayouts['pending'] ?></div>
                     <div class="stats-label">Pending</div>
                 </div>
             </div>
@@ -383,12 +383,11 @@ foreach ($transactions as $t) {
             </div>
         </div>
 
-        
 
         <!-- Transactions Table -->
         <div class="table-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0 fw-bold">All Transactions</h5>
+                <h5 class="mb-0 fw-bold">Completed Bookings</h5>
                 <a href="export-transactions.php" class="btn btn-outline-success btn-sm">
                     <i class="bi bi-file-earmark-excel"></i> Export to Excel
                 </a>
@@ -466,11 +465,11 @@ foreach ($transactions as $t) {
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <!-- <button type="button" class="btn btn-outline-primary btn-action btn-sm" 
+                                            <button type="button" class="btn btn-outline-primary btn-action btn-sm" 
                                                     data-bs-toggle="modal" 
-                                                    data-bs-target="#viewModal<?php // $t['transaction_ID'] ?>">
+                                                    data-bs-target="#viewModal<?= $t['transaction_ID'] ?>">
                                                 <i class="bi bi-eye"></i>
-                                            </button> -->
+                                            </button>
                                             <a href="transaction-details.php?id=<?= $t['transaction_ID'] ?>" 
                                                class="btn btn-outline-secondary btn-action btn-sm">
                                                 <i class="bi bi-receipt"></i>
@@ -503,46 +502,7 @@ foreach ($transactions as $t) {
                                     </td>
                                 </tr>
 
-                                <!-- View Modal -->
-                                <div class="modal fade" id="viewModal<?= $t['transaction_ID'] ?>" tabindex="-1">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Transaction Details</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <p><strong>Transaction ID:</strong> #<?= $t['transaction_ID'] ?></p>
-                                                        <p><strong>Booking ID:</strong> #<?= $t['booking_ID'] ?></p>
-                                                        <p><strong>Guide:</strong> <?= htmlspecialchars($guideName) ?></p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p><strong>Amount:</strong> ₱<?= number_format($t['transaction_total_amount'], 2) ?></p>
-                                                        <p><strong>Status:</strong> 
-                                                            <span class="status-badge <?= $statusClass ?>">
-                                                                <?= htmlspecialchars($t['transaction_status']) ?>
-                                                            </span>
-                                                        </p>
-                                                        <p><strong>Date:</strong> <?= date('M d, Y h:i A', strtotime($t['transaction_created_date'])) ?></p>
-                                                    </div>
-                                                </div>
-                                                <?php if (!empty($t['transaction_reference'])): ?>
-                                                    <p><strong>Reference:</strong> <?= htmlspecialchars($t['transaction_reference']) ?></p>
-                                                <?php endif; ?>
-                                                <?php if (!empty($t['paymongo_intent_id'])): ?>
-                                                    <p><strong>PayMongo Intent ID:</strong> <?= htmlspecialchars($t['paymongo_intent_id']) ?></p>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                <a href="transaction-details.php?id=<?= $t['transaction_ID'] ?>" 
-                                                   class="btn btn-primary">View Full Details</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
@@ -556,20 +516,7 @@ foreach ($transactions as $t) {
                 </table>
             </div>
 
-            <!-- Pagination -->
-            <nav aria-label="Transaction pagination">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Previous</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Next</a>
-                    </li>
-                </ul>
-            </nav>
+            
         </div>
 
     </main>

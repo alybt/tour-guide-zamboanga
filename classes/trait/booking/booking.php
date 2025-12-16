@@ -105,10 +105,7 @@ trait BookingDetails{
         LEFT JOIN Contact_Info ci ON tp.contactinfo_ID = ci.contactinfo_ID
         
         -- Tour Package Info
-        JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
-        JOIN Schedule s ON tp.schedule_ID = tp.schedule_ID
-        JOIN Number_Of_People nop ON tp.numberofpeople_ID = tp.numberofpeople_ID
-        JOIN Pricing pr ON tp.pricing_ID = pr.pricing_ID
+        JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID 
         
         -- Guide Info
         LEFT JOIN Guide g ON tp.guide_ID = g.guide_ID
@@ -432,10 +429,7 @@ trait BookingDetails{
                 b.*,
                 tp.tourpackage_name
             FROM booking b
-            INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-            INNER JOIN schedule s ON tp.schedule_ID = tp.schedule_ID
-            INNER JOIN number_of_people nop ON tp.numberofpeople_ID = tp.numberofpeople_ID
-            INNER JOIN pricing p ON tp.pricing_ID = tp.pricing_ID
+            INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID   
             WHERE b.booking_ID = :booking_ID
             LIMIT 1";
 
