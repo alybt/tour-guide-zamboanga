@@ -24,6 +24,113 @@ $guideObj = new Guide();
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
 $spots = $guideObj->getAllSpots();
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $errors = [];
+    $old = [
+        'tourpackage_name' => trim($_POST['tourpackage_name'] ?? ''),
+        'tourpackage_desc' => trim($_POST['tourpackage_desc'] ?? ''),
+        'schedule_days' => (int)($_POST['schedule_days'] ?? 1),
+        'numberofpeople_maximum' => (int)($_POST['numberofpeople_maximum'] ?? 0),
+        'numberofpeople_based' => (int)($_POST['numberofpeople_based'] ?? 0),
+        'pricing_foradult' => $_POST['pricing_foradult'] ?? '',
+        'pricing_forchild' => $_POST['pricing_forchild'] ?? '',
+        'pricing_foryoungadult' => $_POST['pricing_foryoungadult'] ?? '',
+        'pricing_forsenior' => $_POST['pricing_forsenior'] ?? '',
+        'pricing_forpwd' => $_POST['pricing_forpwd'] ?? '',
+        'include_meal' => isset($_POST['include_meal']) ? 1 : 0,
+        'meal_fee' => $_POST['meal_fee'] ?? '0.00',
+        'transport_fee' => $_POST['transport_fee'] ?? '0.00',
+        'discount' => $_POST['discount'] ?? '0.00',
+    ];
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
+        $errors['general'] = 'Invalid request.';
+    }
+    if ($old['tourpackage_name'] === '') {
+        $errors['tourpackage_name'] = 'Package name is required.';
+    }
+    if ($old['tourpackage_desc'] === '') {
+        $errors['tourpackage_desc'] = 'Description is required.';
+    }
+    if ($old['schedule_days'] < 1) {
+        $errors['schedule_days'] = 'Schedule days must be at least 1.';
+    }
+    if ($old['numberofpeople_maximum'] < 1) {
+        $errors['numberofpeople_maximum'] = 'Max people must be at least 1.';
+    }
+    if ($old['numberofpeople_based'] < 1) {
+        $errors['numberofpeople_based'] = 'Min people must be at least 1.';
+    }
+    if ($old['pricing_foradult'] === '' || !is_numeric($old['pricing_foradult'])) {
+        $errors['pricing_foradult'] = 'Adult price is required.';
+    }
+    $itinerary = $_POST['itinerary'] ?? [];
+    $spotsArr = [];
+    $activityArr = [];
+    $startArr = [];
+    $endArr = [];
+    $dayArr = [];
+    if (is_array($itinerary)) {
+        foreach ($itinerary as $row) {
+            $spot = $row['spot'] ?? '';
+            $act = trim($row['activity_name'] ?? '');
+            $start = $row['start_time'] ?? '';
+            $end = $row['end_time'] ?? '';
+            $day = isset($row['day']) ? (int)$row['day'] : null;
+            if ($spot === '' && $act === '' && $start === '' && $end === '') {
+                continue;
+            }
+            $spotsArr[] = $spot !== '' ? (int)$spot : null;
+            $activityArr[] = $act !== '' ? $act : null;
+            $startArr[] = $start !== '' ? $start : null;
+            $endArr[] = $end !== '' ? $end : null;
+            $dayArr[] = $day ?? null;
+        }
+    }
+    if (empty($spotsArr) && empty($activityArr)) {
+        $errors['general'] = ($errors['general'] ?? '') ?: 'Add at least one itinerary item.';
+    }
+    if (!empty($errors)) {
+        $_SESSION['errors'] = $errors;
+        $_SESSION['old_input'] = $old;
+        header('Location: tour-packages-add.php');
+        exit;
+    }
+    $currency = 'PHP';
+    $ok = $tourMgrObj->addTourPackagesAndItsSpots(
+        $spotsArr,
+        $activityArr,
+        $startArr,
+        $endArr,
+        $dayArr,
+        $guide_ID,
+        $old['tourpackage_name'],
+        $old['tourpackage_desc'],
+        $old['schedule_days'],
+        $old['numberofpeople_maximum'],
+        $old['numberofpeople_based'],
+        $currency,
+        (float)$old['pricing_foradult'],
+        $old['pricing_forchild'] !== '' ? (float)$old['pricing_forchild'] : null,
+        $old['pricing_foryoungadult'] !== '' ? (float)$old['pricing_foryoungadult'] : null,
+        $old['pricing_forsenior'] !== '' ? (float)$old['pricing_forsenior'] : null,
+        $old['pricing_forpwd'] !== '' ? (float)$old['pricing_forpwd'] : null,
+        (int)$old['include_meal'],
+        (float)$old['meal_fee'],
+        (float)$old['transport_fee'],
+        (float)$old['discount']
+    );
+    if ($ok) {
+        $_SESSION['success'] = 'Tour package created successfully.';
+        header('Location: tour-packages.php');
+        exit;
+    } else {
+        $_SESSION['errors'] = ['general' => 'Failed to create tour package.'];
+        $_SESSION['old_input'] = $old;
+        header('Location: tour-packages-add.php');
+        exit;
+    }
+}
+
 /* Flash Messages */
 $errors = $_SESSION['errors'] ?? [];
 $success = $_SESSION['success'] ?? '';
