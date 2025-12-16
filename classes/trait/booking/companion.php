@@ -35,10 +35,9 @@ trait CompanionTrait{
     }
 
     public function getCompanionsByBooking($booking_ID) {
-        $sql = "SELECT c.companion_name, cc.companion_category_name, c.companion_age
+        $sql = "SELECT c.companion_name, c.companion_category, c.companion_age
                 FROM Booking_Bundle b
-                JOIN Companion c ON b.companion_ID = c.companion_ID
-                JOIN Companion_Category cc ON c.companion_category_ID = cc.companion_category_ID 
+                JOIN Companion c ON b.companion_ID = c.companion_ID 
                 WHERE b.booking_ID = :id";
         $db = $this->connect();
         $stmt = $db->prepare($sql);
@@ -49,25 +48,21 @@ trait CompanionTrait{
     
     public function getCompanionBreakdown($booking_ID) {
         $sql = "SELECT 
-                cc.companion_category_name AS category,
+                c.companion_category AS category,
                 COUNT(c.companion_ID) AS qty,
-                pc.pricing_forchild,
-                pc.pricing_foryoungadult,
-                pc.pricing_foradult,
-                pc.pricing_forsenior,
-                pc.pricing_forpwd
-            FROM companion c
-            JOIN companion_category cc ON c.companion_category_ID = cc.companion_category_ID
+                tp.pricing_forchild,
+                tp.pricing_foryoungadult,
+                tp.pricing_foradult,
+                tp.pricing_forsenior,
+                tp.pricing_forpwd
+            FROM companion c 
             JOIN booking_bundle bb ON bb.companion_ID = c.companion_ID
             JOIN booking b ON bb.booking_ID = b.booking_ID
-            JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-            JOIN schedule s ON tp.schedule_ID = s.schedule_ID
-            JOIN Number_Of_People np ON s.numberofpeople_ID = np.numberofpeople_ID
-            JOIN pricing pc ON np.pricing_ID = pc.pricing_ID
+            JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID 
             WHERE bb.booking_ID = :booking_ID
-            GROUP BY cc.companion_category_name, pc.pricing_ID
+            GROUP BY c.companion_category, tp.pricing_ID
             HAVING qty > 0
-            ORDER BY FIELD(cc.companion_category_name, 'Infant', 'Child', 'Young Adult', 'Adult', 'Senior', 'PWD')
+            ORDER BY FIELD(c.companion_category, 'Infant', 'Child', 'Young Adult', 'Adult', 'Senior', 'PWD')
         ";
 
         $db = $this->connect();

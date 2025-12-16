@@ -18,7 +18,6 @@ class Auth extends Database {
             FROM User_Login ul
             JOIN Account_Info ai ON ul.user_ID = ai.user_ID
             JOIN Role r ON ai.role_ID = r.role_ID
-            JOIN person p ON ul.person_ID = p.person_ID
             WHERE ul.user_username = :username
             LIMIT 1";
         

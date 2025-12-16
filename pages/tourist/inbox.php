@@ -54,7 +54,9 @@ $conversationObj->markAsRead($selected_conversation_ID, $tourist_ID);
 // Get guide details for the chat header
 $guidedetails = $guideObj->getGuideByID($guide_ID);
  
-$guide_name = $guidedetails['name_last'] . ' ' . $guidedetails['name_last'];
+
+
+$guide_name = $guidedetails['name_first'] . ' ' . $guidedetails['name_last'];
 $guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?img=' . $guide_ID;
 ?>
 <!DOCTYPE html>

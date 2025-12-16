@@ -30,34 +30,29 @@ class Booking extends Database{
             tp.tourpackage_ID,
             tp.tourpackage_name,
             tp.tourpackage_desc,
-            CONCAT(n.name_first, ' ', n.name_last) AS guide_name,
+            CONCAT(ul.name_first, ' ', ul.name_last) AS guide_name,
             b.booking_start_date,
             b.booking_end_date,
             b.booking_status,
-            s.schedule_days,
-            np.numberofpeople_maximum,
-            np.numberofpeople_based,
-            pc.pricing_foradult,
-            pc.pricing_forchild,
-            pc.pricing_foryoungadult,
-            pc.pricing_forsenior,
-            pc.pricing_forpwd,
-            pc.include_meal,
-            pc.pricing_mealfee,
-            pc.transport_fee,
-            pc.pricing_discount,
+            tp.schedule_days,
+            tp.numberofpeople_maximum,
+            tp.numberofpeople_based,
+            tp.pricing_foradult,
+            tp.pricing_forchild,
+            tp.pricing_foryoungadult,
+            tp.pricing_forsenior,
+            tp.pricing_forpwd,
+            tp.include_meal,
+            tp.pricing_mealfee,
+            tp.transport_fee,
+            tp.pricing_discount,
             GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots
         FROM booking b
         JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-        JOIN schedule s ON tp.schedule_ID = s.schedule_ID
-        JOIN Number_Of_People np ON np.numberofpeople_ID = s.numberofpeople_ID
-        JOIN pricing pc ON pc.pricing_ID = np.pricing_ID
         JOIN guide g ON tp.guide_ID = g.guide_ID
         JOIN account_info ai ON g.account_ID = ai.account_ID
-        JOIN user_login ul ON ai.user_ID = ul.user_ID
-        JOIN person p ON ul.person_ID = p.person_ID
-        JOIN name_info n ON p.name_ID = n.name_ID
-        JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
+        JOIN User_Login ul ON ai.user_ID = ul.user_ID  
+        JOIN tour_package_spots tps ON tp.tourpackage_ID = tp.tourpackage_ID
         JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID    
         WHERE b.tourist_ID = :tourist_ID
         GROUP BY b.booking_ID
@@ -78,34 +73,29 @@ class Booking extends Database{
             tp.tourpackage_ID,
             tp.tourpackage_name,
             tp.tourpackage_desc,
-            CONCAT(n.name_first, ' ', n.name_last) AS guide_name,
+            CONCAT(ul.name_first, ' ', ul.name_last) AS guide_name,
             b.booking_start_date,
             b.booking_end_date,
             b.booking_status,
-            s.schedule_days,
-            np.numberofpeople_maximum,
-            np.numberofpeople_based,
-            pc.pricing_foradult,
-            pc.pricing_forchild,
-            pc.pricing_foryoungadult,
-            pc.pricing_forsenior,
-            pc.pricing_forpwd,
-            pc.include_meal,
-            pc.pricing_mealfee,
-            pc.transport_fee,
-            pc.pricing_discount,
+            tp.schedule_days,
+            tp.numberofpeople_maximum,
+            tp.numberofpeople_based,
+            tp.pricing_foradult,
+            tp.pricing_forchild,
+            tp.pricing_foryoungadult,
+            tp.pricing_forsenior,
+            tp.pricing_forpwd,
+            tp.include_meal,
+            tp.pricing_mealfee,
+            tp.transport_fee,
+            tp.pricing_discount,
             GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots
         FROM booking b
         JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-        JOIN schedule s ON tp.schedule_ID = s.schedule_ID
-        JOIN Number_Of_People np ON np.numberofpeople_ID = s.numberofpeople_ID
-        JOIN pricing pc ON pc.pricing_ID = np.pricing_ID
         JOIN guide g ON tp.guide_ID = g.guide_ID
         JOIN account_info ai ON g.account_ID = ai.account_ID
-        JOIN user_login ul ON ai.user_ID = ul.user_ID
-        JOIN person p ON ul.person_ID = p.person_ID
-        JOIN name_info n ON p.name_ID = n.name_ID
-        JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
+        JOIN User_Login ul ON ai.user_ID = ul.user_ID
+        JOIN tour_package_spots tps ON tp.tourpackage_ID = tp.tourpackage_ID
         JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID    
         LEFT JOIN booking_bundle bb ON b.booking_ID = bb.booking_ID
         WHERE b.booking_ID = :booking_ID
@@ -126,33 +116,28 @@ class Booking extends Database{
             tp.tourpackage_ID,
             tp.tourpackage_name,
             tp.tourpackage_desc,
-            CONCAT(n.name_first, ' ', n.name_last) AS tourist_name,
+            CONCAT(ul.name_first, ' ', ul.name_last) AS tourist_name,
             b.booking_start_date,
             b.booking_end_date,
             b.booking_status,
-            s.schedule_days,
-            np.numberofpeople_maximum,
-            np.numberofpeople_based,
-            pc.pricing_foradult,
-            pc.pricing_forchild,
-            pc.pricing_foryoungadult,
-            pc.pricing_forsenior,
-            pc.pricing_forpwd,
-            pc.include_meal,
-            pc.pricing_mealfee,
-            pc.transport_fee,
-            pc.pricing_discount,
+            tp.schedule_days,
+            tp.numberofpeople_maximum,
+            tp.numberofpeople_based,
+            tp.pricing_foradult,
+            tp.pricing_forchild,
+            tp.pricing_foryoungadult,
+            tp.pricing_forsenior,
+            tp.pricing_forpwd,
+            tp.include_meal,
+            tp.pricing_mealfee,
+            tp.transport_fee,
+            tp.pricing_discount,
             GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots
         FROM booking b
         JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-        JOIN schedule s ON tp.schedule_ID = s.schedule_ID
-        JOIN Number_Of_People np ON np.numberofpeople_ID = s.numberofpeople_ID
-        JOIN pricing pc ON pc.pricing_ID = np.pricing_ID
         JOIN account_info ai ON ai.account_ID = b.tourist_ID
-        JOIN user_login ul ON ai.user_ID = ul.user_ID
-        JOIN person p ON ul.person_ID = p.person_ID
-        JOIN name_info n ON p.name_ID = n.name_ID
-        JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
+        JOIN User_Login ul ON ai.user_ID = ul.user_ID
+        JOIN tour_package_spots tps ON tp.tourpackage_ID = tp.tourpackage_ID
         JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID    
         LEFT JOIN booking_bundle bb ON b.booking_ID = bb.booking_ID
         WHERE b.booking_ID = :booking_ID
@@ -292,18 +277,15 @@ class Booking extends Database{
 
     public function getBookingByGuideID($guide_ID){
         $sql = "SELECT
-            tp.tourpackage_name, tp.tourpackage_desc, s.schedule_days, 
-            CONCAT(ni.name_first, ' ', ni.name_last) AS tourist_name, 
+            tp.tourpackage_name, tp.tourpackage_desc, tp.schedule_days, 
+            CONCAT(ul.name_first, ' ', ul.name_last) AS tourist_name, 
             b.booking_ID, b.booking_start_date, b.booking_end_date, b.booking_status, 
-            s.schedule_days, GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots 
+            tp.schedule_days, GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots 
             FROM booking b 
             JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID 
             JOIN account_info ai ON b.tourist_ID = ai.account_ID 
-            JOIN user_login ul ON ai.user_ID = ul.user_ID 
-            JOIN person p ON ul.person_ID = p.person_ID 
-            JOIN name_info ni ON p.name_ID = ni.name_ID 
-            JOIN schedule s ON s.schedule_ID = tp.schedule_ID 
-            JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID 
+            JOIN user_login ul ON ai.user_ID = ul.user_ID  
+            JOIN tour_package_spots tps ON tp.tourpackage_ID = tp.tourpackage_ID 
             JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID
             WHERE tp.guide_ID = :guide_ID
             GROUP BY b.booking_ID
@@ -350,7 +332,7 @@ class Booking extends Database{
 
             if (!$stmt->execute()) {
                 $db->rollback();
-                throw new Exception("Failed to update Booking status.");
+                throw new Exception("Failed to update Booking statutp.");
                 return false;
             }
 
@@ -362,7 +344,7 @@ class Booking extends Database{
 
             if (!$query->execute()) {
                 $db->rollback();
-                throw new Exception("Failed to update Transaction status.");
+                throw new Exception("Failed to update Transaction statutp.");
                 return false;
             } 
 

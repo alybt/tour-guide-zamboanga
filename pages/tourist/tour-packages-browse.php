@@ -82,9 +82,6 @@ foreach ($guides as $guide) {
             <th>Actions</th>
         </tr>
         <?php $no = 1; foreach ($packages as $package): 
-            $schedule = $tourManager->getScheduleByID($package['schedule_ID']);
-            $people = $tourManager->getPeopleByID($schedule['numberofpeople_ID']);
-            $pricing = $tourManager->getPricingByID($people['pricing_ID']);
             $spots = $tourManager->getSpotsByPackage($package['tourpackage_ID']);
             $spotNames = array_map(function($spot) {
                 return $spot['spots_name'];
@@ -95,11 +92,11 @@ foreach ($guides as $guide) {
             <td><?= htmlspecialchars($package['tourpackage_name']); ?></td>
             <td><?= htmlspecialchars($package['tourpackage_desc']); ?></td>
             <td><?= htmlspecialchars($guidesById[$package['guide_ID']]['guide_name'] ?? 'Unknown'); ?></td>
-            <td><?= htmlspecialchars($schedule['schedule_days']); ?></td>
-            <td><?= htmlspecialchars($people['numberofpeople_maximum']); ?></td>
-            <td><?= htmlspecialchars($people['numberofpeople_based']); ?></td>
-            <td><?= htmlspecialchars($pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_foradult'], 2)); ?></td>
-            <td><?= htmlspecialchars($pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_discount'], 2)); ?></td>
+            <td><?= htmlspecialchars($package['schedule_days']); ?></td>
+            <td><?= htmlspecialchars($package['numberofpeople_maximum']); ?></td>
+            <td><?= htmlspecialchars($package['numberofpeople_based']); ?></td>
+            <td><?= htmlspecialchars(($package['pricing_currency'] ?? '') . ' ' . number_format($package['pricing_foradult'] ?? 0, 2)); ?></td>
+            <td><?= htmlspecialchars(($package['pricing_currency'] ?? '') . ' ' . number_format($package['pricing_discount'] ?? 0, 2)); ?></td>
             <td><?= htmlspecialchars(implode(', ', $spotNames)); ?></td>
             <td>
                 <a href="tour-packages-view.php?id=<?= $package['tourpackage_ID']; ?>">View</a> | <a href="booking-add.php?id=<?= $package['tourpackage_ID']; ?>">Book</a>

@@ -5,71 +5,81 @@ trait TourPackagesTrait {
     //addGetSchedule($days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db)
 
     public function addTourPackage($guide_ID, $name, $desc, $days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db) {
-        $schedule_ID = $this->addGetSchedule($days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db);
-
-        if (!$schedule_ID) {
-                return false;
-        }
-
-        $sql = "INSERT INTO Tour_Package(guide_ID, tourpackage_name, tourpackage_desc, schedule_ID) VALUES (:guide_ID, :tourpackage_name, :tourpackage_desc, :schedule_ID)";
-            $query = $db->prepare($sql);
-            $query->bindParam(':guide_ID', $guide_ID);
-            $query->bindParam(':tourpackage_name', $name);
-            $query->bindParam(':tourpackage_desc', $desc);
-            $query->bindParam(':schedule_ID', $schedule_ID);
-            $query->execute();
-            return $db->lastInsertId();
-
-
-        
+        $sql = "INSERT INTO Tour_Package(
+                    guide_ID, tourpackage_name, tourpackage_desc,
+                    schedule_days, numberofpeople_maximum, numberofpeople_based,
+                    pricing_currency, pricing_foradult, pricing_forchild, pricing_foryoungadult,
+                    pricing_forsenior, pricing_forpwd, include_meal, pricing_mealfee,
+                    transport_fee, pricing_discount
+                ) VALUES (
+                    :guide_ID, :tourpackage_name, :tourpackage_desc,
+                    :schedule_days, :numberofpeople_maximum, :numberofpeople_based,
+                    :pricing_currency, :pricing_foradult, :pricing_forchild, :pricing_foryoungadult,
+                    :pricing_forsenior, :pricing_forpwd, :include_meal, :pricing_mealfee,
+                    :transport_fee, :pricing_discount
+                )";
+        $query = $db->prepare($sql);
+        $query->execute([
+            ':guide_ID'               => $guide_ID,
+            ':tourpackage_name'       => $name,
+            ':tourpackage_desc'       => $desc,
+            ':schedule_days'          => $days,
+            ':numberofpeople_maximum' => $numberofpeople_maximum,
+            ':numberofpeople_based'   => $numberofpeople_based,
+            ':pricing_currency'       => $currency,
+            ':pricing_foradult'       => $forAdult,
+            ':pricing_forchild'       => $forChild,
+            ':pricing_foryoungadult'  => $forYoungAdult,
+            ':pricing_forsenior'      => $forSenior,
+            ':pricing_forpwd'         => $forPWD,
+            ':include_meal'           => $includeMeal,
+            ':pricing_mealfee'        => $mealFee,
+            ':transport_fee'          => $transportFee,
+            ':pricing_discount'       => $discount,
+        ]);
+        return $db->lastInsertId();
     }
 
     public function updateTourPackages($tourpackage_ID, $guide_ID, $name, $desc, $schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based, $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db) {
         try {
-            // ✅ STEP 1: Update Schedule
-            $result = $this->updateSchedule(
-                $schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based,
-                $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult,
-                $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db
-            );
-
-            if (!$result) {
-                throw new Exception("Failed to update schedule for package ID: $tourpackage_ID");
-            }
-
-            // ✅ STEP 2: Update Number of People
-            $sqlPeople = "UPDATE Number_Of_People
-                        SET pricing_ID = :pricing_ID,
-                            numberofpeople_maximum = :max,
-                            numberofpeople_based = :based
-                        WHERE numberofpeople_ID = :numberofpeople_ID";
-
-            $stmtPeople = $db->prepare($sqlPeople);
-            $stmtPeople->execute([
-                ':pricing_ID' => $pricing_ID,
-                ':max'        => $numberofpeople_maximum,
-                ':based'      => $numberofpeople_based,
-                ':numberofpeople_ID' => $numberofpeople_ID
+            $sql = "UPDATE Tour_Package SET 
+                        guide_ID = :guide_ID,
+                        tourpackage_name = :name,
+                        tourpackage_desc = :desc,
+                        schedule_days = :days,
+                        numberofpeople_maximum = :max,
+                        numberofpeople_based = :based,
+                        pricing_currency = :currency,
+                        pricing_foradult = :adult,
+                        pricing_forchild = :child,
+                        pricing_foryoungadult = :young,
+                        pricing_forsenior = :senior,
+                        pricing_forpwd = :pwd,
+                        include_meal = :meal,
+                        pricing_mealfee = :meal_fee,
+                        transport_fee = :transport,
+                        pricing_discount = :discount
+                    WHERE tourpackage_ID = :tourpackage_ID";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([
+                ':guide_ID'       => $guide_ID,
+                ':name'           => $name,
+                ':desc'           => $desc,
+                ':days'           => $days,
+                ':max'            => $numberofpeople_maximum,
+                ':based'          => $numberofpeople_based,
+                ':currency'       => $currency,
+                ':adult'          => $forAdult,
+                ':child'          => $forChild,
+                ':young'          => $forYoungAdult,
+                ':senior'         => $forSenior,
+                ':pwd'            => $forPWD,
+                ':meal'           => $includeMeal,
+                ':meal_fee'       => $mealFee,
+                ':transport'      => $transportFee,
+                ':discount'       => $discount,
+                ':tourpackage_ID' => $tourpackage_ID,
             ]);
-
-            // ✅ STEP 3: Update Main Tour_Packages Table
-            $sqlPackage = "UPDATE Tour_Package
-                        SET guide_ID = :guide_ID,
-                            tourpackage_name = :name,
-                            tourpackage_desc = :desc,
-                            schedule_ID = :schedule_ID
-                        WHERE tourpackage_ID = :tourpackage_ID";
-
-            $stmtPackage = $db->prepare($sqlPackage);
-            $stmtPackage->execute([
-                ':guide_ID'           => $guide_ID,
-                ':name'               => $name,
-                ':desc'               => $desc,
-                ':schedule_ID'        => $schedule_ID,
-                ':tourpackage_ID'     => $tourpackage_ID
-            ]);
-
-            // ✅ All succeeded
             return true;
 
         } catch (Exception $e) {
@@ -98,13 +108,11 @@ trait TourPackagesTrait {
     }
 
     public function viewAllPackagesInfo(){
-        $sql = "SELECT tp.guide_ID, tp.tourpackage_desc, tp.tourpackage_ID, tp.tourpackage_name,
-            s.schedule_days, nop.numberofpeople_maximum, nop.numberofpeople_based,
-            p.pricing_currency, p.pricing_foradult
-            FROM Tour_Package tp 
-            JOIN schedule s ON s.schedule_ID = tp.schedule_ID
-            JOIN number_of_people nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-            JOIN pricing p ON nop.pricing_ID = p.pricing_ID";
+        $sql = "SELECT 
+                tp.guide_ID, tp.tourpackage_desc, tp.tourpackage_ID, tp.tourpackage_name,
+                tp.schedule_days, tp.numberofpeople_maximum, tp.numberofpeople_based,
+                tp.pricing_currency, tp.pricing_foradult
+            FROM Tour_Package tp";
         $db = $this->connect();
         $query = $db->prepare($sql);
         $query->execute();
@@ -116,31 +124,26 @@ trait TourPackagesTrait {
             tp.tourpackage_ID,
             tp.tourpackage_name,
             tp.tourpackage_desc,
-            CONCAT(n.name_first, ' ', n.name_last) AS guide_name,
-            s.schedule_days,
-            g.guide_ID,
-            np.numberofpeople_maximum,
-            np.numberofpeople_based,
-            pc.pricing_currency,
-            pc.pricing_foradult,
-            pc.pricing_forchild,
-            pc.pricing_foryoungadult,
-            pc.pricing_forsenior,
-            pc.pricing_forpwd,
-            pc.include_meal,
-            pc.pricing_mealfee,
-            pc.transport_fee,
-            pc.pricing_discount,
+            CONCAT(ul.name_first, ' ', ul.name_last) AS guide_name,
+            tp.schedule_days,
+            g.guide_ID as guide_ID,
+            tp.numberofpeople_maximum,
+            tp.numberofpeople_based,
+            tp.pricing_currency,
+            tp.pricing_foradult,
+            tp.pricing_forchild,
+            tp.pricing_foryoungadult,
+            tp.pricing_forsenior,
+            tp.pricing_forpwd,
+            tp.include_meal,
+            tp.pricing_mealfee,
+            tp.transport_fee,
+            tp.pricing_discount,
             GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots
         FROM tour_package tp
-        JOIN schedule s ON tp.schedule_ID = s.schedule_ID
-        JOIN Number_Of_People np ON np.numberofpeople_ID = s.numberofpeople_ID
-        JOIN pricing pc ON pc.pricing_ID = np.pricing_ID
-        JOIN guide g ON tp.guide_ID = g.guide_ID
+        JOIN Guide g ON tp.guide_ID = g.guide_ID
         JOIN account_info ai ON g.account_ID = ai.account_ID
-        JOIN user_login ul ON ai.user_ID = ul.user_ID
-        JOIN person p ON ul.person_ID = p.person_ID
-        JOIN name_info n ON p.name_ID = n.name_ID
+        JOIN User_Login ul ON ai.user_ID = ul.user_ID 
         JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
         JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID    
         WHERE tp.tourpackage_ID = :tourpackage_ID";
@@ -148,7 +151,9 @@ trait TourPackagesTrait {
         $query = $db->prepare($sql);
         $query->bindParam(':tourpackage_ID', $tourpackage_ID);
         $query->execute();
-        return $query->fetch(PDO::FETCH_ASSOC);
+        $results =$query->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
     }
 
     public function getTourPackagesRating($tourpackage_ID): ?array{
@@ -220,11 +225,8 @@ trait TourPackagesTrait {
 
     // TourManager.php  (add inside the class)
     public function filterPackages(array $filters = []): array {
-        $sql = "SELECT DISTINCT p.* 
-                FROM Tour_Package p
-                JOIN Schedule sch ON p.schedule_ID = sch.schedule_ID
-                JOIN Number_Of_People nop ON sch.numberofpeople_ID = nop.numberofpeople_ID
-                JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID";
+        $sql = "SELECT DISTINCT ul.* 
+                FROM Tour_Package p";
         
         $params = [];
         $conditions = [];
@@ -234,7 +236,7 @@ trait TourPackagesTrait {
         if (!empty($filters['categories']) && is_array($filters['categories'])) {
             $placeholders = implode(',', array_fill(0, count($filters['categories']), '?'));
             
-            $sql .= " JOIN Tour_Package_Spots ps ON p.tourpackage_ID = ps.tourpackage_ID
+            $sql .= " JOIN Tour_Package_Spots ps ON ul.tourpackage_ID = ps.tourpackage_ID
                     JOIN Tour_Spots s ON ps.spots_ID = s.spots_ID";
             
             // Use LOWER() and TRIM() for case-insensitive matching
@@ -248,23 +250,23 @@ trait TourPackagesTrait {
 
         // ----- PRICE RANGE -----
         if (!empty($filters['price_min'])) {
-            $conditions[] = "pr.pricing_foradult >= ?";
+            $conditions[] = "ul.pricing_foradult >= ?";
             $params[] = $filters['price_min'];
         }
 
         if (!empty($filters['price_max'])) {
-            $conditions[] = "pr.pricing_foradult <= ?";
+            $conditions[] = "ul.pricing_foradult <= ?";
             $params[] = $filters['price_max'];
         }
 
         // ----- PAX -----
         if (!empty($filters['minPax'])) {
-            $conditions[] = "nop.numberofpeople_based >= ?";
+            $conditions[] = "ul.numberofpeople_based >= ?";
             $params[] = $filters['minPax'];
         }
 
         if (!empty($filters['maxPax'])) {
-            $conditions[] = "(nop.numberofpeople_maximum <= ? OR nop.numberofpeople_maximum IS NULL)";
+            $conditions[] = "(ul.numberofpeople_maximum <= ? OR ul.numberofpeople_maximum IS NULL)";
             $params[] = $filters['maxPax'];
         }
 
@@ -274,7 +276,7 @@ trait TourPackagesTrait {
         }
 
         // Add ORDER BY for consistent results
-        $sql .= " ORDER BY p.tourpackage_ID";
+        $sql .= " ORDER BY ul.tourpackage_ID";
 
         try {
             $db = $this->connect();

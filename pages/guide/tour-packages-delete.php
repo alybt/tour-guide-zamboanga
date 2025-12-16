@@ -26,28 +26,25 @@ $guideObj = new Guide();
  
 // Check if package exists and get its details
 $package = $tourMgrObj->getTourPackageById($tourpackage_ID);
-$schedule          = $tourMgrObj->getScheduleByID($package['schedule_ID']);
-$numberofpeople    = $tourMgrObj->getPeopleByID($schedule['numberofpeople_ID']);
-$pricing           = $tourMgrObj->getPricingByID($numberofpeople['pricing_ID']);
 $tourpackage_spots = $tourMgrObj->getSpotsByPackageID($tourpackage_ID);
 
 
 $pkg = [
-    'tourpackage_name'       => $old['tourpackage_name']       ?? $tourpackage['tourpackage_name'] ?? '',
-    'tourpackage_desc'       => $old['tourpackage_desc']       ?? $tourpackage['tourpackage_desc'] ?? '',
-    'schedule_days'          => $old['schedule_days']          ?? $schedule['schedule_days'] ?? 1,
-    'numberofpeople_maximum' => $old['numberofpeople_maximum'] ?? $numberofpeople['numberofpeople_maximum'] ?? '',
-    'numberofpeople_based'   => $old['numberofpeople_based']   ?? $numberofpeople['numberofpeople_based'] ?? '',
-    'pricing_foradult'       => $old['pricing_foradult']       ?? $pricing['pricing_foradult'] ?? '',
-    'pricing_currency'       => $old['pricing_currency']       ?? $pricing['pricing_currency'] ?? '',
-    'pricing_forchild'       => $old['pricing_forchild']       ?? $pricing['pricing_forchild'] ?? '',
-    'pricing_foryoungadult'  => $old['pricing_foryoungadult']  ?? $pricing['pricing_foryoungadult'] ?? '',
-    'pricing_forsenior'      => $old['pricing_forsenior']      ?? $pricing['pricing_forsenior'] ?? '',
-    'pricing_forpwd'         => $old['pricing_forpwd']         ?? $pricing['pricing_forpwd'] ?? '',
-    'include_meal'           => $old['include_meal']           ?? $pricing['include_meal'] ?? 0,
-    'meal_fee'               => $old['meal_fee']               ?? $pricing['meal_fee'] ?? '0.00',
-    'transport_fee'          => $old['transport_fee']          ?? $pricing['transport_fee'] ?? '0.00',
-    'discount'               => $old['discount']               ?? $pricing['discount'] ?? '0.00',
+    'tourpackage_name'       => $package['tourpackage_name'] ?? '',
+    'tourpackage_desc'       => $package['tourpackage_desc'] ?? '',
+    'schedule_days'          => $package['schedule_days'] ?? 1,
+    'numberofpeople_maximum' => $package['numberofpeople_maximum'] ?? '',
+    'numberofpeople_based'   => $package['numberofpeople_based'] ?? '',
+    'pricing_foradult'       => $package['pricing_foradult'] ?? '',
+    'pricing_currency'       => $package['pricing_currency'] ?? '',
+    'pricing_forchild'       => $package['pricing_forchild'] ?? '',
+    'pricing_foryoungadult'  => $package['pricing_foryoungadult'] ?? '',
+    'pricing_forsenior'      => $package['pricing_forsenior'] ?? '',
+    'pricing_forpwd'         => $package['pricing_forpwd'] ?? '',
+    'include_meal'           => $package['include_meal'] ?? 0,
+    'meal_fee'               => $package['pricing_mealfee'] ?? '0.00',
+    'transport_fee'          => $package['transport_fee'] ?? '0.00',
+    'discount'               => $package['pricing_discount'] ?? '0.00',
 ];
 
 if (!$package) {
@@ -71,7 +68,7 @@ $spots = $tourMgrObj->getSpotsByPackage($tourpackage_ID);
 
 // Handle confirmation
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
-    $result = $tourMgrObj->deleteTourPackage($spots, $tourpackage_ID, $package['schedule_ID'], $schedule['numberofpeople_ID'], $numberofpeople['pricing_ID']);
+    $result = $tourMgrObj->deleteTourPackage($spots, $tourpackage_ID);
     
     if ($result) {
         $_SESSION['success'] = "Tour package deleted successfully!";
@@ -114,8 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
             <p><strong>Schedule Days:</strong> <?= $pkg['schedule_days']; ?> days</p>
             <p><strong>Maximum People:</strong> <?= $pkg['numberofpeople_maximum']; ?></p>
             <p><strong>Minimum People:</strong> <?= $pkg['numberofpeople_based']; ?></p>
-            <p><strong>Base Amount:</strong> <?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_foradult'], 2); ?></p>
-            <p><strong>Discount:</strong> <?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_discount'], 2); ?></p>
+            <p><strong>Base Amount:</strong> <?= $pkg['pricing_currency'] . ' ' . number_format($pkg['pricing_foradult'], 2); ?></p>
+            <p><strong>Discount:</strong> <?= $pkg['pricing_currency'] . ' ' . number_format($pkg['discount'], 2); ?></p>
             
             <?php if (!empty($spots)): ?>
             <p><strong>Tour Spots:</strong></p>

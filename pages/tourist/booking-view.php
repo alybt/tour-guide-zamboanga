@@ -14,24 +14,25 @@ require_once "../../classes/tourist.php";
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     $_SESSION['error'] = "Invalid booking ID.";
-    header("Location: my-bookings.php");
+    header("Location: bookings.php");
     exit;
 }
 
 $booking_ID = (int)$_GET['id'];
+ 
+
 $tourist_ID = $_SESSION['account_ID'];
 $bookingObj = new Booking();
-$tourManager = new TourManager();
+$tourManagerObj = new TourManager();
 $guideObj = new Guide();
 
 
-$booking = $bookingObj->getBookingByIDAndTourist($booking_ID, $tourist_ID);
-
-
-$package = $tourManager->getTourPackageDetailsByID($booking['tourpackage_ID']);
-$guide = $guideObj->getGuideByID($package['guide_ID']);
-$spots = $tourManager->getSpotsByPackage($package['tourpackage_ID']);
+$booking = $bookingObj->getBookingByIDAndTourist($booking_ID, $tourist_ID);  
+$packages = $tourManagerObj->getTourPackageDetailsByID($booking['tourpackage_ID']); 
+$guide = $guideObj->getGuideByID($booking['booking_ID']);
+$spots =  $tourManagerObj->getSpotsByPackage($booking['tourpackage_ID']);
 $companions = $bookingObj->getCompanionsByBooking($booking_ID);
+
 
 $tourdetails = $bookingObj->getTourDetails($booking_ID);
 $transactionDetails = $bookingObj->getTransactionSummary($booking_ID);
@@ -303,7 +304,7 @@ $statusColor = match ($booking['booking_status']) {
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="mb-2">Booking #<?= str_pad($booking['booking_ID'], 5, '0', STR_PAD_LEFT) ?></h6>
-                    <h1><?= htmlspecialchars($package['tourpackage_name']) ?></h1>
+                    <h1><?= htmlspecialchars($booking['tourpackage_name']) ?></h1>
                 </div>
                 <span class="status-badge <?= $statusColor ?>"> 
                     <?= htmlspecialchars($booking['booking_status']) ?>
@@ -392,13 +393,13 @@ $statusColor = match ($booking['booking_status']) {
                                 ?>
                                 <span class="text-muted">(<?= $rating_count ?>)</span>
                             </div>
-                            <?php $spoken = $guideObj->getguideLanguages($package['guide_ID']); ?>
+                            <?php $spoken = $guideObj->getguideLanguages($booking['guide_ID']); ?>
                             <p class="mb-0 text-muted">
                                 <i class="fas fa-language me-2"></i> <?= $spoken['Spoken_Languages'] ?? 'N/A' ?>
                             </p>
                         </div>
                         <div>
-                            <a href="inbox.php?guide_id=<?= htmlspecialchars($package['guide_ID']) ?>" class="btn btn-primary btn-sm mb-2">
+                            <a href="inbox.php?guide_id=<?= htmlspecialchars($booking['guide_ID']) ?>" class="btn btn-primary btn-sm mb-2">
                                 <i class="fas fa-comment"></i> Message
                             </a>
                             <br>

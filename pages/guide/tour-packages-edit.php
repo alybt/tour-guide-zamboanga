@@ -30,9 +30,6 @@ $tourpackage_ID = intval($_GET['id']);
 
 // --- Load Related Data ---
 $tourpackage       = $tourMgrObj->getTourPackageByID($tourpackage_ID);
-$schedule          = $tourMgrObj->getScheduleByID($tourpackage['schedule_ID']);
-$numberofpeople    = $tourMgrObj->getPeopleByID($schedule['numberofpeople_ID']);
-$pricing           = $tourMgrObj->getPricingByID($numberofpeople['pricing_ID']);
 $tourpackage_spots = $tourMgrObj->getSpotsByPackageID($tourpackage_ID);
 
 if (!$tourpackage) {
@@ -56,18 +53,18 @@ unset($_SESSION['old_input'], $_SESSION['errors'], $_SESSION['success']);
 $pkg = [
     'tourpackage_name'       => $old['tourpackage_name']       ?? $tourpackage['tourpackage_name'] ?? '',
     'tourpackage_desc'       => $old['tourpackage_desc']       ?? $tourpackage['tourpackage_desc'] ?? '',
-    'schedule_days'          => $old['schedule_days']          ?? $schedule['schedule_days'] ?? 1,
-    'numberofpeople_maximum' => $old['numberofpeople_maximum'] ?? $numberofpeople['numberofpeople_maximum'] ?? '',
-    'numberofpeople_based'   => $old['numberofpeople_based']   ?? $numberofpeople['numberofpeople_based'] ?? '',
-    'pricing_foradult'       => $old['pricing_foradult']       ?? $pricing['pricing_foradult'] ?? '',
-    'pricing_forchild'       => $old['pricing_forchild']       ?? $pricing['pricing_forchild'] ?? '',
-    'pricing_foryoungadult'  => $old['pricing_foryoungadult']  ?? $pricing['pricing_foryoungadult'] ?? '',
-    'pricing_forsenior'      => $old['pricing_forsenior']      ?? $pricing['pricing_forsenior'] ?? '',
-    'pricing_forpwd'         => $old['pricing_forpwd']         ?? $pricing['pricing_forpwd'] ?? '',
-    'include_meal'           => $old['include_meal']           ?? $pricing['include_meal'] ?? 0,
-    'meal_fee'               => $old['meal_fee']               ?? $pricing['meal_fee'] ?? '0.00',
-    'transport_fee'          => $old['transport_fee']          ?? $pricing['transport_fee'] ?? '0.00',
-    'discount'               => $old['discount']               ?? $pricing['discount'] ?? '0.00',
+    'schedule_days'          => $old['schedule_days']          ?? $tourpackage['schedule_days'] ?? 1,
+    'numberofpeople_maximum' => $old['numberofpeople_maximum'] ?? $tourpackage['numberofpeople_maximum'] ?? '',
+    'numberofpeople_based'   => $old['numberofpeople_based']   ?? $tourpackage['numberofpeople_based'] ?? '',
+    'pricing_foradult'       => $old['pricing_foradult']       ?? $tourpackage['pricing_foradult'] ?? '',
+    'pricing_forchild'       => $old['pricing_forchild']       ?? $tourpackage['pricing_forchild'] ?? '',
+    'pricing_foryoungadult'  => $old['pricing_foryoungadult']  ?? $tourpackage['pricing_foryoungadult'] ?? '',
+    'pricing_forsenior'      => $old['pricing_forsenior']      ?? $tourpackage['pricing_forsenior'] ?? '',
+    'pricing_forpwd'         => $old['pricing_forpwd']         ?? $tourpackage['pricing_forpwd'] ?? '',
+    'include_meal'           => $old['include_meal']           ?? $tourpackage['include_meal'] ?? 0,
+    'meal_fee'               => $old['meal_fee']               ?? $tourpackage['pricing_mealfee'] ?? '0.00',
+    'transport_fee'          => $old['transport_fee']          ?? $tourpackage['transport_fee'] ?? '0.00',
+    'discount'               => $old['discount']               ?? $tourpackage['pricing_discount'] ?? '0.00',
 ];
 
 /* -------------------------------------------------
@@ -179,9 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $tourMgrObj->updateTourPackagesAndItsSpots(
                 $packagespots_id, $tour_spots, $activities, $startTimes, $endTimes, $days,
                 $tourpackage_ID, $guide_ID, $posted['tourpackage_name'], $posted['tourpackage_desc'],
-                $schedule['schedule_ID'], $posted['schedule_days'],
-                $numberofpeople['numberofpeople_ID'], $posted['numberofpeople_maximum'], $posted['numberofpeople_based'],
-                $pricing['pricing_ID'], 'PHP', $posted['pricing_foradult'], $posted['pricing_forchild'] ?? 0,
+                $posted['schedule_days'], $posted['numberofpeople_maximum'], $posted['numberofpeople_based'],
+                'PHP', $posted['pricing_foradult'], $posted['pricing_forchild'] ?? 0,
                 $posted['pricing_foryoungadult'] ?? 0, $posted['pricing_forsenior'] ?? 0, $posted['pricing_forpwd'] ?? 0,
                 $posted['include_meal'], $posted['meal_fee'], $posted['transport_fee'], $posted['discount']
             );

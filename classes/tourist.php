@@ -15,9 +15,9 @@ class Tourist extends Database {
 
     public function getTouristBirthdateByTouristID($tourist_ID) {
         $sql  = "SELECT p.person_DateOfBirth
-                 FROM account_info ai
-                 JOIN user_login ul   ON ul.user_ID   = ai.user_ID
-                 JOIN person p        ON p.person_ID  = ul.person_ID
+                 FROM Account_Info ai
+                 JOIN User_Login ul ON ul.user_ID = ai.user_ID
+                 ts.
                  WHERE ai.account_ID = :tourist_ID";
         $db   = $this->connect();
         $stmt = $db->prepare($sql);
@@ -29,14 +29,14 @@ class Tourist extends Database {
     public function getTouristPWDStatusByTouristID($tourist_ID) {
         $db   = $this->connect();
         $sql  = "SELECT p.person_isPWD
-                 FROM account_info ai
-                 JOIN user_login ul   ON ul.user_ID   = ai.user_ID
-                 JOIN person p        ON p.person_ID  = ul.person_ID
+                 FROM Account_Info ai
+                 JOIN User_Login ul ON ul.user_ID = ai.user_ID
+                 ts.
                  WHERE ai.account_ID = :id";
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':id', $tourist_ID, PDO::PARAM_INT);
         $stmt->execute();
-        return (int)$stmt->fetchColumn();          // 1 or 0
+        return (int)$stmt->fetchColumn();
     }
 
     public function getTouristCategory($tourist_ID) {
@@ -65,12 +65,13 @@ class Tourist extends Database {
 
     public function getPricingOfTourist($tourist_category, $booking_ID){
         $db = $this->connect(); // make sure your class has connect() method
-        $sql = "SELECT p.pricing_foradult, p.pricing_foryoungadult, p.pricing_forsenior, p.pricing_forpwd 
+        $sql = "SELECT 
+                    tp.pricing_foradult, 
+                    tp.pricing_foryoungadult, 
+                    tp.pricing_forsenior, 
+                    tp.pricing_forpwd 
                 FROM booking b 
                 JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-                JOIN schedule s ON tp.schedule_ID = s.schedule_ID
-                JOIN number_of_people nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-                JOIN pricing p ON p.pricing_ID = nop.pricing_ID 
                 WHERE b.booking_ID = :booking_ID";
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':booking_ID', $booking_ID, PDO::PARAM_INT);
@@ -97,11 +98,11 @@ class Tourist extends Database {
  
     public function getEmailByID(int $tourist_ID): ?string {
         $sql = " SELECT ci.contactinfo_email 
-            FROM contact_info ci
-            INNER JOIN person p ON p.contactinfo_ID = ci.contactinfo_ID
-            INNER JOIN user_login u ON u.person_ID = p.person_ID
-            INNER JOIN account_info a ON a.user_ID = u.user_ID
-            WHERE a.account_ID = :tourist_ID
+            FROM Account_Info ai
+            INNER JOIN User_Login ul ON ai.user_ID = ul.user_ID
+            INNER ts.
+            INNER JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
+            WHERE ai.account_ID = :tourist_ID
             LIMIT 1 ";
 
         try {
@@ -117,11 +118,12 @@ class Tourist extends Database {
     }
  
     public function getFullNameByID(int $tourist_ID): ?string  {
-        $sql = " SELECT CONCAT(p.person_firstname, ' ', p.person_lastname) AS fullname
-            FROM person p
-            INNER JOIN user_login u ON u.person_ID = p.person_ID
-            INNER JOIN account_info a ON a.user_ID = u.user_ID
-            WHERE a.account_ID = :tourist_ID
+        $sql = " SELECT CONCAT(ul.name_first, ' ', ul.name_last) AS fullname
+            FROM Account_Info ai
+            INNER JOIN User_Login ul ON ai.user_ID = ul.user_ID
+            INNER ts.
+            INNER JOIN Name_Info ni ON p.name_ID = ul.name_ID
+            WHERE ai.account_ID = :tourist_ID
             LIMIT 1 ";
 
         try {
@@ -155,20 +157,20 @@ class Tourist extends Database {
                     p.person_DateOfBirth,
                     
                     -- Name Info
-                    ni.name_ID,
-                    ni.name_first,
-                    ni.name_second,
-                    ni.name_middle,
-                    ni.name_last,
-                    ni.name_suffix,
+                    ul.name_ID,
+                    ul.name_first,
+                    ul.name_second,
+                    ul.name_middle,
+                    ul.name_last,
+                    ul.name_suffix,
                     
                     -- Full Name (Computed)
                     CONCAT(
-                        ni.name_first,
-                        IF(ni.name_second IS NOT NULL AND ni.name_second != '', CONCAT(' ', ni.name_second), ''),
-                        IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''),
-                        ' ', ni.name_last,
-                        IF(ni.name_suffix IS NOT NULL AND ni.name_suffix != '', CONCAT(' ', ni.name_suffix), '')
+                        ul.name_first,
+                        IF(ul.name_second IS NOT NULL AND ul.name_second != '', CONCAT(' ', ul.name_second), ''),
+                        IF(ul.name_middle IS NOT NULL AND ul.name_middle != '', CONCAT(' ', ul.name_middle), ''),
+                        ' ', ul.name_last,
+                        IF(ul.name_suffix IS NOT NULL AND ul.name_suffix != '', CONCAT(' ', ul.name_suffix), '')
                     ) AS tourist_name,
                     
                     -- Contact Info
@@ -216,13 +218,13 @@ class Tourist extends Database {
                 
                 -- Join User and Person
                 JOIN User_Login ul ON ai.user_ID = ul.user_ID
-                JOIN Person p ON ul.person_ID = p.person_ID
+                ts.
                 
                 -- Join Name Info
-                LEFT JOIN Name_Info ni ON p.name_ID = ni.name_ID
+                
                 
                 -- Join Contact Info
-                LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+                LEFT JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
                 
                 -- Join Phone Number and Country
                 LEFT JOIN Phone_Number pn ON ci.phone_ID = pn.phone_ID
@@ -250,15 +252,15 @@ class Tourist extends Database {
     public function getTouristBasicInfo($tourist_ID) {
         $sql = "SELECT 
                     ai.account_ID,
-                    CONCAT(ni.name_first, ' ', ni.name_last) AS tourist_name,
+                    CONCAT(ul.name_first, ' ', ul.name_last) AS tourist_name,
                     ci.contactinfo_email,
                     pn.phone_number
                     
                 FROM Account_Info ai
                 JOIN User_Login ul ON ai.user_ID = ul.user_ID
-                JOIN Person p ON ul.person_ID = p.person_ID
-                LEFT JOIN Name_Info ni ON p.name_ID = ni.name_ID
-                LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+                ts.
+                LEFT JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
+                
                 LEFT JOIN Phone_Number pn ON ci.phone_ID = pn.phone_ID
                 
                 WHERE ai.account_ID = :tourist_ID";
@@ -282,8 +284,8 @@ class Tourist extends Database {
                     
                 FROM Account_Info ai
                 JOIN User_Login ul ON ai.user_ID = ul.user_ID
-                JOIN Person p ON ul.person_ID = p.person_ID
-                JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+                ts.
+                JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
                 LEFT JOIN Address_Info addr ON ci.address_ID = addr.address_ID
                 LEFT JOIN Barangay b ON addr.barangay_ID = b.barangay_ID
                 LEFT JOIN City city ON b.city_ID = city.city_ID
@@ -309,21 +311,18 @@ class Tourist extends Database {
                     b.booking_start_date,
                     b.booking_end_date,
                     tp.tourpackage_name,
-                    CONCAT(gn.name_first, ' ', gn.name_last) AS guide_name,
+                    CONCAT(ul.name_first, ' ', ul.name_last) AS guide_name,
                     pt.transaction_total_amount,
-                    pr.pricing_currency
+                    tp.pricing_currency
                     
                 FROM Booking b
                 JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
                 LEFT JOIN Guide g ON tp.guide_ID = g.guide_ID
                 LEFT JOIN Account_Info gai ON g.account_ID = gai.account_ID
-                LEFT JOIN User_Login gul ON gai.user_ID = gul.user_ID
-                LEFT JOIN Person gp ON gul.person_ID = gp.person_ID
-                LEFT JOIN Name_Info gn ON gp.name_ID = gn.name_ID
+                LEFT JOIN User_Login ul ON gai.user_ID = ul.user_ID
+                LEFT ts.
+                
                 LEFT JOIN Payment_Transaction pt ON b.booking_ID = pt.booking_ID
-                LEFT JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
-                LEFT JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-                LEFT JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
                 
                 WHERE b.tourist_ID = :tourist_ID
                 ORDER BY b.booking_created_at DESC";
@@ -355,51 +354,48 @@ class Tourist extends Database {
             $db = $this->connect();
             $db->beginTransaction();
             
-            // Update Name Info
-            if (isset($data['name_first']) || isset($data['name_last'])) {
-                $sql = "UPDATE Name_Info ni
-                        JOIN Person p ON ni.name_ID = p.name_ID
-                        JOIN User_Login ul ON p.person_ID = ul.person_ID
-                        JOIN Account_Info ai ON ul.user_ID = ai.user_ID
-                        SET 
-                            ni.name_first = COALESCE(:name_first, ni.name_first),
-                            ni.name_middle = COALESCE(:name_middle, ni.name_middle),
-                            ni.name_last = COALESCE(:name_last, ni.name_last)
-                        WHERE ai.account_ID = :tourist_ID";
-                
-                $stmt = $db->prepare($sql);
-                $stmt->execute([
-                    ':tourist_ID' => $tourist_ID,
-                    ':name_first' => $data['name_first'] ?? null,
-                    ':name_middle' => $data['name_middle'] ?? null,
-                    ':name_last' => $data['name_last'] ?? null
-                ]);
+            if (isset($data['name_first']) || isset($data['name_middle']) || isset($data['name_last']) || isset($data['name_suffix']) || isset($data['person_Nationality']) || isset($data['person_Gender']) || isset($data['person_DateOfBirth'])) {
+                $sqlIds = "SELECT p.person_ID, p.name_ID
+                           FROM Account_Info ai
+                           JOIN User_Login ul ON ai.user_ID = ul.user_ID
+                           ts.
+                           WHERE ai.account_ID = :tourist_ID";
+                $stmtIds = $db->prepare($sqlIds);
+                $stmtIds->execute([':tourist_ID' => $tourist_ID]);
+                $ids = $stmtIds->fetch(PDO::FETCH_ASSOC);
+                if ($ids) {
+                    $sqlName = "UPDATE Name_Info SET
+                        name_first = COALESCE(:name_first, name_first),
+                        name_middle = COALESCE(:name_middle, name_middle),
+                        name_last = COALESCE(:name_last, name_last),
+                        name_suffix = COALESCE(:name_suffix, name_suffix)
+                        WHERE name_ID = :name_ID";
+                    $stmtName = $db->prepare($sqlName);
+                    $stmtName->execute([
+                        ':name_ID' => $ids['name_ID'],
+                        ':name_first' => $data['name_first'] ?? null,
+                        ':name_middle' => $data['name_middle'] ?? null,
+                        ':name_last' => $data['name_last'] ?? null,
+                        ':name_suffix' => $data['name_suffix'] ?? null,
+                    ]);
+                    $sqlPerson = "UPDATE Person SET
+                        person_Nationality = COALESCE(:nationality, person_Nationality),
+                        person_Gender = COALESCE(:gender, person_Gender),
+                        person_DateOfBirth = COALESCE(:dob, person_DateOfBirth)
+                        WHERE person_ID = :person_ID";
+                    $stmtPerson = $db->prepare($sqlPerson);
+                    $stmtPerson->execute([
+                        ':person_ID' => $ids['person_ID'],
+                        ':nationality' => $data['person_Nationality'] ?? null,
+                        ':gender' => $data['person_Gender'] ?? null,
+                        ':dob' => $data['person_DateOfBirth'] ?? null,
+                    ]);
+                }
             }
             
-            // Update Person Info (Nationality, Gender, DOB)
-            if (isset($data['person_Nationality']) || isset($data['person_Gender']) || isset($data['person_DateOfBirth'])) {
-                $sql = "UPDATE Person p
-                        JOIN User_Login ul ON p.person_ID = ul.person_ID
-                        JOIN Account_Info ai ON ul.user_ID = ai.user_ID
-                        SET 
-                            p.person_Nationality = COALESCE(:nationality, p.person_Nationality),
-                            p.person_Gender = COALESCE(:gender, p.person_Gender),
-                            p.person_DateOfBirth = COALESCE(:dob, p.person_DateOfBirth)
-                        WHERE ai.account_ID = :tourist_ID";
-                
-                $stmt = $db->prepare($sql);
-                $stmt->execute([
-                    ':tourist_ID' => $tourist_ID,
-                    ':nationality' => $data['person_Nationality'] ?? null,
-                    ':gender' => $data['person_Gender'] ?? null,
-                    ':dob' => $data['person_DateOfBirth'] ?? null
-                ]);
-            }
-            
-            // Update Contact Info (Email)
             if (isset($data['contactinfo_email'])) {
                 $sql = "UPDATE Contact_Info ci
-                        JOIN Person p ON ci.contactinfo_ID = p.contactinfo_ID
+                        JOIN Person p ON ci.contactinfo_ID = ul.contactinfo_ID
                         JOIN User_Login ul ON p.person_ID = ul.person_ID
                         JOIN Account_Info ai ON ul.user_ID = ai.user_ID
                         SET ci.contactinfo_email = :email
@@ -430,18 +426,14 @@ class Tourist extends Database {
                     b.booking_end_date,
                     tp.tourpackage_name,
                     pt.transaction_total_amount,
-                    pr.pricing_currency
+                    tp.pricing_currency
                     
                     
                 FROM Booking b
                 JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
                 LEFT JOIN Payment_Transaction pt ON b.booking_ID = pt.booking_ID
-                LEFT JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
-                LEFT JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-                LEFT JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
                 JOIN booking_bundle bb ON b.booking_ID = bb.booking_ID
                 JOIN companion c ON bb.companion_ID = c.companion_ID
-                JOIN companion_category cc ON c.companion_category_ID = cc.companion_category_ID
                 
                 WHERE b.tourist_ID = :tourist_ID AND b.booking_status IN ('Completed', 'Cancelled', 'Refunded', 'Failed', 'Rejected by the Guide', 'Booking Expired — Payment Not Completed', 'Booking Expired — Guide Did Not Confirm in Time')
                 ORDER BY b.booking_created_at DESC";
@@ -465,15 +457,13 @@ class Tourist extends Database {
         $sql = "SELECT 
                     ai.account_ID,
                     ul.user_ID,
-                    p.person_ID,
-                    ni.name_first,
-                    ni.name_last,
+                    ul.name_first,
+                    ul.name_last,
                     ci.contactinfo_email
                 FROM Account_Info ai
-                JOIN User_Login ul ON ai.user_ID = ul.user_ID
-                JOIN Person p ON ul.person_ID = p.person_ID
-                LEFT JOIN Name_Info ni ON p.name_ID = ni.name_ID
-                LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+                JOIN User_Login ul ON ai.user_ID = ul.user_ID 
+                LEFT JOIN Contact_Info ci ON ul.contactinfo_ID = ci.contactinfo_ID
+                
                 WHERE ai.account_ID = :account_ID";
         
         $stmt = $this->connect()->prepare($sql);
@@ -507,4 +497,3 @@ class Tourist extends Database {
     }
 
 }
-

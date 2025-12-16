@@ -7,25 +7,21 @@ trait BookingDetails{
         
         $sql = "SELECT 
                 b.*,
+                tp.tourpackage_ID,
                 tp.tourpackage_name,
                 tp.tourpackage_desc,
-                s.schedule_days,
-                nop.numberofpeople_maximum,
-                nop.numberofpeople_based,
-                p.pricing_currency,
-                p.pricing_foradult,
-                p.pricing_discount,
+                tp.schedule_days,
+                tp.numberofpeople_maximum,
+                tp.numberofpeople_based,
+                tp.pricing_currency,
+                tp.pricing_foradult,
+                tp.pricing_discount,
                 tp.guide_ID
             FROM booking b
-            INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-            INNER JOIN schedule s ON s.schedule_ID = tp.schedule_ID
-            INNER JOIN number_of_people nop ON nop.numberofpeople_ID = s.numberofpeople_ID
-            INNER JOIN pricing p ON p.pricing_ID = nop.pricing_ID
-            WHERE 
-            b.booking_ID = :booking_ID 
+            INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID 
+            WHERE  b.booking_ID = :booking_ID 
             AND b.tourist_ID = :tourist_ID
-                        LIMIT 1
-        ";
+                        LIMIT 1 ";
 
         try {
             $stmt = $db->prepare($sql);
@@ -73,9 +69,9 @@ trait BookingDetails{
         
         -- Tourist Info
         ai.account_ID AS tourist_account_ID,
-        CONCAT(ni.name_first, 
-            IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
-            ' ', ni.name_last) AS tourist_fullname,
+        CONCAT(ul.name_first, 
+            IF(ul.name_middle IS NOT NULL AND ul.name_middle != '', CONCAT(' ', ul.name_middle), ''), 
+            ' ', ul.name_last) AS tourist_fullname,
         ci.contactinfo_email AS tourist_email,
         
         -- Tour Package Info
@@ -90,7 +86,7 @@ trait BookingDetails{
         
         -- Guide Info
         g.guide_ID,
-        CONCAT(gn.name_first, ' ', gn.name_last) AS guide_fullname,
+        CONCAT(gul.name_first, ' ', gul.name_last) AS guide_fullname,
         gci.contactinfo_email AS guide_email,
         gpn.phone_number AS guide_phone,
         
@@ -105,24 +101,20 @@ trait BookingDetails{
         
         -- Tourist Info
         JOIN Account_Info ai ON b.tourist_ID = ai.account_ID
-        JOIN User_Login ul ON ai.user_ID = ul.user_ID
-        JOIN Person p ON ul.person_ID = p.person_ID
-        JOIN Name_Info ni ON p.name_ID = ni.name_ID
-        LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+        JOIN User_Login ul ON ai.user_ID = ul.user_ID 
+        LEFT JOIN Contact_Info ci ON tp.contactinfo_ID = ci.contactinfo_ID
         
         -- Tour Package Info
         JOIN Tour_Package tp ON b.tourpackage_ID = tp.tourpackage_ID
-        JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
-        JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-        JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
+        JOIN Schedule s ON tp.schedule_ID = tp.schedule_ID
+        JOIN Number_Of_People nop ON tp.numberofpeople_ID = tp.numberofpeople_ID
+        JOIN Pricing pr ON tp.pricing_ID = pr.pricing_ID
         
         -- Guide Info
         LEFT JOIN Guide g ON tp.guide_ID = g.guide_ID
         LEFT JOIN Account_Info gai ON g.account_ID = gai.account_ID
-        LEFT JOIN User_Login gul ON gai.user_ID = gul.user_ID
-        LEFT JOIN Person gp ON gul.person_ID = gp.person_ID
-        LEFT JOIN Name_Info gn ON gp.name_ID = gn.name_ID
-        LEFT JOIN Contact_Info gci ON gp.contactinfo_ID = gci.contactinfo_ID
+        LEFT JOIN User_Login gul ON gai.user_ID = gul.user_ID 
+        LEFT JOIN Contact_Info gci ON gul.contactinfo_ID = gci.contactinfo_ID
         LEFT JOIN Phone_Number gpn ON gci.phone_ID = gpn.phone_ID
         
         -- Transaction Info
@@ -212,7 +204,7 @@ trait BookingDetails{
             b.booking_status, 
             tp.tourpackage_name, 
             -- Full tourist name
-            TRIM( CONCAT( ni.name_first, IF(ni.name_middle IS NOT NULL AND TRIM(ni.name_middle) != '', CONCAT(' ', ni.name_middle),  '' ), ' ', ni.name_last ) ) AS tourist_name, 
+            TRIM( CONCAT( ul.name_first, IF(ul.name_middle IS NOT NULL AND TRIM(ul.name_middle) != '', CONCAT(' ', ul.name_middle),  '' ), ' ', ul.name_last ) ) AS tourist_name, 
             -- CORRECT TOTAL PAX using your booking_isselfIncluded flag
             ( COUNT(c.companion_ID) +  IF(b.booking_isselfIncluded = 1 OR b.booking_isselfIncluded IS NULL, 1, 0) ) AS total_pax, 
             -- Money
@@ -225,10 +217,10 @@ trait BookingDetails{
             JOIN tour_package tp  ON b.tourpackage_ID = tp.tourpackage_ID
             JOIN account_info ai  ON ai.account_ID = b.tourist_ID
             JOIN user_login ul ON ul.user_ID = ai.user_ID
-            JOIN person p ON p.person_ID = ul.person_ID
-            JOIN name_info ni ON ni.name_ID = p.name_ID
+            JOIN person p ON tp.person_ID = ul.person_ID
+            JOIN name_info ni ON ul.name_ID = tp.name_ID
 
-            LEFT JOIN contact_info ci ON ci.contactinfo_ID = p.contactinfo_ID
+            LEFT JOIN contact_info ci ON ci.contactinfo_ID = tp.contactinfo_ID
             LEFT JOIN phone_number pn ON pn.phone_ID = ci.phone_ID
             LEFT JOIN country coun    ON coun.country_ID = pn.country_ID
             LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
@@ -242,7 +234,7 @@ trait BookingDetails{
             'Cancelled - No Refund' )
             
             GROUP BY b.booking_ID, tp.tourpackage_name, 
-                ni.name_first, ni.name_middle, ni.name_last,
+                ul.name_first, ul.name_middle, ul.name_last,
                 b.booking_isselfIncluded, b.booking_created_at, b.booking_start_date, b.booking_status,
                 pi.paymentinfo_total_amount, pt.transaction_status,
                 coun.country_codenumber, pn.phone_number
@@ -269,9 +261,9 @@ trait BookingDetails{
                 b.booking_status, 
                 tp.tourpackage_name, 
                 TRIM(CONCAT(
-                    ni.name_first, 
-                    IF(ni.name_middle IS NOT NULL AND TRIM(ni.name_middle) != '', CONCAT(' ', ni.name_middle), ''), 
-                    ' ', ni.name_last
+                    ul.name_first, 
+                    IF(ul.name_middle IS NOT NULL AND TRIM(ul.name_middle) != '', CONCAT(' ', ul.name_middle), ''), 
+                    ' ', ul.name_last
                 )) AS tourist_name, 
                 
                 (COUNT(c.companion_ID) + IF(b.booking_isselfIncluded = 1 OR b.booking_isselfIncluded IS NULL, 1, 0)) AS total_pax, 
@@ -285,9 +277,9 @@ trait BookingDetails{
                 JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
                 JOIN account_info ai ON ai.account_ID = b.tourist_ID
                 JOIN user_login ul ON ul.user_ID = ai.user_ID
-                JOIN person p ON p.person_ID = ul.person_ID
-                JOIN name_info ni ON ni.name_ID = p.name_ID
-                LEFT JOIN contact_info ci ON ci.contactinfo_ID = p.contactinfo_ID
+                JOIN person p ON tp.person_ID = ul.person_ID
+                JOIN name_info ni ON ul.name_ID = tp.name_ID
+                LEFT JOIN contact_info ci ON ci.contactinfo_ID = tp.contactinfo_ID
                 LEFT JOIN phone_number pn ON pn.phone_ID = ci.phone_ID
                 LEFT JOIN country coun ON coun.country_ID = pn.country_ID
                 LEFT JOIN booking_bundle bb ON bb.booking_ID = b.booking_ID
@@ -303,7 +295,7 @@ trait BookingDetails{
             )
 
             GROUP BY 
-                b.booking_ID, tp.tourpackage_name, ni.name_first, ni.name_middle, ni.name_last,
+                b.booking_ID, tp.tourpackage_name, ul.name_first, ul.name_middle, ul.name_last,
                 b.booking_isselfIncluded, b.booking_created_at, b.booking_start_date, b.booking_status,
                 pt.transaction_total_amount, pt.transaction_status,
                 coun.country_codenumber, pn.phone_number
@@ -404,17 +396,17 @@ trait BookingDetails{
     public function getGuideDetailsByAccountID(int $account_ID): ?array {
         $sql = "SELECT ai.*,
                 g.guide_ID,
-                CONCAT(ni.name_first, 
-                    IF(ni.name_middle IS NOT NULL AND ni.name_middle != '', CONCAT(' ', ni.name_middle), ''), 
-                    ' ', ni.name_last) AS guide_fullname,
+                CONCAT(ul.name_first, 
+                    IF(ul.name_middle IS NOT NULL AND ul.name_middle != '', CONCAT(' ', ul.name_middle), ''), 
+                    ' ', ul.name_last) AS guide_fullname,
                 ci.contactinfo_email AS guide_email,
                 pn.phone_number AS guide_phone
             FROM guide g
             JOIN account_info ai ON g.account_ID = ai.account_ID
             JOIN user_login ul ON ai.user_ID = ul.user_ID
-            JOIN person p ON ul.person_ID = p.person_ID
-            JOIN name_info ni ON p.name_ID = ni.name_ID
-            LEFT JOIN contact_info ci ON p.contactinfo_ID = ci.contactinfo_ID
+            JOIN person p ON ul.person_ID = tp.person_ID
+            JOIN name_info ni ON tp.name_ID = ul.name_ID
+            LEFT JOIN contact_info ci ON tp.contactinfo_ID = ci.contactinfo_ID
             LEFT JOIN phone_number pn ON ci.phone_ID = pn.phone_ID
             WHERE g.account_ID = :account_ID
             LIMIT 1";
@@ -441,9 +433,9 @@ trait BookingDetails{
                 tp.tourpackage_name
             FROM booking b
             INNER JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
-            INNER JOIN schedule s ON s.schedule_ID = tp.schedule_ID
-            INNER JOIN number_of_people nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-            INNER JOIN pricing p ON nop.pricing_ID = p.pricing_ID
+            INNER JOIN schedule s ON tp.schedule_ID = tp.schedule_ID
+            INNER JOIN number_of_people nop ON tp.numberofpeople_ID = tp.numberofpeople_ID
+            INNER JOIN pricing p ON tp.pricing_ID = tp.pricing_ID
             WHERE b.booking_ID = :booking_ID
             LIMIT 1";
 
@@ -664,13 +656,11 @@ trait BookingDetails{
             $sql = "SELECT 
                 b.*,
                 tp.tourPackage_name,
-                CONCAT(ni.name_first, ' ', ni.name_last) as tourist_name
+                CONCAT(ul.name_first, ' ', ul.name_last) as tourist_name
             FROM Booking b
             LEFT JOIN TourPackage tp ON b.tourPackage_ID = tp.tourPackage_ID
             LEFT JOIN Account_Info acc ON b.tourist_ID = acc.account_ID
-            LEFT JOIN User_Login ul ON acc.user_ID = ul.user_ID
-            LEFT JOIN Person p ON ul.person_ID = p.person_ID
-            LEFT JOIN Name_Info ni ON p.name_ID = ni.name_ID
+            LEFT JOIN User_Login ul ON acc.user_ID = ul.user_ID  
             WHERE b.guide_ID = ? 
             AND DATE(b.booking_startDate) = ?
             AND b.booking_status IN ('Confirmed', 'In Progress')

@@ -62,7 +62,7 @@
 
                             <div class="d-flex gap-2 flex-wrap pt-2">
                                 <a href="booking-view.php?id=<?= $booking['booking_ID'] ?>" class="btn btn-primary btn-sm flex-fill">
-                                    <i class="fas fa-eye me-1"></i> View
+                                    <i class="fas fa-eye me-1"></i> <?= $booking['booking_ID'] ?>View
                                 </a>
                                 
                                 <?php if ($booking['booking_status'] == 'Pending for Payment'): ?>

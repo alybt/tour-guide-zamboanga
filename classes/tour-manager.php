@@ -4,12 +4,10 @@ require_once __DIR__ . "/../config/database.php";
 require_once "trait/tour/tour-packages.php";
 require_once "trait/tour/tour-spots.php";
 require_once "trait/tour/tour-packagespots.php";
-require_once "trait/tour/schedule.php";
-require_once "trait/tour/pricing.php";
-require_once "trait/tour/people.php";
+// schedule, pricing, and people tables are flattened into Tour_Package
 
 class TourManager extends Database {
-    use TourPackagesTrait, PeopleTrait, PricingTrait, ScheduleTrait;
+    use TourPackagesTrait;
     use TourSpotsTrait, TourPackageSpot;
 
     // spots_ID, packagespots_activityname, packagespots_starttime, packagespots_endtime, packagespot_day
@@ -59,17 +57,17 @@ class TourManager extends Database {
     }
 
 
-    //updateTourPackage($tourpackage_ID, $guide_ID, $name, $desc, $schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based, $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db)
-    public function updateTourPackagesAndItsSpots($packagespot_ID, $tour_spots, $packagespots_activityname, $packagespots_starttime, $packagespots_endtime, $packagespot_day, $tourpackage_ID, $guide_ID, $name, $desc, $schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based, $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount) {
+    // Update flattened Tour_Package plus its spots
+    public function updateTourPackagesAndItsSpots($packagespot_ID, $tour_spots, $packagespots_activityname, $packagespots_starttime, $packagespots_endtime, $packagespot_day, $tourpackage_ID, $guide_ID, $name, $desc, $days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount) {
         try {
             $db = $this->connect();
             $db->beginTransaction();
 
             // ✅ STEP 1: Update main tour package
             $result = $this->updateTourPackages(
-                $tourpackage_ID, $guide_ID, $name, $desc, $schedule_ID, $days,
-                $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based,
-                $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult,
+                $tourpackage_ID, $guide_ID, $name, $desc, null, $days,
+                null, $numberofpeople_maximum, $numberofpeople_based,
+                null, $currency, $forAdult, $forChild, $forYoungAdult,
                 $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db
             );
 
@@ -134,14 +132,11 @@ class TourManager extends Database {
     }
 
 
-    public function deleteTourPackage($spots, $tourpackage_ID, $schedule_ID, $numberofpeople_ID, $pricing_ID){
+    public function deleteTourPackage($spots, $tourpackage_ID){
         $db = $this->connect();
         $db->beginTransaction();
 
         try {
-            $pricingDelete = $this->deletePricingByID($pricing_ID,$db);
-            $numberofpeopleDelete = $this->deletePeopleByID($numberofpeople_ID, $db);
-            $scheduleDelete = $this->deleteScheduleByID($schedule_ID, $db);
             $count = count($spots);
             for ($i = 0; $i < $count; $i++){
                 $tourpackage_spots = $this->deleteTourPackageSpotsByTourPackageID($tourpackage_ID, $db);
