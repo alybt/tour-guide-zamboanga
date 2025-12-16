@@ -55,9 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ajax'])) {
     }
 
     foreach ($packages as $package) {
-        $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
-        $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
-        $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
+        $package = $TourManagerObj->getScheduleByID($package['schedule_ID']);
+        $package   = $TourManagerObj->getPeopleByID($package['numberofpeople_ID']);
+        $package  = $TourManagerObj->getPricingByID($package['pricing_ID']);
         
         // Handle rating errors gracefully
         try {
@@ -188,10 +188,7 @@ function buildStarList(float $avg, int $count): string
 
 <main id="packagesContainer" class="main-contents ">
     <?php foreach ($packages as $package): ?>
-        <?php
-        $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
-        $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
-        $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
+        <?php 
         
         // Handle rating errors gracefully
         try {

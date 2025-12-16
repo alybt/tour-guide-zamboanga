@@ -35,11 +35,13 @@ if (!$package) {
 $guides = $guideObj->viewAllGuide();
 $guideName = "N/A";
 $guideID = null;
-foreach ($guides as $guide) {
-    if ($guide['guide_ID'] == $package['guide_ID']) {
-        $guideName = htmlspecialchars($guide['guide_name']);
-        $guideID = $guide['guide_ID'];
-        break;
+if ($guides && !empty($package['guide_ID'])) {
+    foreach ($guides as $guide) {
+        if ($guide['guide_ID'] == $package['guide_ID']) {
+            $guideName = htmlspecialchars($guide['guide_name']);
+            $guideID = $guide['guide_ID'];
+            break;
+        }
     }
 }
 
@@ -62,8 +64,7 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
     
 </head>
 <body>
-    <?php require_once "includes/header.php"; 
-    include_once "includes/header.php";?>
+    <?php require_once "includes/header.php"; ?>
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10 col-xl-9">
@@ -88,7 +89,7 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
                             <!-- Package Info -->
                             <div class="col-md-6">
                                 <p class="mb-3"><span class="info-label">Description:</span></p>
-                                <p class="text-muted ms-1"><?= nl2br(htmlspecialchars($package['tourpackage_desc'])) ?></p>
+                                <p class="text-muted ms-1"><?= nl2br(htmlspecialchars($package['tourpackage_desc'] ?? 'No description available')) ?></p>
                             </div>
 
                             <div class="col-md-6">
@@ -109,7 +110,7 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
                                 <p class="mb-3"><span class="info-label">Duration:</span></p>
                                 <p class="ms-1">
                                     <i class="fas fa-calendar-alt text-info"></i>
-                                    <?= htmlspecialchars($package['schedule_days']) ?> day(s)
+                                    <?= htmlspecialchars($package['schedule_days'] ?? 'N/A') ?> day(s)
                                 </p>
                             </div>
 
@@ -117,23 +118,23 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
                                 <p class="mb-3"><span class="info-label">Group Size:</span></p>
                                 <p class="ms-1">
                                     <i class="fas fa-users text-success"></i>
-                                    <?= htmlspecialchars($package['numberofpeople_based']) ?> - <?= htmlspecialchars($package['numberofpeople_maximum']) ?> people
+                                    <?= htmlspecialchars($package['numberofpeople_based'] ?? 'N/A') ?> - <?= htmlspecialchars($package['numberofpeople_maximum'] ?? 'N/A') ?> people
                                 </p>
                             </div>
 
                             <div class="col-md-6">
                                 <p class="mb-3"><span class="info-label">Base Price:</span></p>
                                 <h5 class="ms-1 text-success fw-bold">
-                                    <?= htmlspecialchars($package['pricing_currency']) ?>
-                                    <?= number_format($package['pricing_foradult'], 2) ?>
+                                    <?= htmlspecialchars($package['pricing_currency'] ?? 'PHP') ?>
+                                    <?= number_format($package['pricing_foradult'] ?? 0, 2) ?>
                                 </h5>
                             </div>
 
                             <div class="col-md-6">
                                 <p class="mb-3"><span class="info-label">Discount:</span></p>
                                 <h5 class="ms-1 text-danger fw-bold">
-                                    - <?= htmlspecialchars($package['pricing_currency']) ?>
-                                    <?= number_format($package['pricing_discount'], 2) ?>
+                                    - <?= htmlspecialchars($package['pricing_currency'] ?? 'PHP') ?>
+                                    <?= number_format($package['pricing_discount'] ?? 0, 2) ?>
                                 </h5>
                             </div>
                         </div>
@@ -164,7 +165,7 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
                         <?php endif; ?>
 
                         <div class="d-flex flex-wrap gap-3 mt-5">
-                            <a href="booking-add.php?id=<?= $package['tourpackage_ID']; ?>" 
+                            <a href="booking-add.php?id=<?= htmlspecialchars($package['tourpackage_ID'] ?? '') ?>" 
                                class="btn btn-success btn-book text-white">
                                 <i class="fas fa-ticket-alt me-2"></i> Book Now
                             </a>

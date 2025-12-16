@@ -29,7 +29,8 @@ $guideObj = new Guide();
 
 $booking = $bookingObj->getBookingByIDAndTourist($booking_ID, $tourist_ID);  
 $packages = $tourManagerObj->getTourPackageDetailsByID($booking['tourpackage_ID']); 
-$guide = $guideObj->getGuideByID($booking['booking_ID']);
+$guide = $guideObj->getGuideByBooking($booking['booking_ID']);
+$guide_name = $guide['guide_name'] ?? '';
 $spots =  $tourManagerObj->getSpotsByPackage($booking['tourpackage_ID']);
 $companions = $bookingObj->getCompanionsByBooking($booking_ID);
 
@@ -399,7 +400,7 @@ $statusColor = match ($booking['booking_status']) {
                             </p>
                         </div>
                         <div>
-                            <a href="inbox.php?guide_id=<?= htmlspecialchars($booking['guide_ID']) ?>" class="btn btn-primary btn-sm mb-2">
+                            <a href="inbox.php?guide_id=<?= htmlspecialchars($guide['account_ID']) ?>" class="btn btn-primary btn-sm mb-2">
                                 <i class="fas fa-comment"></i> Message
                             </a>
                             <br>

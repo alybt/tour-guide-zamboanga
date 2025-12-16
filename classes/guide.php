@@ -379,6 +379,7 @@ class Guide extends Database {
                 -- Guide & Account
                 g.guide_ID,
                 ai.*,
+                a.account_profilepic AS profile_pic
                 
                 -- Login
                 ul.user_username,
@@ -450,6 +451,47 @@ class Guide extends Database {
 
         } catch (PDOException $e) {
             error_log("getGuideByID Error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getGuideByBooking($booking_ID){
+        $sql = "SELECT 
+                -- Guide & Account
+                g.guide_ID,
+                g.account_ID,
+                
+                -- Full Name (Clean Concatenation)
+                TRIM(
+                    CONCAT(
+                        ul.name_first, ' ',
+                        COALESCE(ul.name_second, ''), ' ',
+                        COALESCE(ul.name_middle, ''), ' ',
+                        ul.name_last,
+                        IF(ul.name_suffix IS NOT NULL AND ul.name_suffix != '', CONCAT(' ', ul.name_suffix), '')
+                    )
+                ) AS guide_name
+                
+            FROM booking b
+            JOIN tour_package tp ON tp.tourpackage_ID = b.tourpackage_ID
+            LEFT JOIN guide g ON g.guide_ID = tp.guide_ID  -- Changed to LEFT JOIN
+            LEFT JOIN Account_Info ai ON ai.account_ID = g.account_ID
+            LEFT JOIN User_Login ul ON ul.user_ID = ai.user_ID 
+            LEFT JOIN Contact_Info ci ON ci.contactinfo_ID = ul.contactinfo_ID 
+            WHERE b.booking_ID = :booking_ID
+            LIMIT 1
+        ";
+
+        try {
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->execute([':booking_ID' => $booking_ID]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Return null if no guide is assigned (guide_ID is null)
+            return ($result && $result['guide_ID']) ? $result : null;
+
+        } catch (PDOException $e) {
+            error_log("getGuideByBooking Error: " . $e->getMessage());
             return null;
         }
     }
@@ -538,11 +580,7 @@ class Guide extends Database {
                 JOIN
                     Account_Info AI ON G.account_ID = AI.account_ID
                 JOIN
-                    User_Login UL ON AI.user_ID = UL.user_ID
-                JOIN
-                    Person P ON UL.person_ID = ul.person_ID
-                JOIN
-                    Name_Info NI ON ul.name_ID = ul.name_ID
+                    User_Login UL ON AI.user_ID = UL.user_ID 
                 LEFT JOIN
                     Guide_Languages GL ON G.guide_ID = GL.guide_ID
                 LEFT JOIN

@@ -138,22 +138,18 @@ trait TourPackagesTrait {
             tp.include_meal,
             tp.pricing_mealfee,
             tp.transport_fee,
-            tp.pricing_discount,
-            GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots
-        FROM tour_package tp
+            tp.pricing_discount
+        FROM Tour_Package tp
         JOIN Guide g ON tp.guide_ID = g.guide_ID
-        JOIN account_info ai ON g.account_ID = ai.account_ID
+        JOIN Account_Info ai ON g.account_ID = ai.account_ID
         JOIN User_Login ul ON ai.user_ID = ul.user_ID 
-        JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
-        JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID    
         WHERE tp.tourpackage_ID = :tourpackage_ID";
         $db = $this->connect();
         $query = $db->prepare($sql);
         $query->bindParam(':tourpackage_ID', $tourpackage_ID);
         $query->execute();
-        $results =$query->fetchAll(PDO::FETCH_ASSOC);
 
-        return $results;
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getPackageById($id) {

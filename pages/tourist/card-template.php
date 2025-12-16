@@ -30,14 +30,14 @@
 
             <p class="mb-1">
                 <strong>PAX:</strong>
-                <?= $people['numberofpeople_based'] ?>
-                <?php if ($people['numberofpeople_based'] != $people['numberofpeople_maximum']): ?>
-                    – <?= $people['numberofpeople_maximum'] ?>
+                <?= $package['numberofpeople_based'] ?>
+                <?php if ($package['numberofpeople_based'] != $package['numberofpeople_maximum']): ?>
+                    – <?= $package['numberofpeople_maximum'] ?>
                 <?php endif; ?>
             </p>
 
             <p class="mb-2 text-success fw-semibold">
-                from <?= htmlspecialchars($pricing['pricing_currency']) ?> <?= number_format($pricing['pricing_foradult'], 2) ?> per adult
+                from <?= htmlspecialchars($package['pricing_currency']) ?> <?= number_format($package['pricing_foradult'], 2) ?> per adult
             </p>
 
             <a href="tour-packages-view.php?id=<?= $package['tourpackage_ID'] ?>"

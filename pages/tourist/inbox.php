@@ -33,11 +33,11 @@ if (!isset($_GET['guide_id']) || empty($_GET['guide_id'])) {
     }
 }
 
-$guide_ID = intval($_GET['guide_id']);// Assuming this is set in session as account_ID
+$guide_account_ID = intval($_GET['guide_id']); // This is an account_ID
 
 // Get or create conversation with this specific guide
 $db = $conversationObj->connect();
-$selected_conversation_ID = $conversationObj->addgetUsers($tourist_ID, $guide_ID, $db);
+$selected_conversation_ID = $conversationObj->addgetUsers($tourist_ID, $guide_account_ID, $db);
 
 if (!$selected_conversation_ID) {
     $_SESSION['error'] = "Unable to load conversation.";
@@ -51,13 +51,34 @@ $messages = $conversationObj->fetchMessages($selected_conversation_ID);
 // Mark messages as read for this conversation
 $conversationObj->markAsRead($selected_conversation_ID, $tourist_ID);
 
-// Get guide details for the chat header
-$guidedetails = $guideObj->getGuideByID($guide_ID);
+// Resolve guide_ID from account_ID, then fetch details for header
+$guide_ID = $guideObj->getGuide_ID($guide_account_ID);
+$guidedetails = $guide_ID ? $guideObj->getGuideByID($guide_ID) : null;
  
 
 
-$guide_name = $guidedetails['name_first'] . ' ' . $guidedetails['name_last'];
-$guide_avatar = $guidedetails['profile_picture'] ?? 'https://i.pravatar.cc/100?img=' . $guide_ID;
+$guide_name = $guidedetails['guide_name'] ?? '';
+$guide_avatar = $guidedetails['profile_picture'] ?? ('https://i.pravatar.cc/100?img=' . $guide_account_ID);
+
+if ($guide_name === '') {
+    $stmt = $db->prepare("
+        SELECT TRIM(CONCAT(
+            ul.name_first, ' ',
+            COALESCE(ul.name_second, ''), ' ',
+            COALESCE(ul.name_middle, ''), ' ',
+            ul.name_last,
+            IF(ul.name_suffix IS NOT NULL AND ul.name_suffix != '', CONCAT(' ', ul.name_suffix), '')
+        )) AS full_name
+        FROM Account_Info ai
+        JOIN User_Login ul ON ai.user_ID = ul.user_ID
+        WHERE ai.account_ID = :account_ID
+        LIMIT 1
+    ");
+    $stmt->bindParam(':account_ID', $guide_account_ID, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $guide_name = $row['full_name'] ?? 'Unknown Guide';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
