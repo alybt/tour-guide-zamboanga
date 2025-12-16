@@ -28,9 +28,13 @@ $response = ['success' => false];
 
 if (isset($_GET['id'])) {
     $earning_ID = intval($_GET['id']); 
-    $transaction_ID = $paymentManagerObj->getTransactionIDByEarning($earning_ID);
+    $earning = $paymentManagerObj->getEarningByID($earning_ID);
+    $transaction_ID = $earning['transaction_ID'] ?? null;
+    $balanceRow = $guideObj->getGuideBalanace($guide_ID);
+    $guide_balance = $balanceRow['guide_balance'] ?? 0;
+    $earning_amount = $earning['earning_amount'] ?? null;
     
-    if ($earning_ID) {
+    if ($earning_ID && $transaction_ID && $earning_amount !== null) {
         if ($paymentManagerObj->addingToBalanceMoney($guide_ID, $guide_balance, $earning_amount, $transaction_ID, $earning_ID)) {
             $response['success'] = true;
             $response['message'] = "adding To Balance Succesfully";
@@ -38,7 +42,7 @@ if (isset($_GET['id'])) {
             $response['error'] = "Failed to add balance #$earning_ID.";
         }
     } else {
-        $response['error'] = "Transaction #$transaction_ID not found.";
+        $response['error'] = "Invalid earning or transaction reference.";
     }
 } else {
     $response['error'] = "Invalid transaction ID.";

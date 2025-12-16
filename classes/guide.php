@@ -654,7 +654,7 @@ class Guide extends Database {
         $sql = "SELECT 
             COALESCE(SUM(amount), 0.00) AS total_payout 
             FROM guide_money_history  
-        WHERE guide_ID = :guide_ID";
+        WHERE guide_ID = :guide_ID AND reference_name = 'Payout'";
         
         $db = $this->connect();
         $query = $db->prepare($sql);
