@@ -183,7 +183,7 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
             <h2>Ready to Start Your Journey?</h2>
             <p>Join thousands of travelers who have discovered the world through local eyes</p>
             <div class="cta-buttons">
-                <button class="btn btn-cta-primary">Find a Guide</button>
+                <!-- <button class="btn btn-cta-primary">Find a Guide</button> -->
                 <button class="btn btn-cta-secondary">Become a Guide</button>
             </div>
         </div>
@@ -282,7 +282,7 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
             });
 
             $('.btn-cta-secondary').on('click', function() {
-                window.location.href = 'become-guide.html';
+                window.location.href = '/registration/guide-registration.php';
             });
         });
     </script>
