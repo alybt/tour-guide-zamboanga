@@ -1,19 +1,15 @@
 <?php
 
 require_once __DIR__ . "/../config/database.php";
-require_once "trait/person/trait-name-info.php";
-require_once "trait/person/trait-address.php";
-require_once "trait/person/trait-phone.php";
-require_once "trait/person/trait-emergency.php";
-require_once "trait/person/trait-contact-info.php";
-require_once "trait/person/trait-person.php";
 require_once "trait/person/trait-user.php";
 require_once "trait/person/trait-account.php";
 require_once "trait/account/account-logs.php";
+require_once "trait/person/trait-phone.php";
+require_once "trait/person/trait-address.php";
 
 class Registration extends Database {
 
-    use PersonTrait, UserTrait, NameInfoTrait, AddressTrait, PhoneTrait, EmergencyTrait, ContactInfoTrait, Account_InfoTrait, AccountLogs;
+    use UserTrait, Account_InfoTrait, AccountLogs, PhoneTrait, AddressTrait;
     
     public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,
         $houseno, $street, $barangay,
@@ -97,7 +93,7 @@ class Registration extends Database {
             $db = $this->connect();
             if (!$db) {
                 $this->setLastError("Database connection failed");
-                error_log("Database connection failed in addTourist");
+                error_log("Database connection failed in addgetGuide");
                 return false;
             }
 
@@ -146,6 +142,7 @@ class Registration extends Database {
 
             } catch (PDOException $e) {
             $db->rollBack();
+            $this->setLastError($e->getMessage());
             error_log("Guide Registration Error: " . $e->getMessage()); 
             return false;
         }

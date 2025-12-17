@@ -62,8 +62,7 @@ trait AccountInfoTrait {
                 $data['name_second'],
                 $data['name_middle'],
                 $data['name_last'],
-                $data['name_suffix'],
-                $ids['name_ID']
+                $data['name_suffix']
             ]);
 
             // Update Contact_Info email

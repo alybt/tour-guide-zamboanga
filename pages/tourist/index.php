@@ -252,13 +252,13 @@ $topfiveguides = $guideObj->viewTop5GuideInfoByRate();
                 <div class="col-md-8">
                     <h1>Welcome back, <?= $tourist['name_first'] ?> 👋</h1>
                     <p class="lead">Ready for your next adventure? Let's find the perfect guide for you.</p>
-                    <div class="search-bar mt-3">
+                    <!-- <div class="search-bar mt-3">
                         <div class="input-group">
                             <span class="input-group-text bg-transparent border-0"><i class="fas fa-search"></i></span>
                             <input type="text" class="form-control" placeholder="Search destinations, guides, or experiences...">
                             <button class="btn btn-primary" type="button">Search</button>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="col-md-4 text-center d-none d-md-block">
                     <i class="fas fa-globe-americas" style="font-size: 8rem; color: var(--secondary-accent); opacity: 0.3;"></i>
